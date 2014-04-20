@@ -96,8 +96,8 @@
 	   (forth-word-set! name prog)
 	   $s)
 
-(forth-def ref (quotedname)
-	   (forth-return (table-ref forth-words (car quotedname))))
+(forth-def ref (name)
+	   (forth-return (table-ref forth-words name)))
 
 (forth-def thenelse (val truebranch falsebranch)
 	   (forth-eval $s (if val truebranch falsebranch)))
@@ -162,6 +162,11 @@
 						      (car prog*)
 						      (cadr prog*)))
 				      cont)))
+		       ((QUOTE)
+			;; takes 1 argument from program, puts it on
+			;; the stack
+			(let ((cont (cdr prog*)))
+			  (forth-eval (cons (car prog*) stack) cont)))
 		       (else
 			(let ((app (thunk (forth-apply stack item))))
 			  (if (null? prog*)
@@ -187,16 +192,23 @@
  > (forth-eval '() '(4 (5 1 +) eval))
  (6 4)
 
+ ;; words can be quoted by way of QUOTE:
+ > (forth-eval '() '(QUOTE 1))
+ (1)
+ > (forth-eval '() '(QUOTE foo))
+ (foo)
+
  ;; "syntax-based" word definition form: |:| takes a name, and a
  ;; program to its right, syntactically
  > (forth-eval '() '(: square (dup *) 4 square))
  (16)
  ;; stack-based word definition form (works like a normal word):
- ;; |set!| takes a program and a quoted name from the stack at
- ;; runtime. (I don't know why the original Forth chooses to use such
- ;; "syntax-based" features when it could do with program quote and
- ;; then just words like this, other than visual preference.)
- > (forth-eval '() '((dup *) (sqr) set! 4 sqr))
+ ;; |set!| takes a program and a name from the stack at runtime. (I
+ ;; don't know why the original Forth chooses to use such
+ ;; "syntax-based" features when it could do with program and symbol
+ ;; quoting and then just words like this, other than visual
+ ;; preference.)
+ > (forth-eval '() '((dup *) QUOTE sqr set! 4 sqr))
  (16)
 
  ;; "syntax-based" branching facility: takes a truebranch and a
@@ -223,21 +235,21 @@
  ;; write a word-based branching facility ourselves, using the
  ;; syntax-based one internally:
  > (forth-eval '() '((3 rot THENELSE (drop eval) (swap drop eval))
-		     (if) set!))
+		     QUOTE if set!))
  > (forth-eval '(5) '(zero? (1) (0) if))
  (0)
  > (forth-eval '(0) '(zero? (1) (0) if))
  (1)
  ;; write a word-based branching facility ourselves, using the
  ;; stack-based one internally:
- > (forth-eval '() '((thenelse) (if*) set!))
+ > (forth-eval '() '((thenelse) QUOTE if* set!))
  > (forth-eval '(5) '(zero? (1) (0) if*))
  (0)
  > (forth-eval '(0) '(zero? (1) (0) if*))
  (1)
  ;; alias the branching facility by simply storing it to a different
  ;; word:
- > (forth-eval '() '((if*) ref (anotherif) set!))
+ > (forth-eval '() '(QUOTE if* ref QUOTE anotherif set!))
  > (forth-eval '(5) '(zero? (1) (0) anotherif))
  (0)
  > (forth-eval '(0) '(zero? (1) (0) anotherif))
