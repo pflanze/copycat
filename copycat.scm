@@ -7,19 +7,20 @@
 ;; the lookups to a parsing step (symbol creation, store as part of
 ;; symbol data structure). ("Linker step")
 
-(defstruct forthword
-  #(symbol? origname)
+(defstruct forthforeigncall
   #(natural0? numargs)
   #(procedure? op))
+
+;; (defstruct forthprogram
+;;   list)
+;; no, just store the list directly. Let instead forthforeigncall be a
+;; type visible by Forth.
 
 ;; setting a word with a Forth program
 (def (forth-word-subprog-set! name subprog)
      (table-set! forth-words
 		 name
-		 (forthword name
-			    0
-			    (lambda ($s)
-			      (forth-eval $s subprog)))))
+		 subprog))
 
 ;; setting a word to a Scheme program
 (defmacro (forth-def name args . body)
@@ -27,13 +28,13 @@
 	   (lambda_
 	    `(table-set! forth-words
 			 ',name
-			 (forthword ',name
-				    ,(length (source-code args))
-				    (lambda ,(cons '$s (source-code args))
-				      ;; ^ HEH that |source-code| is
-				      ;; required. otherwise gambit has a
-				      ;; problem, 'Identifier expected'
-				      ,@body))))))
+			 (forthforeigncall
+			  ,(length (source-code args))
+			  (lambda ,(cons '$s (source-code args))
+			    ;; ^ HEH that |source-code| is
+			    ;; required. otherwise gambit has a
+			    ;; problem, 'Identifier expected'
+			    ,@body))))))
 
 (defmacro (forth-return . es)
   `(cons* ,@(reverse es) $s))
@@ -98,6 +99,9 @@
 	   (forth-word-subprog-set! (car quotedname) prog)
 	   $s)
 
+(forth-def ref (quotedname)
+	   (forth-return (table-ref forth-words (car quotedname))))
+
 (forth-def thenelse (val truebranch falsebranch)
 	   (forth-eval $s (if val truebranch falsebranch)))
 
@@ -120,16 +124,19 @@
 ;; ----------------------------
 
 (def (forth-apply stack #(symbol? word))
-     (let-forthword
-      ((origname numargs op) (table-ref forth-words word))
-      (case numargs
-	((0) (op stack))
-	((1) (op (cdr stack) (car stack)))
-	((2) (op (cddr stack) (cadr stack) (car stack)))
-	(else
-	 ;; split-at-reverse?
-	 (letv ((args stack) (split-at stack numargs))
-	       (apply op (cons stack (reverse args))))))))
+     (let ((w (table-ref forth-words word)))
+       (if (forthforeigncall? w)
+	   (let-forthforeigncall
+	    ((numargs op) w)
+	    (case numargs
+	      ((0) (op stack))
+	      ((1) (op (cdr stack) (car stack)))
+	      ((2) (op (cddr stack) (cadr stack) (car stack)))
+	      (else
+	       ;; split-at-reverse?
+	       (letv ((args stack) (split-at stack numargs))
+		     (apply op (cons stack (reverse args)))))))
+	   (forth-eval stack w))))
 
 (def (forth-eval stack prog)
      (if (null? prog)
@@ -230,6 +237,13 @@
  > (forth-eval '(5) '(zero? (1) (0) if*))
  (0)
  > (forth-eval '(0) '(zero? (1) (0) if*))
+ (1)
+ ;; alias the branching facility by simply storing it to a different
+ ;; word:
+ > (forth-eval '() '((if*) ref (anotherif) set!))
+ > (forth-eval '(5) '(zero? (1) (0) anotherif))
+ (0)
+ > (forth-eval '(0) '(zero? (1) (0) anotherif))
  (1)
 
  ;; factorial
