@@ -1,41 +1,42 @@
-;; Cat: a concatenative language using S-expressions
+;; Copycat: a concatenative language using S-expressions
 
 ;; This implements a concatenative ("Forth-like") language. It uses
 ;; S-expressions for basic syntax, and deviates from normal Forth by
 ;; using lists to quote subprograms, and maybe a few other changes. I
-;; think it is closer to [Joy][] than Forth.
+;; think it is closer to [Joy][] or [Cat][] than [Forth][].
 ;; 
 ;; [Joy]: https://en.wikipedia.org/wiki/Joy_(programming_language),
 ;;        http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language
+;; [Cat]: http://www.cat-language.com/
 ;; [Forth]: https://en.wikipedia.org/wiki/Forth_(programming_language)
 
 
 ;; table to store the values of words
-(def cat-words
+(def copycat-words
      (make-table))
 
-;; Note: currently the cat-words table is used for every word
+;; Note: currently the copycat-words table is used for every word
 ;; reference at runtime. This could be made more efficient by moving
 ;; the lookups to a parsing step (symbol creation, store as part of
 ;; symbol data structure). ("Linker step")
 
-(def (cat-word-set! #(symbol? name) val)
-     (table-set! cat-words name val))
+(def (copycat-word-set! #(symbol? name) val)
+     (table-set! copycat-words name val))
 
 
 ;; We need a way to fall back onto the host system to implement
 ;; primitives, thus provide part of a foreign function interface:
 
-(defstruct catforeigncall
+(defstruct copycatforeigncall
   #(natural0? numargs)
   #(procedure? op))
 
 ;; setting a word to a Scheme program
-(defmacro (cat-def name args . body)
+(defmacro (copycat-def name args . body)
   (assert* symbol? name
 	   (lambda_
-	    `(cat-word-set! ',name
-			      (catforeigncall
+	    `(copycat-word-set! ',name
+			      (copycatforeigncall
 			       ,(length (source-code args))
 			       (lambda ,(cons '$s (source-code args))
 				 ;; ^ HEH that |source-code| is
@@ -43,42 +44,42 @@
 				 ;; problem, 'Identifier expected'
 				 ,@body))))))
 
-(defmacro (cat-return . es)
+(defmacro (copycat-return . es)
   `(cons* ,@(reverse es) $s))
 
-(defmacro (cat-defhost name args)
-  `(cat-def ,name ,args
-	      (cat-return ,(cons name (source-code args)))))
+(defmacro (copycat-defhost name args)
+  `(copycat-def ,name ,args
+	      (copycat-return ,(cons name (source-code args)))))
 
 ;; -- functions
 
-(cat-defhost + (a b))
-(cat-defhost - (a b))
-(cat-defhost * (a b))
-(cat-defhost / (a b))
+(copycat-defhost + (a b))
+(copycat-defhost - (a b))
+(copycat-defhost * (a b))
+(copycat-defhost / (a b))
 
-(cat-def dup (a)
-	   (cat-return a a))
+(copycat-def dup (a)
+	   (copycat-return a a))
 
-(cat-def drop (a)
+(copycat-def drop (a)
 	   $s)
 
-(cat-def swap (a b)
-	   (cat-return b a))
+(copycat-def swap (a b)
+	   (copycat-return b a))
 
-(cat-defhost zero? (v))
-(cat-defhost = (a b))
-(cat-defhost < (a b))
-(cat-defhost <= (a b))
-(cat-defhost > (a b))
-(cat-defhost >= (a b))
-(cat-def != (a b)
-	   (cat-return (not (= a b))))
-(cat-defhost eq? (a b))
-(cat-def !eq? (a b)
-	   (cat-return (not (eq? a b))))
+(copycat-defhost zero? (v))
+(copycat-defhost = (a b))
+(copycat-defhost < (a b))
+(copycat-defhost <= (a b))
+(copycat-defhost > (a b))
+(copycat-defhost >= (a b))
+(copycat-def != (a b)
+	   (copycat-return (not (= a b))))
+(copycat-defhost eq? (a b))
+(copycat-def !eq? (a b)
+	   (copycat-return (not (eq? a b))))
 
-(cat-def rot (n)
+(copycat-def rot (n)
 	   ;; (letv ((args stack*) (split-at $s n))
 	   ;; 	 (append (cons (last args) (butlast args)) stack*))
 	   ;;or, saving on intermediates:
@@ -95,44 +96,44 @@
 
 ;; -- procedures (for side-effects)
 
-(cat-def eval (v)
-	   (cat-eval $s v))
+(copycat-def eval (v)
+	   (copycat-eval $s v))
 
-(cat-def nop ()
+(copycat-def nop ()
 	   $s)
 
-(cat-def set! (prog name)
-	   (cat-word-set! name prog)
+(copycat-def set! (prog name)
+	   (copycat-word-set! name prog)
 	   $s)
 
-(cat-def ref (name)
-	   (cat-return (table-ref cat-words name)))
+(copycat-def ref (name)
+	   (copycat-return (table-ref copycat-words name)))
 
-(cat-def thenelse (val truebranch falsebranch)
-	   (cat-eval $s (if val truebranch falsebranch)))
+(copycat-def thenelse (val truebranch falsebranch)
+	   (copycat-eval $s (if val truebranch falsebranch)))
 
-(cat-def print (v)
+(copycat-def print (v)
 	   (print v)
 	   $s)
 
-(cat-def write (v)
+(copycat-def write (v)
 	   (write v)
 	   $s)
 
-(cat-def newline ()
+(copycat-def newline ()
 	   (newline)
 	   $s)
 
-(cat-def println (v)
+(copycat-def println (v)
 	   (println v)
 	   $s)
 
 ;; ----------------------------
 
-(def (cat-apply stack #(symbol? word))
-     (let ((w (table-ref cat-words word)))
-       (if (catforeigncall? w)
-	   (let-catforeigncall
+(def (copycat-apply stack #(symbol? word))
+     (let ((w (table-ref copycat-words word)))
+       (if (copycatforeigncall? w)
+	   (let-copycatforeigncall
 	    ((numargs op) w)
 	    (case numargs
 	      ((0) (op stack))
@@ -142,9 +143,9 @@
 	       ;; split-at-reverse?
 	       (letv ((args stack) (split-at stack numargs))
 		     (apply op (cons stack (reverse args)))))))
-	   (cat-eval stack w))))
+	   (copycat-eval stack w))))
 
-(def (cat-eval stack prog)
+(def (copycat-eval stack prog)
      (if (null? prog)
 	 stack
 	 (let-pair ((item prog*) prog)
@@ -160,13 +161,13 @@
 			(let ((name (car prog*))
 			      (subprog (cadr prog*))
 			      (cont (cddr prog*)))
-			  (cat-word-set! name subprog)
-			  (cat-eval stack cont)))
+			  (copycat-word-set! name subprog)
+			  (copycat-eval stack cont)))
 		       ((THENELSE)
 			;; takes 2 arguments from program (truebranch,
 			;; falsebranch), and 1 from stack (test value)
 			(let ((cont (cddr prog*)))
-			  (cat-eval (cat-eval (cdr stack)
+			  (copycat-eval (copycat-eval (cdr stack)
 						  (if (car stack)
 						      (car prog*)
 						      (cadr prog*)))
@@ -175,107 +176,107 @@
 			;; takes 1 argument from program, puts it on
 			;; the stack
 			(let ((cont (cdr prog*)))
-			  (cat-eval (cons (car prog*) stack) cont)))
+			  (copycat-eval (cons (car prog*) stack) cont)))
 		       (else
-			(let ((app (thunk (cat-apply stack item))))
+			(let ((app (thunk (copycat-apply stack item))))
 			  (if (null? prog*)
 			      (app)
-			      (cat-eval (app) prog*))))))
+			      (copycat-eval (app) prog*))))))
 		    (else
-		     (cat-eval (cons item stack) prog*))))))
+		     (copycat-eval (cons item stack) prog*))))))
 
 (TEST
- > (cat-eval '() '(4 5 5 *))
+ > (copycat-eval '() '(4 5 5 *))
  (25 4)
- > (cat-eval '() '(4 5 5 * -))
+ > (copycat-eval '() '(4 5 5 * -))
  (-21)
- > (cat-eval '() '(4 5 dup * -))
+ > (copycat-eval '() '(4 5 dup * -))
  (-21)
- > (cat-eval '() '(4 5 swap dup * -))
+ > (copycat-eval '() '(4 5 swap dup * -))
  (-11)
 
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
- > (cat-eval '() '(4 (5) eval))
+ > (copycat-eval '() '(4 (5) eval))
  (5 4)
- > (cat-eval '() '(4 (5 1 +) eval))
+ > (copycat-eval '() '(4 (5 1 +) eval))
  (6 4)
 
  ;; words can be quoted by way of QUOTE:
- > (cat-eval '() '(QUOTE 1))
+ > (copycat-eval '() '(QUOTE 1))
  (1)
- > (cat-eval '() '(QUOTE foo))
+ > (copycat-eval '() '(QUOTE foo))
  (foo)
 
  ;; "syntax-based" word definition form: |:| takes a name, and a
  ;; program to its right, syntactically
- > (cat-eval '() '(: square (dup *) 4 square))
+ > (copycat-eval '() '(: square (dup *) 4 square))
  (16)
  ;; stack-based word definition form (works like a normal word):
  ;; |set!| takes a program and a name from the stack at runtime. (I
- ;; don't know why the original Cat chooses to use such
+ ;; don't know why the original Copycat chooses to use such
  ;; "syntax-based" features when it could do with program and symbol
  ;; quoting and then just words like this, other than visual
  ;; preference.)
- > (cat-eval '() '((dup *) QUOTE sqr set! 4 sqr))
+ > (copycat-eval '() '((dup *) QUOTE sqr set! 4 sqr))
  (16)
 
  ;; "syntax-based" branching facility: takes a truebranch and a
  ;; falsebranch to its right, syntactically, as well as a boolean
  ;; value from the stack at runtime.
- > (cat-eval '(5) '(zero?))
+ > (copycat-eval '(5) '(zero?))
  (#f)
- > (cat-eval '(5) '(zero? THENELSE (1) (0)))
+ > (copycat-eval '(5) '(zero? THENELSE (1) (0)))
  (0)
- > (cat-eval '(0) '(zero? THENELSE (1) (0)))
+ > (copycat-eval '(0) '(zero? THENELSE (1) (0)))
  (1)
  ;; stack-based branching facility (works like a normal word): takes
  ;; boolean value, truebranch and falsebranch from the stack at
  ;; runtime
- > (cat-eval '(5) '(zero? (1) (0) thenelse))
+ > (copycat-eval '(5) '(zero? (1) (0) thenelse))
  (0)
- > (cat-eval '(0) '(zero? (1) (0) thenelse))
+ > (copycat-eval '(0) '(zero? (1) (0) thenelse))
  (1)
  ;; rot takes a number denoting the number of elements to rotate, and
  ;; rotates their position on the stack so that the last of those
  ;; becomes the first:
- > (cat-eval '((no) (yes) #t 7) '(3 rot))
+ > (copycat-eval '((no) (yes) #t 7) '(3 rot))
  (#t (no) (yes) 7)
  ;; write a word-based branching facility ourselves, using the
  ;; syntax-based one internally:
- > (cat-eval '() '((3 rot THENELSE (drop eval) (swap drop eval))
+ > (copycat-eval '() '((3 rot THENELSE (drop eval) (swap drop eval))
 		     QUOTE if set!))
- > (cat-eval '(5) '(zero? (1) (0) if))
+ > (copycat-eval '(5) '(zero? (1) (0) if))
  (0)
- > (cat-eval '(0) '(zero? (1) (0) if))
+ > (copycat-eval '(0) '(zero? (1) (0) if))
  (1)
  ;; write a word-based branching facility ourselves, using the
  ;; stack-based one internally:
- > (cat-eval '() '((thenelse) QUOTE if* set!))
- > (cat-eval '(5) '(zero? (1) (0) if*))
+ > (copycat-eval '() '((thenelse) QUOTE if* set!))
+ > (copycat-eval '(5) '(zero? (1) (0) if*))
  (0)
- > (cat-eval '(0) '(zero? (1) (0) if*))
+ > (copycat-eval '(0) '(zero? (1) (0) if*))
  (1)
  ;; alias the branching facility by simply storing it to a different
  ;; word:
- > (cat-eval '() '(QUOTE if* ref QUOTE anotherif set!))
- > (cat-eval '(5) '(zero? (1) (0) anotherif))
+ > (copycat-eval '() '(QUOTE if* ref QUOTE anotherif set!))
+ > (copycat-eval '(5) '(zero? (1) (0) anotherif))
  (0)
- > (cat-eval '(0) '(zero? (1) (0) anotherif))
+ > (copycat-eval '(0) '(zero? (1) (0) anotherif))
  (1)
 
  ;; factorial
- > (cat-eval '(0) '(: fact (dup zero? THENELSE (drop 1) (dup 1 - fact *))))
+ > (copycat-eval '(0) '(: fact (dup zero? THENELSE (drop 1) (dup 1 - fact *))))
  ;; or:
- > (cat-eval '(0) '(: fact (dup zero? (drop 1) (dup 1 - fact *) thenelse)))
- > (cat-eval '(0) '(fact))
+ > (copycat-eval '(0) '(: fact (dup zero? (drop 1) (dup 1 - fact *) thenelse)))
+ > (copycat-eval '(0) '(fact))
  (1)
- > (cat-eval '(1) '(fact))
+ > (copycat-eval '(1) '(fact))
  (1)
- > (cat-eval '(2) '(fact))
+ > (copycat-eval '(2) '(fact))
  (2)
- > (cat-eval '(3) '(fact))
+ > (copycat-eval '(3) '(fact))
  (6)
- > (cat-eval '(20) '(fact))
+ > (copycat-eval '(20) '(fact))
  (2432902008176640000)
  )
