@@ -90,7 +90,10 @@
 						     (forth-eval $s subprog))))
 			    (forth-eval stack (cddr prog*))))
 			 ((symbol? item)
-			  (forth-eval (forth-apply stack item) prog*))
+			  (let ((app (thunk (forth-apply stack item))))
+			    (if (null? prog*)
+				(app)
+				(forth-eval (app) prog*))))
 			 (else
 			  (forth-eval (cons item stack) prog*))))))
 
