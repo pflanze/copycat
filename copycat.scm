@@ -17,24 +17,21 @@
 ;; type visible by Forth.
 
 ;; setting a word with a Forth program
-(def (forth-word-subprog-set! name subprog)
-     (table-set! forth-words
-		 name
-		 subprog))
+(def (forth-word-set! #(symbol? name) val)
+     (table-set! forth-words name val))
 
 ;; setting a word to a Scheme program
 (defmacro (forth-def name args . body)
   (assert* symbol? name
 	   (lambda_
-	    `(table-set! forth-words
-			 ',name
-			 (forthforeigncall
-			  ,(length (source-code args))
-			  (lambda ,(cons '$s (source-code args))
-			    ;; ^ HEH that |source-code| is
-			    ;; required. otherwise gambit has a
-			    ;; problem, 'Identifier expected'
-			    ,@body))))))
+	    `(forth-word-set! ',name
+			      (forthforeigncall
+			       ,(length (source-code args))
+			       (lambda ,(cons '$s (source-code args))
+				 ;; ^ HEH that |source-code| is
+				 ;; required. otherwise gambit has a
+				 ;; problem, 'Identifier expected'
+				 ,@body))))))
 
 (defmacro (forth-return . es)
   `(cons* ,@(reverse es) $s))
@@ -95,8 +92,8 @@
 		 (cons (car stack)
 		       (rappend tmp (cdr stack))))))
 
-(forth-def set! (prog quotedname)
-	   (forth-word-subprog-set! (car quotedname) prog)
+(forth-def set! (prog name)
+	   (forth-word-set! name prog)
 	   $s)
 
 (forth-def ref (quotedname)
@@ -154,7 +151,7 @@
 			(let ((name (car prog*))
 			      (subprog (cadr prog*))
 			      (cont (cddr prog*)))
-			  (forth-word-subprog-set! name subprog)
+			  (forth-word-set! name subprog)
 			  (forth-eval stack cont)))
 		       ((THENELSE)
 			;; takes 2 arguments from program (truebranch,
