@@ -2,6 +2,11 @@
 (def forth-words
      (make-table))
 
+;; Note: currently the forth-words table is used for every word
+;; reference at runtime. This could be made more efficient by moving
+;; the lookups to a parsing step (symbol creation, store as part of
+;; symbol data structure). ("Linker step")
+
 (defstruct forthword
   #(symbol? origname)
   #(natural0? numargs)
