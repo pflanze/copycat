@@ -1,4 +1,8 @@
+;; This implements a Forth-like language. It uses S-expressions for
+;; basic syntax, and deviates from normal Forth by using lists to
+;; quote subprograms, and maybe a few other changes.
 
+;; table to store the values of words
 (def forth-words
      (make-table))
 
@@ -7,18 +11,16 @@
 ;; the lookups to a parsing step (symbol creation, store as part of
 ;; symbol data structure). ("Linker step")
 
+(def (forth-word-set! #(symbol? name) val)
+     (table-set! forth-words name val))
+
+
+;; We need a way to fall back onto the host system to implement
+;; primitives, thus provide part of a foreign function interface:
+
 (defstruct forthforeigncall
   #(natural0? numargs)
   #(procedure? op))
-
-;; (defstruct forthprogram
-;;   list)
-;; no, just store the list directly. Let instead forthforeigncall be a
-;; type visible by Forth.
-
-;; setting a word with a Forth program
-(def (forth-word-set! #(symbol? name) val)
-     (table-set! forth-words name val))
 
 ;; setting a word to a Scheme program
 (defmacro (forth-def name args . body)
@@ -68,16 +70,6 @@
 (forth-def !eq? (a b)
 	   (forth-return (not (eq? a b))))
 
-;; eval
-(forth-def eval (v)
-	   (forth-eval $s v))
-
-
-;; -- side-effecting statements
-
-(forth-def nop ()
-	   $s)
-
 (forth-def rot (n)
 	   ;; (letv ((args stack*) (split-at $s n))
 	   ;; 	 (append (cons (last args) (butlast args)) stack*))
@@ -91,6 +83,15 @@
 		     (cdr stack))
 		 (cons (car stack)
 		       (rappend tmp (cdr stack))))))
+
+
+;; -- procedures (for side-effects)
+
+(forth-def eval (v)
+	   (forth-eval $s v))
+
+(forth-def nop ()
+	   $s)
 
 (forth-def set! (prog name)
 	   (forth-word-set! name prog)
