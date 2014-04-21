@@ -1,19 +1,22 @@
 ;; Copycat: a concatenative language using S-expressions
 
 ;; This implements a concatenative ("Forth-like") language. It uses
-;; S-expressions for basic syntax, and deviates from normal Forth by
+;; S-expressions for basic syntax, and deviates from [Forth][] by
 ;; using lists to quote subprograms, and maybe a few other changes. I
-;; think it is closer to [Joy][] or [Cat][] than [Forth][].
-;; 
+;; think it is closest to [Joy][], or [tcK][]. See also [Cat][].
+
+;; [Forth]: https://en.wikipedia.org/wiki/Forth_(programming_language)
 ;; [Joy]: https://en.wikipedia.org/wiki/Joy_(programming_language),
 ;;        http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language
+;; [tcK]: "tiny concatenative K", http://archive.vector.org.uk/art10000360
 ;; [Cat]: http://www.cat-language.com/
-;; [Forth]: https://en.wikipedia.org/wiki/Forth_(programming_language)
 
 
 ;; table to store the values of words
 (def copycat-words
      (make-table))
+;; XX: Forth has a *tree* of binding maps? Context dependent? What kind
+;; of context? Here it's just one map.
 
 ;; Note: currently the copycat-words table is used for every word
 ;; reference at runtime. This could be made more efficient by moving
