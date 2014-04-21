@@ -282,4 +282,9 @@
  (6)
  > (copycat-eval '(20) '(fact))
  (2432902008176640000)
+
+ ;; test tail call optimization: this must run indefinitely and not
+ ;; run out of memory:
+ ;; > (copycat-eval '() '(: lp (lp) lp))
+ ;; (comment out (generate-proper-tail-calls #f) in .gambcini for this to work)
  )
