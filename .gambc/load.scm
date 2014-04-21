@@ -89,3 +89,7 @@
   (c/load "lib/cj-io-util")
   (i/load "lib/cj-path"))
 
+(i/load "lib/easy")
+(i/load "copycat")
+
+
