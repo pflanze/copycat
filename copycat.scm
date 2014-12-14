@@ -350,6 +350,7 @@
 
  ;; <lis> <code> map
  > (cc-eval '() '(: inc (1 +)))
+ ;; iterative version:
  > (cc-eval '()
 	    '(:
 	      rmap-iter ;; <code> <lis> <result>
@@ -392,10 +393,37 @@
 	      reverse
 	      (() reverse-iter)
 	      :
-	      map
+	      imap
 	      (rmap reverse)))
- > (cc-eval '(()) '((inc) map))
+ > (cc-eval '(()) '((inc) imap))
  (())
+ > (cc-eval '((5 6 7)) '((inc) imap))
+ ((6 7 8))
+ ;; recursive definition:
+ > (cc-eval '()
+	    '(:
+	      map-recur ;; <fn> <lis> -> <fn> <res>
+	      (dup
+	       pair?
+	       (;; P
+		dup
+		car
+		pick2
+		;; "vor eval" P*
+		eval
+		;; "after evap" P*
+		swap rot swap cdr
+		;; "after rot" P*
+		;; D
+		map-recur
+		;; "after recur" P*
+		rot
+		cons)
+	       ()
+	       if)
+	      :
+	      map
+	      (swap map-recur swap drop)))
  > (cc-eval '((5 6 7)) '((inc) map))
  ((6 7 8))
 
