@@ -107,13 +107,13 @@
 		       (rappend tmp (cdr stack))))))
 
 (cc-def over ()
-	(cons (cadr $s) $s))
+	(cc-return (cadr $s)))
 (cc-def pick2 ()
-	(cons (caddr $s) $s))
+	(cc-return (caddr $s)))
 (cc-def pick3 ()
-	(cons (cadddr $s) $s))
+	(cc-return (cadddr $s)))
 (cc-def pick (n)
-	(cons (list-ref $s n) $s))
+	(cc-return (list-ref $s n)))
 
 ;; -- procedures (for side-effects)
 
