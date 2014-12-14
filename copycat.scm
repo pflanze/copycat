@@ -92,19 +92,19 @@
 (cc-defhost error/1 (a))
 (cc-defhost error/2 (a))
 
-(cc-def rot (n)
-	   ;; (letv ((args stack*) (split-at $s n))
-	   ;; 	 (append (cons (last args) (butlast args)) stack*))
-	   ;;or, saving on intermediates:
-	   (let lp ((n n)
-		    (tmp '())
-		    (stack $s))
-	     (if (> n 1)
-		 (lp (dec n)
-		     (cons (car stack) tmp)
-		     (cdr stack))
-		 (cons (car stack)
-		       (rappend tmp (cdr stack))))))
+(cc-def roll (n)
+	;; (letv ((args stack*) (split-at $s n))
+	;; 	 (append (cons (last args) (butlast args)) stack*))
+	;;or, saving on intermediates:
+	(let lp ((n n)
+		 (tmp '())
+		 (stack $s))
+	  (if (> n 1)
+	      (lp (dec n)
+		  (cons (car stack) tmp)
+		  (cdr stack))
+	      (cons (car stack)
+		    (rappend tmp (cdr stack))))))
 
 (cc-def over ()
 	(cc-return (cadr $s)))
@@ -275,14 +275,14 @@
  (0)
  > (cc-eval '(0) '(zero? (1) (0) thenelse))
  (1)
- ;; rot takes a number denoting the number of elements to rotate, and
+ ;; roll takes a number denoting the number of elements to rotate, and
  ;; rotates their position on the stack so that the last of those
  ;; becomes the first:
- > (cc-eval '((no) (yes) #t 7) '(3 rot))
+ > (cc-eval '((no) (yes) #t 7) '(3 roll))
  (#t (no) (yes) 7)
  ;; write a word-based branching facility ourselves, using the
  ;; syntax-based one internally:
- > (cc-eval '() '((3 rot THENELSE (drop eval) (swap drop eval))
+ > (cc-eval '() '((3 roll THENELSE (drop eval) (swap drop eval))
 		  QUOTE if set!))
  > (cc-eval '(5) '(zero? (1) (0) if))
  (0)
