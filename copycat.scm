@@ -89,6 +89,9 @@
 (cc-defhost pair? (a))
 (cc-defhost null? (a))
 
+(cc-defhost error/1 (a))
+(cc-defhost error/2 (a))
+
 (cc-def rot (n)
 	   ;; (letv ((args stack*) (split-at $s n))
 	   ;; 	 (append (cons (last args) (butlast args)) stack*))
