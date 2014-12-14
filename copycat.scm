@@ -82,6 +82,13 @@
 (cc-def !eq? (a b)
 	   (cc-return (not (eq? a b))))
 
+(cc-def cons (a b)
+	(cc-return (cons b a)))
+(cc-defhost car (a))
+(cc-defhost cdr (a))
+(cc-defhost pair? (a))
+(cc-defhost null? (a))
+
 (cc-def rot (n)
 	   ;; (letv ((args stack*) (split-at $s n))
 	   ;; 	 (append (cons (last args) (butlast args)) stack*))
@@ -197,6 +204,9 @@
  (-21)
  > (cc-eval '() '(4 5 swap dup * -))
  (-11)
+
+ > (cc-eval '() '(() 1 cons))
+ ((1))
 
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
