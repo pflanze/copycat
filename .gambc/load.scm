@@ -25,6 +25,7 @@
   (c/load "lib/srfi-11")
   (c/load "lib/slib-sort")
   (c/load "lib/cj-symbol") ;; for tests
+  (c/load "lib/local-test")
   (c/load "lib/list-util-2")
   (c/load "lib/string-quote")
   (c/load "lib/cj-functional") ;; requires apply-values from srfi-11.scm
@@ -74,20 +75,40 @@
   (c/load "lib/vector-util")
 
   (c/load "lib/char-util")
-  (i/load "lib/cj-syntax")
+  (c/load "lib/cj-syntax")
 
   (c/load "lib/cj-source-wraps")
   (c/load "lib/dot-oo")
 
-  (i/load "lib/cj-source-quasiquote")
+  (c/load "lib/cj-source-quasiquote")
   (c/load "lib/cj-inline-2")
-  (i/load "lib/constants")
+  (c/load "lib/constants")
 
   (i/load "lib/oo-util")
 
   (c/load "lib/u8-parse")
   (c/load "lib/cj-io-util")
-  (i/load "lib/cj-path"))
+  (i/load "lib/cj-path")
+
+  (c/load "lib/warn-plus")
+  (c/load "lib/test-logic")
+  (c/load "lib/math-approximate")
+  (c/load "lib/enum")
+  (c/load "lib/easy")
+  (c/load "lib/more-oo")
+  (c/load "lib/predicates")
+  (c/load "lib/oo-gambit")
+  (c/load "lib/realrandom")
+  (c/load "lib/string-util-3")
+  (c/load "lib/code-map")
+  (c/load "lib/oo-vector-lib")
+  (c/load "lib/unixtime")
+  (c/load "lib/tree-util")
+  (c/load "lib/cj-url-encode") ;;needed for hex
+  (c/load "lib/hex")
+  (c/load "lib/hide")
+
+  )
 
 (i/load "lib/easy")
 (i/load "copycat")
