@@ -90,7 +90,7 @@
   (c/load "lib/u8-parse")
   (c/load "lib/cj-io-util")
   (c/load "lib/string-util-3")
-  (i/load "lib/cj-path")
+  ;; (i/load "lib/cj-path")
 
   ;; (c/load "lib/warn-plus")
   ;; (c/load "lib/test-logic")
