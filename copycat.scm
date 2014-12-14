@@ -106,19 +106,14 @@
 		 (cons (car stack)
 		       (rappend tmp (cdr stack))))))
 
-;; like dup but copy the value behind the last
-(cc-def dup1 ()
+(cc-def over ()
 	(cons (cadr $s) $s))
-;; etc.
-(cc-def dup2 ()
+(cc-def pick2 ()
 	(cons (caddr $s) $s))
-(cc-def dup3 ()
+(cc-def pick3 ()
 	(cons (cadddr $s) $s))
-
-;; like rot but copy instead of moving
 (cc-def pick (n)
 	(cons (list-ref $s n) $s))
-
 
 ;; -- procedures (for side-effects)
 
@@ -228,9 +223,9 @@
  (-21)
  > (cc-eval '() '(4 5 swap dup * -))
  (-11)
- > (cc-eval '(1 2) '(dup1))
+ > (cc-eval '(1 2) '(over))
  (2 1 2)
- > (cc-eval '(1 2 3) '(dup2))
+ > (cc-eval '(1 2 3) '(pick2))
  (3 1 2 3)
  > (cc-eval '(1 2 3) '(2 pick))
  (3 1 2 3)
@@ -328,15 +323,15 @@
  > (cc-eval '()
 	    '(:
 	      rmap-iter ;; <code> <lis> <result>
-	      (dup1
+	      (over
 	       pair?
 	       ( ;; change result
-		dup1
-		car dup3 eval cons
+		over
+		car pick3 eval cons
 		;; and lis
 		swap cdr swap
 		rmap-iter)
-	       (dup1
+	       (over
 		null?
 	        (swap drop swap drop) ;; optimize?
 		("improper list" error/1)
@@ -352,12 +347,12 @@
  > (cc-eval '()
 	    '(:
 	      reverse-iter ;; <lis> <result>
-	      (dup1
+	      (over
 	       pair?
-	       (dup1 car cons
+	       (over car cons
 		     swap cdr swap
 		     reverse-iter)
-	       (dup1
+	       (over
 		null?
 		(swap drop)
 		("improper list" error/1)
