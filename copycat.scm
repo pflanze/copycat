@@ -103,6 +103,19 @@
 		 (cons (car stack)
 		       (rappend tmp (cdr stack))))))
 
+;; like dup but copy the value behind the last
+(cc-def dup1 ()
+	(cons (cadr $s) $s))
+;; etc.
+(cc-def dup2 ()
+	(cons (caddr $s) $s))
+(cc-def dup3 ()
+	(cons (cadddr $s) $s))
+
+;; like rot but copy instead of moving
+(cc-def pick (n)
+	(cons (list-ref $s n) $s))
+
 
 ;; -- procedures (for side-effects)
 
@@ -204,10 +217,16 @@
  (-21)
  > (cc-eval '() '(4 5 swap dup * -))
  (-11)
+ > (cc-eval '(1 2) '(dup1))
+ (2 1 2)
+ > (cc-eval '(1 2 3) '(dup2))
+ (3 1 2 3)
+ > (cc-eval '(1 2 3) '(2 pick))
+ (3 1 2 3)
 
  > (cc-eval '() '(() 1 cons))
  ((1))
-
+ 
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
  > (cc-eval '() '(4 (5) eval))
@@ -258,7 +277,7 @@
  ;; write a word-based branching facility ourselves, using the
  ;; syntax-based one internally:
  > (cc-eval '() '((3 rot THENELSE (drop eval) (swap drop eval))
-		     QUOTE if set!))
+		  QUOTE if set!))
  > (cc-eval '(5) '(zero? (1) (0) if))
  (0)
  > (cc-eval '(0) '(zero? (1) (0) if))
