@@ -154,6 +154,14 @@
 	   (println v)
 	   $s)
 
+
+;; -- debugging
+
+;; print stack, enter a repl; enter ,(c $s) to continue!
+(cc-def D ()
+	(pretty-print $s)
+	(##repl))
+
 ;; ----------------------------
 
 (def (cc-apply stack #(symbol? word))
