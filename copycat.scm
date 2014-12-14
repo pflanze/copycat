@@ -61,15 +61,6 @@
 (cc-defhost * (a b))
 (cc-defhost / (a b))
 
-(cc-def dup (a)
-	   (cc-return a a))
-
-(cc-def drop (a)
-	   $s)
-
-(cc-def swap (a b)
-	   (cc-return b a))
-
 (cc-defhost zero? (v))
 (cc-defhost = (a b))
 (cc-defhost < (a b))
@@ -91,6 +82,22 @@
 
 (cc-defhost error/1 (a))
 (cc-defhost error/2 (a))
+
+;; -- stack ops
+;; as shown on http://wiki.laptop.org/go/Forth_stack_operators
+
+(cc-def dup (a)
+	(cc-return a a))
+(cc-def drop (a)
+	$s)
+(cc-def swap (a b)
+	(cc-return b a))
+(cc-def rot (a b c)
+	(cc-return b c a))
+(cc-def -rot (a b c)
+	(cc-return c a b))
+(cc-def nip (a b)
+	(cc-return b))
 
 (cc-def roll (n)
 	;; (letv ((args stack*) (split-at $s n))
@@ -229,6 +236,18 @@
  (3 1 2 3)
  > (cc-eval '(1 2 3) '(2 pick))
  (3 1 2 3)
+ > (cc-eval '(c b a) '(rot))
+ (a c b)
+ > (cc-eval '(c b a) '(3 roll))
+ (a c b)
+ > (cc-eval '(c b a) '(-rot))
+ (b a c)
+ > (cc-eval '(c b a) '(rot rot))
+ (b a c)
+ > (cc-eval '(c b a x) '(rot -rot))
+ (c b a x)
+ > (cc-eval '(c b a x) '(nip))
+ (c a x)
 
  > (cc-eval '() '(() 1 cons))
  ((1))
