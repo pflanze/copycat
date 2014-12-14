@@ -323,6 +323,57 @@
  > (cc-eval '(20) '(fact))
  (2432902008176640000)
 
+ ;; <lis> <code> map
+ > (cc-eval '() '(: inc (1 +)))
+ > (cc-eval '()
+	    '(:
+	      rmap-iter ;; <code> <lis> <result>
+	      (dup1
+	       pair?
+	       ( ;; change result
+		dup1
+		car dup3 eval cons
+		;; and lis
+		swap cdr swap
+		rmap-iter)
+	       (dup1
+		null?
+	        (swap drop swap drop) ;; optimize?
+		("improper list" error/1)
+		if)
+	       if)
+	      :
+	      rmap
+	      (swap
+	       ()
+	       rmap-iter)))
+ > (cc-eval '((1 2)) '((inc) rmap))
+ ((3 2))
+ > (cc-eval '()
+	    '(:
+	      reverse-iter ;; <lis> <result>
+	      (dup1
+	       pair?
+	       (dup1 car cons
+		     swap cdr swap
+		     reverse-iter)
+	       (dup1
+		null?
+		(swap drop)
+		("improper list" error/1)
+		if)
+	       if)
+	      :
+	      reverse
+	      (() reverse-iter)
+	      :
+	      map
+	      (rmap reverse)))
+ > (cc-eval '(()) '((inc) map))
+ (())
+ > (cc-eval '((5 6 7)) '((inc) map))
+ ((6 7 8))
+
  ;; test tail call optimization: this must run indefinitely and not
  ;; run out of memory:
  ;; > (cc-eval '() '(: lp (lp) lp))
