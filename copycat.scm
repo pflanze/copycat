@@ -164,6 +164,11 @@
 	(pretty-print $s)
 	(##repl))
 
+;; print stack
+(cc-def P ()
+	(pretty-print $s)
+	(cc-return))
+
 ;; ----------------------------
 
 (def (cc-apply stack #(symbol? word))
