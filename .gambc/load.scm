@@ -186,7 +186,7 @@
   '(c/load "lib/unixtime")
   '(c/load "lib/cj-warn-t")
   '(c/load "lib/clojure-base")
-  '(c/load "lib/table")
+  (c/load "lib/table")
   '(c/load "lib/clojure")
   '(c/load "lib/clojure-examples")
   '(c/load "lib/clojure-test")
