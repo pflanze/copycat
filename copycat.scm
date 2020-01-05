@@ -255,7 +255,7 @@
                     (cc-eval stack w)))
               (Error (copycat-unbound-symbol stack word))))
 
-(def (cc-eval stack prog) -> copycat-runtime-result? ;; XX don't break TCO! f
+(def (cc-eval stack prog) ;; -> copycat-runtime-result? ;; XX don't break TCO!
      (in-monad
       Result
       (if (null? prog)
