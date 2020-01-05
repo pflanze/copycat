@@ -17,7 +17,9 @@
          table
          Maybe
          Result
-         srfi-1-Maybe)
+         srfi-1-Maybe
+         error ;; for built-in exception .show
+         )
 
 
 ;; table to store the values of words
