@@ -21,6 +21,10 @@
          error ;; for built-in exception .show
          )
 
+(export cc-eval
+        cc-repl)
+
+
 
 ;; table to store the values of words
 (def cc-words
