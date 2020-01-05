@@ -26,16 +26,15 @@
 ;; the lookups to a parsing step (symbol creation, store as part of
 ;; symbol data structure). ("Linker step")
 
-(def (cc-word-set! #(symbol? name) val)
+(def (cc-word-set! [symbol? name] val)
      (table-set! cc-words name val))
 
 
 ;; We need a way to fall back onto the host system to implement
 ;; primitives, thus provide part of a foreign function interface:
 
-(defstruct ccforeigncall
-  #(natural0? numargs)
-  #(procedure? op))
+(defclass (ccforeigncall [natural0? numargs]
+                         [procedure? op]))
 
 ;; setting a word to a Scheme program
 (defmacro (cc-def name args . body)
@@ -180,7 +179,7 @@
 
 ;; ----------------------------
 
-(def (cc-apply stack #(symbol? word))
+(def (cc-apply stack [symbol? word])
      (let ((w (table-ref cc-words word)))
        (if (ccforeigncall? w)
 	   (let-ccforeigncall
