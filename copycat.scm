@@ -504,7 +504,7 @@
 
 
 
-(def (cc-repl #!optional (stack '())) ;; -> !
+(def (cc-repl #!optional (stack '())) -> !
      (in-monad
       Result
       (pp (reverse stack))
