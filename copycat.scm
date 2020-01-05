@@ -177,6 +177,11 @@
 (cc-def pick (n)
         (cc-return (list-ref $s n)))
 
+;; my own ideas for stack ops:
+
+(cc-def clear ()
+        (Ok '()))
+
 ;; -- procedures (for side-effects)
 
 (cc-def eval (v)
@@ -335,6 +340,8 @@
  (Ok (list 'c 'b 'a 'x))
  > (t '(c b a x) '(nip))
  (Ok (list 'c 'a 'x))
+ > (t '(1 2 3) '(clear))
+ (Ok (list))
 
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
