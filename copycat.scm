@@ -105,6 +105,10 @@
                  (zero? b))
             (Error (copycat-division-by-zero $s '/ a b))
             (cc-return (/ a b))))
+(cc-defhost/type fixnum? inc (n))
+(cc-defhost/type fixnum? dec (n))
+(cc-defhost/type number? square (x))
+(cc-defhost/type number? sqrt (x))
 
 (cc-defhost zero? (v))
 (cc-defhost = (a b))
@@ -418,7 +422,6 @@
  (Ok (list 2432902008176640000))
 
  ;; <lis> <code> map
- > (t '() '(: inc (1 +)))
  ;; iterative version:
  > (t '()
       '(:
