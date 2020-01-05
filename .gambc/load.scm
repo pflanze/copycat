@@ -343,6 +343,7 @@
   '(c/load "lib/sqlite3-errors")
   '(c/load "lib/sqlite3")
   '(c/load "lib/sqlite3-test")
+  (c/load "lib/srfi-1-Maybe")
   '(c/load "lib/srfi-11-bench")
   '(c/load "lib/statprof")
   '(c/load "lib/statprof/ring")
