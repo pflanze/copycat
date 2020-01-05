@@ -434,3 +434,12 @@
  ;; > (cc-eval '() '(: lp (lp) lp))
  ;; (comment out (generate-proper-tail-calls #f) in .gambcini for this to work)
  )
+
+
+
+(def (cc-repl #!optional (stack '()))
+     (display "$ ")
+     (let (stack (cc-eval stack (with-input-from-string (read-line) read-all)))
+       (pp (reverse stack))
+       (cc-repl stack)))
+
