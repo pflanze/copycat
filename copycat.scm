@@ -12,6 +12,9 @@
 ;; [Cat]: http://www.cat-language.com/
 
 
+(require easy)
+
+
 ;; table to store the values of words
 (def cc-words
      (make-table))
