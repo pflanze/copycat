@@ -39,22 +39,22 @@
 ;; setting a word to a Scheme program
 (defmacro (cc-def name args . body)
   (assert* symbol? name
-	   (lambda_
-	    `(cc-word-set! ',name
-			      (ccforeigncall
-			       ,(length (source-code args))
-			       (lambda ,(cons '$s (source-code args))
-				 ;; ^ HEH that |source-code| is
-				 ;; required. otherwise gambit has a
-				 ;; problem, 'Identifier expected'
-				 ,@body))))))
+           (lambda_
+            `(cc-word-set! ',name
+                              (ccforeigncall
+                               ,(length (source-code args))
+                               (lambda ,(cons '$s (source-code args))
+                                 ;; ^ HEH that |source-code| is
+                                 ;; required. otherwise gambit has a
+                                 ;; problem, 'Identifier expected'
+                                 ,@body))))))
 
 (defmacro (cc-return . es)
   `(cons* ,@(reverse es) $s))
 
 (defmacro (cc-defhost name args)
   `(cc-def ,name ,args
-	      (cc-return ,(cons name (source-code args)))))
+              (cc-return ,(cons name (source-code args)))))
 
 ;; -- functions
 
@@ -70,13 +70,13 @@
 (cc-defhost > (a b))
 (cc-defhost >= (a b))
 (cc-def != (a b)
-	   (cc-return (not (= a b))))
+           (cc-return (not (= a b))))
 (cc-defhost eq? (a b))
 (cc-def !eq? (a b)
-	   (cc-return (not (eq? a b))))
+           (cc-return (not (eq? a b))))
 
 (cc-def cons (a b)
-	(cc-return (cons b a)))
+        (cc-return (cons b a)))
 (cc-defhost car (a))
 (cc-defhost cdr (a))
 (cc-defhost pair? (a))
@@ -89,150 +89,150 @@
 ;; as shown on http://wiki.laptop.org/go/Forth_stack_operators
 
 (cc-def dup (a)
-	(cc-return a a))
+        (cc-return a a))
 (cc-def drop (a)
-	$s)
+        $s)
 (cc-def swap (a b)
-	(cc-return b a))
+        (cc-return b a))
 (cc-def rot (a b c)
-	(cc-return b c a))
+        (cc-return b c a))
 (cc-def -rot (a b c)
-	(cc-return c a b))
+        (cc-return c a b))
 (cc-def nip (a b)
-	(cc-return b))
+        (cc-return b))
 
 (cc-def roll (n)
-	;; (letv ((args stack*) (split-at $s n))
-	;; 	 (append (cons (last args) (butlast args)) stack*))
-	;;or, saving on intermediates:
-	(let lp ((n n)
-		 (tmp '())
-		 (stack $s))
-	  (if (> n 1)
-	      (lp (dec n)
-		  (cons (car stack) tmp)
-		  (cdr stack))
-	      (cons (car stack)
-		    (rappend tmp (cdr stack))))))
+        ;; (letv ((args stack*) (split-at $s n))
+        ;;       (append (cons (last args) (butlast args)) stack*))
+        ;;or, saving on intermediates:
+        (let lp ((n n)
+                 (tmp '())
+                 (stack $s))
+          (if (> n 1)
+              (lp (dec n)
+                  (cons (car stack) tmp)
+                  (cdr stack))
+              (cons (car stack)
+                    (rappend tmp (cdr stack))))))
 
 (cc-def over ()
-	(cc-return (cadr $s)))
+        (cc-return (cadr $s)))
 (cc-def pick2 ()
-	(cc-return (caddr $s)))
+        (cc-return (caddr $s)))
 (cc-def pick3 ()
-	(cc-return (cadddr $s)))
+        (cc-return (cadddr $s)))
 (cc-def pick (n)
-	(cc-return (list-ref $s n)))
+        (cc-return (list-ref $s n)))
 
 ;; -- procedures (for side-effects)
 
 (cc-def eval (v)
-	   (cc-eval $s v))
+           (cc-eval $s v))
 
 (cc-def nop ()
-	   $s)
+           $s)
 
 (cc-def set! (prog name)
-	   (cc-word-set! name prog)
-	   $s)
+           (cc-word-set! name prog)
+           $s)
 
 (cc-def ref (name)
-	   (cc-return (table-ref cc-words name)))
+           (cc-return (table-ref cc-words name)))
 
 (cc-def thenelse (val truebranch falsebranch)
-	   (cc-eval $s (if val truebranch falsebranch)))
+           (cc-eval $s (if val truebranch falsebranch)))
 
 (cc-def print (v)
-	   (print v)
-	   $s)
+           (print v)
+           $s)
 
 (cc-def write (v)
-	   (write v)
-	   $s)
+           (write v)
+           $s)
 
 (cc-def newline ()
-	   (newline)
-	   $s)
+           (newline)
+           $s)
 
 (cc-def println (v)
-	   (println v)
-	   $s)
+           (println v)
+           $s)
 
 
 ;; -- debugging
 
 ;; print stack, enter a repl; enter ,(c $s) to continue!
 (cc-def D ()
-	(pretty-print $s)
-	(##repl))
+        (pretty-print $s)
+        (##repl))
 
 ;; print stack
 (cc-def P ()
-	(pretty-print $s)
-	(cc-return))
+        (pretty-print $s)
+        (cc-return))
 
 (cc-def P* (a)
-	(display a)
-	(display ": ")
-	(pretty-print $s)
-	(cc-return))
+        (display a)
+        (display ": ")
+        (pretty-print $s)
+        (cc-return))
 
 ;; ----------------------------
 
 (def (cc-apply stack [symbol? word])
      (let ((w (table-ref cc-words word)))
        (if (ccforeigncall? w)
-	   (let-ccforeigncall
-	    ((numargs op) w)
-	    (case numargs
-	      ((0) (op stack))
-	      ((1) (op (cdr stack) (car stack)))
-	      ((2) (op (cddr stack) (cadr stack) (car stack)))
-	      (else
-	       ;; split-at-reverse?
-	       (letv ((args stack) (split-at stack numargs))
-		     (apply op (cons stack (reverse args)))))))
-	   (cc-eval stack w))))
+           (let-ccforeigncall
+            ((numargs op) w)
+            (case numargs
+              ((0) (op stack))
+              ((1) (op (cdr stack) (car stack)))
+              ((2) (op (cddr stack) (cadr stack) (car stack)))
+              (else
+               ;; split-at-reverse?
+               (letv ((args stack) (split-at stack numargs))
+                     (apply op (cons stack (reverse args)))))))
+           (cc-eval stack w))))
 
 (def (cc-eval stack prog)
      (if (null? prog)
-	 stack
-	 (let-pair ((item prog*) prog)
-		   (cond 
-		    ((symbol? item)
-		     ;; check for special syntax (XX should this be
-		     ;; made extensible at runtime by using special
-		     ;; word values?)
-		     (case item
-		       ((:)
-			;; takes 2 arguments from program (name,
-			;; prog), not stack
-			(let ((name (car prog*))
-			      (subprog (cadr prog*))
-			      (cont (cddr prog*)))
-			  (cc-word-set! name subprog)
-			  (cc-eval stack cont)))
-		       ((THENELSE)
-			;; takes 2 arguments from program (truebranch,
-			;; falsebranch), and 1 from stack (test value)
-			(let ((cont (cddr prog*)))
-			  (cc-eval (cc-eval (cdr stack)
-						  (if (car stack)
-						      (car prog*)
-						      (cadr prog*)))
-				      cont)))
-		       ((QUOTE)
-			;; takes 1 argument from program, puts it on
-			;; the stack
-			(let ((cont (cdr prog*)))
-			  (cc-eval (cons (car prog*) stack) cont)))
-		       (else
-			(let ((app (thunk (cc-apply stack item))))
-			  (if (null? prog*)
-			      (app)
-			      (cc-eval (app) prog*))))))
-		    (else
-		     (cc-eval (cons item stack) prog*))))))
+         stack
+         (let-pair ((item prog*) prog)
+                   (cond 
+                    ((symbol? item)
+                     ;; check for special syntax (XX should this be
+                     ;; made extensible at runtime by using special
+                     ;; word values?)
+                     (case item
+                       ((:)
+                        ;; takes 2 arguments from program (name,
+                        ;; prog), not stack
+                        (let ((name (car prog*))
+                              (subprog (cadr prog*))
+                              (cont (cddr prog*)))
+                          (cc-word-set! name subprog)
+                          (cc-eval stack cont)))
+                       ((THENELSE)
+                        ;; takes 2 arguments from program (truebranch,
+                        ;; falsebranch), and 1 from stack (test value)
+                        (let ((cont (cddr prog*)))
+                          (cc-eval (cc-eval (cdr stack)
+                                                  (if (car stack)
+                                                      (car prog*)
+                                                      (cadr prog*)))
+                                      cont)))
+                       ((QUOTE)
+                        ;; takes 1 argument from program, puts it on
+                        ;; the stack
+                        (let ((cont (cdr prog*)))
+                          (cc-eval (cons (car prog*) stack) cont)))
+                       (else
+                        (let ((app (thunk (cc-apply stack item))))
+                          (if (null? prog*)
+                              (app)
+                              (cc-eval (app) prog*))))))
+                    (else
+                     (cc-eval (cons item stack) prog*))))))
 
 (TEST
  > (cc-eval '() '(4 5 5 *))
@@ -315,7 +315,7 @@
  ;; write a word-based branching facility ourselves, using the
  ;; syntax-based one internally:
  > (cc-eval '() '((3 roll THENELSE (drop eval) (swap drop eval))
-		  QUOTE if set!))
+                  QUOTE if set!))
  > (cc-eval '(5) '(zero? (1) (0) if))
  (0)
  > (cc-eval '(0) '(zero? (1) (0) if))
@@ -354,78 +354,78 @@
  > (cc-eval '() '(: inc (1 +)))
  ;; iterative version:
  > (cc-eval '()
-	    '(:
-	      rmap-iter ;; <code> <lis> <result>
-	      (over
-	       pair?
-	       ( ;; change result
-		over
-		car pick3 eval cons
-		;; and lis
-		swap cdr swap
-		rmap-iter)
-	       (over
-		null?
-	        (swap drop swap drop) ;; optimize?
-		("improper list" error/1)
-		if)
-	       if)
-	      :
-	      rmap
-	      (swap
-	       ()
-	       rmap-iter)))
+            '(:
+              rmap-iter ;; <code> <lis> <result>
+              (over
+               pair?
+               ( ;; change result
+                over
+                car pick3 eval cons
+                ;; and lis
+                swap cdr swap
+                rmap-iter)
+               (over
+                null?
+                (swap drop swap drop) ;; optimize?
+                ("improper list" error/1)
+                if)
+               if)
+              :
+              rmap
+              (swap
+               ()
+               rmap-iter)))
  > (cc-eval '((1 2)) '((inc) rmap))
  ((3 2))
  > (cc-eval '()
-	    '(:
-	      reverse-iter ;; <lis> <result>
-	      (over
-	       pair?
-	       (over car cons
-		     swap cdr swap
-		     reverse-iter)
-	       (over
-		null?
-		(swap drop)
-		("improper list" error/1)
-		if)
-	       if)
-	      :
-	      reverse
-	      (() reverse-iter)
-	      :
-	      imap
-	      (rmap reverse)))
+            '(:
+              reverse-iter ;; <lis> <result>
+              (over
+               pair?
+               (over car cons
+                     swap cdr swap
+                     reverse-iter)
+               (over
+                null?
+                (swap drop)
+                ("improper list" error/1)
+                if)
+               if)
+              :
+              reverse
+              (() reverse-iter)
+              :
+              imap
+              (rmap reverse)))
  > (cc-eval '(()) '((inc) imap))
  (())
  > (cc-eval '((5 6 7)) '((inc) imap))
  ((6 7 8))
  ;; recursive definition:
  > (cc-eval '()
-	    '(:
-	      map-recur ;; <fn> <lis> -> <fn> <res>
-	      (dup
-	       pair?
-	       (;; P
-		dup
-		car
-		pick2
-		;; "vor eval" P*
-		eval
-		;; "after evap" P*
-		swap rot swap cdr
-		;; "after rot" P*
-		;; D
-		map-recur
-		;; "after recur" P*
-		rot
-		cons)
-	       ()
-	       if)
-	      :
-	      map
-	      (swap map-recur swap drop)))
+            '(:
+              map-recur ;; <fn> <lis> -> <fn> <res>
+              (dup
+               pair?
+               (;; P
+                dup
+                car
+                pick2
+                ;; "vor eval" P*
+                eval
+                ;; "after evap" P*
+                swap rot swap cdr
+                ;; "after rot" P*
+                ;; D
+                map-recur
+                ;; "after recur" P*
+                rot
+                cons)
+               ()
+               if)
+              :
+              map
+              (swap map-recur swap drop)))
  > (cc-eval '((5 6 7)) '((inc) map))
  ((6 7 8))
 
