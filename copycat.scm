@@ -197,7 +197,7 @@
         (cc-eval $s v))
 
 (cc-def nop ()
-        $s)
+        (cc-return))
 
 (cc-def set! (prog name)
         (cc-word-set! name prog)
