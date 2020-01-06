@@ -129,6 +129,8 @@
                  (zero? b))
             (Error (copycat-division-by-zero $s '/ a b))
             (cc-return (/ a b))))
+(cc-def inv (x)
+        (cc-return (/ x)))
 (cc-defhost/type fixnum? inc (n))
 (cc-defhost/type fixnum? dec (n))
 (cc-defhost/type number? square (x))
