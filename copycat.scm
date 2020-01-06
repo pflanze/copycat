@@ -157,6 +157,11 @@
 (cc-defhost pair? (a))
 (cc-defhost null? (a))
 
+(cc-defhost/try append (a b))
+(cc-defhost/try string-append (a b))
+(cc-defhost/try strings-append (l))
+(cc-defhost/try string-split (str char-or-pred))
+
 (cc-defhost error/1 (a))
 (cc-defhost error/2 (a))
 
@@ -418,6 +423,9 @@
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
 
+ > (t '() '("foo bar" #\space string-split strings-append))
+ (Ok (list "foobar"))
+ 
  > (t '() '('f 42 +))
  (Error (copycat-host-error
          (list) '+
