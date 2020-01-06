@@ -88,6 +88,11 @@
   `(cc-def ,name ,args
            (cc-return ,(cons name (source-code args)))))
 
+(defmacro (cc-defhost/try name args)
+  `(cc-def ,name ,args
+           (>>= (Result:try ,(cons name (source-code args)))
+                (C cc-return _))))
+
 (defmacro (cc-defhost/type predicate name args)
   (assert* (list-of-length 1) args)
   (let (var (first (source-code args)))
@@ -101,9 +106,9 @@
 
 ;; -- functions
 
-(cc-defhost + (a b))
-(cc-defhost - (a b))
-(cc-defhost * (a b))
+(cc-defhost/try + (a b))
+(cc-defhost/try - (a b))
+(cc-defhost/try * (a b))
 (cc-def / (a b)
         (if (and (exact? b)
                  (zero? b))
@@ -114,17 +119,18 @@
 (cc-defhost/type number? square (x))
 (cc-defhost/type number? sqrt (x))
 
-(cc-defhost zero? (v))
-(cc-defhost = (a b))
-(cc-defhost < (a b))
-(cc-defhost <= (a b))
-(cc-defhost > (a b))
-(cc-defhost >= (a b))
+(cc-defhost/type number? zero? (v))
+(cc-defhost/try = (a b))
+(cc-defhost/try < (a b))
+(cc-defhost/try <= (a b))
+(cc-defhost/try > (a b))
+(cc-defhost/try >= (a b))
 (cc-def != (a b)
-           (cc-return (not (= a b))))
+        (>>= (Result:try (not (= a b)))
+             (C cc-return _)))
 (cc-defhost eq? (a b))
 (cc-def !eq? (a b)
-           (cc-return (not (eq? a b))))
+        (cc-return (not (eq? a b))))
 
 (cc-def cons (a b)
         (cc-return (cons b a)))
@@ -360,6 +366,9 @@
 
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
+
+ > (t '() '('f 42 +))
+ XXX
  
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
