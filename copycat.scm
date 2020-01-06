@@ -1,15 +1,3 @@
-;; Copycat: a concatenative language using S-expressions
-
-;; This implements a concatenative ("Forth-like") language. It uses
-;; S-expressions for basic syntax, and deviates from [Forth][] by
-;; using lists to quote subprograms, and maybe a few other changes. I
-;; think it is closest to [Joy][], or [tcK][]. See also [Cat][].
-
-;; [Forth]: https://en.wikipedia.org/wiki/Forth_(programming_language)
-;; [Joy]: https://en.wikipedia.org/wiki/Joy_(programming_language),
-;;        http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language
-;; [tcK]: "tiny concatenative K", http://archive.vector.org.uk/art10000360
-;; [Cat]: http://www.cat-language.com/
 
 
 (require easy
