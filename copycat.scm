@@ -320,11 +320,20 @@
                         ((:)
                          ;; takes 2 arguments from program (name,
                          ;; prog), not stack
-                         (let ((name (car prog*))
-                               (subprog (cadr prog*))
-                               (cont (cddr prog*)))
-                           (cc-word-set! name subprog)
-                           (cc-eval stack cont)))
+                         (let (err (lambda (notpair)
+                                     (Error
+                                      (copycat-missing-arguments
+                                       stack ':
+                                       ;; XX again, why "proc" argument?
+                                       notpair))))
+                           (if-let-pair
+                            ((name r) prog*)
+                            (if-let-pair
+                             ((subprog cont) r)
+                             (begin (cc-word-set! name subprog)
+                                    (cc-eval stack cont))
+                             (err r))
+                            (err prog*))))
                         ((THENELSE)
                          ;; takes 2 arguments from program (truebranch,
                          ;; falsebranch), and 1 from stack (test value)
@@ -562,7 +571,15 @@
  ;; run out of memory:
  ;; > (cc-eval '() '(: lp (lp) lp))
  ;; (comment out (generate-proper-tail-calls #f) in .gambcini for this to work)
- )
+
+
+ ;; More error testing:
+ > (t '() '(: foo))
+ (Error (copycat-missing-arguments (list) ': (list)))
+ > (t '() '(: foo 4))
+ (Ok (list))
+ > (t '() '(: foo () 4))
+ (Ok (list 4)))
 
 
 
