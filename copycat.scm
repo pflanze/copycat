@@ -609,9 +609,10 @@
       Result
       (pp (reverse stack))
       (display "$ ")
-      (if-Ok (>>= (copycat:try/name
-                   cc-repl
-                   (with-input-from-string (read-line) read-all))
+      (if-Ok (>>= (let ($s stack)
+                    (copycat:try/name
+                     cc-repl
+                     (with-input-from-string (read-line) read-all)))
                   (C cc-eval stack _))
              (cc-repl it)
              (begin
