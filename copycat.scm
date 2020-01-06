@@ -19,6 +19,7 @@
          Result
          srfi-1-Maybe
          error ;; for built-in exception .show
+         (cj-typed typed-lambda-expand)
          )
 
 (export cc-eval
@@ -53,7 +54,10 @@
 
 ;; XX Really bundle the stack with the error, or keep those separate?
 (defclass (copycat-runtime-error [copycat-stack? stack])
-  (defclass (copycat-runtime-error/symbol [symbol? symbol])
+  (defclass (copycat-runtime-error/symbol
+             ;; Context, i.e. the word reporting the error, or the
+             ;; word that wasn't found.
+             [symbol? symbol])
     (defclass (copycat-unbound-symbol))
     (defclass (copycat-missing-arguments proc))
     (defclass (copycat-division-by-zero a b))
@@ -80,20 +84,50 @@
              (copycat-host-error $s name e)))))
 
 
-;; setting a word to a Scheme program; not translating Scheme
-;; exceptions for now.
+(def (copycat:_type-check-error $s $word
+                                use-source-error?
+                                expr-str
+                                pred-str
+                                pred
+                                val)
+     (Error (copycat-type-error $s
+                                $word
+                                ($ "($pred-str $expr-str)")
+                                val)))
+
+;; Macro so that it can unhygienically catch $s and $word. Evil?
+(defmacro (copycat:type-check-error use-source-error?
+                                    expr-str
+                                    pred-str
+                                    pred
+                                    val)
+  `(copycat:_type-check-error $s $word
+                              ,use-source-error?
+                              ,expr-str
+                              ,pred-str
+                              ,pred
+                              ,val))
+
+(defmacro (copycat-lambda args . body)
+  (typed-lambda-expand stx args body '##begin
+                       `copycat:type-check-error))
+
+;; setting a word to a Scheme program (not translating Scheme
+;; exceptions)
 (defmacro (cc-def name args . body)
   (assert* symbol? name
            (lambda_
             `(cc-word-set! ',name
-                              (ccforeigncall
-                               ,(length (source-code args))
-                               (lambda ,(cons '$s (source-code args))
-                                 ;; ^ HEH that |source-code| is
-                                 ;; required. otherwise gambit has a
-                                 ;; problem, 'Identifier expected'
-                                 (in-monad Result
-                                           ,@body)))))))
+                           (ccforeigncall
+                            ,(length (source-code args))
+                            (let (($word ',name))
+                              (copycat-lambda
+                               ,(cons '$s (source-code args))
+                               ;; ^ HEH that |source-code| is
+                               ;; required. otherwise gambit has a
+                               ;; problem, 'Identifier expected'
+                               (in-monad Result
+                                         ,@body))))))))
 
 (defmacro (cc-return . es)
   `(Ok (cons* ,@(reverse es) $s)))
@@ -124,12 +158,12 @@
 (cc-defhost/try + (a b))
 (cc-defhost/try - (a b))
 (cc-defhost/try * (a b))
-(cc-def / (a b)
+(cc-def / ([number? a] [number? b])
         (if (and (exact? b)
                  (zero? b))
             (Error (copycat-division-by-zero $s '/ a b))
             (cc-return (/ a b))))
-(cc-def inv (x)
+(cc-def inv ([number? x])
         (cc-return (/ x)))
 (cc-defhost/type fixnum? inc (n))
 (cc-defhost/type fixnum? dec (n))
@@ -421,6 +455,8 @@
  (Error (copycat-missing-arguments (list 6 7 8) 'dropn 4))
  > (t '(6 7 8) '(-4 dropn))
  (Error (copycat-type-error (list 6 7 8) 'dropn 'fixnum-natural0? -4))
+ > (t '() '("f" inv))
+ (Error (copycat-type-error (list) 'inv "(number? x)" "f"))
 
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
