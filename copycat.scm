@@ -145,9 +145,9 @@
 
 ;; -- functions
 
-(cc-defhost/try + (a b))
-(cc-defhost/try - (a b))
-(cc-defhost/try * (a b))
+(cc-defhost + ([number? a] [number? b]))
+(cc-defhost - ([number? a] [number? b]))
+(cc-defhost * ([number? a] [number? b]))
 (cc-def / ([number? a] [number? b])
         (if (and (exact? b)
                  (zero? b))
@@ -161,11 +161,11 @@
 (cc-defhost sqrt ([number? x]))
 
 (cc-defhost zero? ([number? v]))
-(cc-defhost/try = (a b))
-(cc-defhost/try < (a b))
-(cc-defhost/try <= (a b))
-(cc-defhost/try > (a b))
-(cc-defhost/try >= (a b))
+(cc-defhost = ([number? a] [number? b]))
+(cc-defhost < ([number? a] [number? b]))
+(cc-defhost <= ([number? a] [number? b]))
+(cc-defhost > ([number? a] [number? b]))
+(cc-defhost >= ([number? a] [number? b]))
 (cc-def != (a b)
         (>>= (copycat:try/name !=
                                (not (= a b)))
@@ -184,9 +184,12 @@
 (cc-defhost null? (a))
 
 (cc-defhost/try append (a b))
-(cc-defhost/try string-append (a b))
+(cc-defhost string-append ([string? a] [string? b]))
 (cc-defhost/try strings-append (l))
-(cc-defhost/try string-split (str char-or-pred))
+(cc-defhost string-split ([string? str]
+                          ;; XX todo: allow forth preds by
+                          ;; wrapping
+                          [char? char-or-pred]))
 
 (cc-defhost error/1 (a))
 (cc-defhost error/2 (a))
@@ -447,6 +450,10 @@
  (Error (copycat-type-error (list 6 7 8) 'dropn 'fixnum-natural0? -4))
  > (t '() '("f" inv))
  (Error (copycat-type-error (list) 'inv "(number? x)" "f"))
+ > (t '() '("f" 5 +))
+ (Error (copycat-type-error (list) '+ "(number? a)" "f"))
+ > (t '() '(5 "f" +))
+ (Error (copycat-type-error (list) '+ "(number? b)" "f"))
 
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
@@ -455,9 +462,9 @@
  (Ok (list "foobar"))
  
  > (t '() '('f 42 +))
- (Error (copycat-host-error
+ (Error (copycat-type-error
          (list) '+
-         (type-exception + (list (list 'quote 'f) 42) 1 'number)))
+         "(number? a)" (list 'quote 'f)))
  
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
