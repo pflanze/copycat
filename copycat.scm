@@ -67,8 +67,8 @@
 
 
 ;; like Result:try but converts non-|copycat-runtime-error|s
-(defmacro (copycat:try . body)
-  `(with-exception-catcher (C copycat:Error $s 'copycat:try _)
+(defmacro (copycat:try/name name . body)
+  `(with-exception-catcher (C copycat:Error $s ',name _)
                            (lambda () (Ok (begin ,@body)))))
 
 (def (copycat:Error $s name e)
@@ -104,7 +104,8 @@
 
 (defmacro (cc-defhost/try name args)
   `(cc-def ,name ,args
-           (>>= (copycat:try ,(cons name (source-code args)))
+           (>>= (copycat:try/name ,name
+                                  ,(cons name (source-code args)))
                 (C cc-return _))))
 
 (defmacro (cc-defhost/type predicate name args)
@@ -140,7 +141,8 @@
 (cc-defhost/try > (a b))
 (cc-defhost/try >= (a b))
 (cc-def != (a b)
-        (>>= (copycat:try (not (= a b)))
+        (>>= (copycat:try/name !=
+                               (not (= a b)))
              (C cc-return _)))
 (cc-defhost eq? (a b))
 (cc-def !eq? (a b)
@@ -232,19 +234,23 @@
         (cc-eval $s (if val truebranch falsebranch)))
 
 (cc-def print (v)
-        (mdo (copycat:try (print v))
+        (mdo (copycat:try/name print
+                               (print v))
              (cc-return)))
 
 (cc-def write (v)
-        (mdo (copycat:try (write v))
+        (mdo (copycat:try/name write
+                               (write v))
              (cc-return)))
 
 (cc-def newline ()
-        (mdo (copycat:try (newline))
+        (mdo (copycat:try/name newline
+                               (newline))
              (cc-return)))
 
 (cc-def println (v)
-        (mdo (copycat:try (println v))
+        (mdo (copycat:try/name println
+                               (println v))
              (cc-return)))
 
 
@@ -252,19 +258,21 @@
 
 ;; print stack, enter a repl; enter ,(c $s) to continue!
 (cc-def D ()
-        (mdo (copycat:try (pretty-print $s))
+        (mdo (copycat:try/name D
+                               (pretty-print $s))
              (##repl)))
 
 ;; print stack
 (cc-def P ()
-        (mdo (copycat:try (pretty-print $s))
+        (mdo (copycat:try/name P
+                               (pretty-print $s))
              (cc-return)))
 
 (cc-def P* (a)
-        (mdo (copycat:try
-              (display a)
-              (display ": ")
-              (pretty-print $s))
+        (mdo (copycat:try/name P*
+                               (display a)
+                               (display ": ")
+                               (pretty-print $s))
              (cc-return)))
 
 ;; ----------------------------
@@ -383,7 +391,7 @@
 
  > (t '() '('f 42 +))
  (Error (copycat-host-error
-         (list) 'copycat:try
+         (list) '+
          (type-exception + (list (list 'quote 'f) 42) 1 'number)))
  
  ;; sublists are representing sub-programs, which are only evaluated
@@ -563,7 +571,9 @@
       Result
       (pp (reverse stack))
       (display "$ ")
-      (if-Ok (>>= (copycat:try (with-input-from-string (read-line) read-all))
+      (if-Ok (>>= (copycat:try/name
+                   cc-repl
+                   (with-input-from-string (read-line) read-all))
                   (C cc-eval stack _))
              (cc-repl it)
              (begin
