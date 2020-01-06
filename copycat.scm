@@ -330,8 +330,14 @@
                             ((name r) prog*)
                             (if-let-pair
                              ((subprog cont) r)
-                             (begin (cc-word-set! name subprog)
-                                    (cc-eval stack cont))
+                             (if (list? subprog)
+                                 (begin (cc-word-set! name subprog)
+                                        (cc-eval stack cont))
+                                 (Error
+                                  (copycat-type-error stack
+                                                      ':
+                                                      'list?
+                                                      subprog)))
                              (err r))
                             (err prog*))))
                         ((THENELSE)
@@ -577,7 +583,8 @@
  > (t '() '(: foo))
  (Error (copycat-missing-arguments (list) ': (list)))
  > (t '() '(: foo 4))
- (Ok (list))
+ ;; yes, could be more expressive. "not a program". ?
+ (Error (copycat-type-error (list) ': 'list? 4))
  > (t '() '(: foo () 4))
  (Ok (list 4)))
 
