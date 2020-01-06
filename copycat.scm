@@ -210,6 +210,14 @@
 
 ;; my own ideas for stack ops:
 
+(cc-def dropn (n)
+        (if (fixnum-natural0? n)
+            (if-Just ((it (Maybe-drop $s n)))
+                     (Ok it)
+                     (Error
+                      (copycat-missing-arguments $s 'dropn n)))
+            (Error (copycat-type-error $s 'dropn 'fixnum-natural0? n))))
+
 (cc-def clear ()
         (Ok '()))
 
@@ -400,6 +408,12 @@
  (Ok (list 'c 'a 'x))
  > (t '(1 2 3) '(clear))
  (Ok (list))
+ > (t '(6 7 8) '(3 dropn))
+ (Ok (list))
+ > (t '(6 7 8) '(4 dropn))
+ (Error (copycat-missing-arguments (list 6 7 8) 'dropn 4))
+ > (t '(6 7 8) '(-4 dropn))
+ (Error (copycat-type-error (list 6 7 8) 'dropn 'fixnum-natural0? -4))
 
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
