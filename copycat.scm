@@ -134,24 +134,14 @@
 
 (defmacro (cc-defhost name args)
   `(cc-def ,name ,args
-           (cc-return ,(cons name (source-code args)))))
+           (cc-return ,(cons name
+                             (map perhaps-typed.var (source-code args))))))
 
 (defmacro (cc-defhost/try name args)
   `(cc-def ,name ,args
            (>>= (copycat:try/name ,name
                                   ,(cons name (source-code args)))
                 (C cc-return _))))
-
-(defmacro (cc-defhost/type predicate name args)
-  (assert* (list-of-length 1) args)
-  (let (var (first (source-code args)))
-    `(cc-def ,name ,args
-             (if (,predicate ,var)
-                 (cc-return ,(cons name (source-code args)))
-                 (Error (copycat-type-error $s
-                                            ',name
-                                            ',predicate
-                                            ,var))))))
 
 ;; -- functions
 
@@ -165,12 +155,12 @@
             (cc-return (/ a b))))
 (cc-def inv ([number? x])
         (cc-return (/ x)))
-(cc-defhost/type fixnum? inc (n))
-(cc-defhost/type fixnum? dec (n))
-(cc-defhost/type number? square (x))
-(cc-defhost/type number? sqrt (x))
+(cc-defhost inc ([fixnum? n]))
+(cc-defhost dec ([fixnum? n]))
+(cc-defhost square ([number? x]))
+(cc-defhost sqrt ([number? x]))
 
-(cc-defhost/type number? zero? (v))
+(cc-defhost zero? ([number? v]))
 (cc-defhost/try = (a b))
 (cc-defhost/try < (a b))
 (cc-defhost/try <= (a b))
@@ -186,10 +176,10 @@
 
 (cc-def cons (a b)
         (cc-return (cons b a)))
-(cc-defhost/type pair? car (a))
-(cc-defhost/type pair? cdr (a))
-(cc-defhost/type pair? first (a))
-(cc-defhost/type pair? rest (a))
+(cc-defhost car ([pair? a]))
+(cc-defhost cdr ([pair? a]))
+(cc-defhost first ([pair? a]))
+(cc-defhost rest ([pair? a]))
 (cc-defhost pair? (a))
 (cc-defhost null? (a))
 
