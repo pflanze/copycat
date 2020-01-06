@@ -168,14 +168,23 @@
               (Ok (cons (car stack)
                         (rappend tmp (cdr stack)))))))
 
+
+(def (copycat:pick $s n name)
+     (if-Just ((it (list-Maybe-ref $s n)))
+              (cc-return it)
+              (Error (copycat-missing-arguments
+                      $s
+                      name
+                      ;; proc expected here, evil:
+                      n))))
 (cc-def over ()
-        (cc-return (cadr $s)))
+        (copycat:pick $s 1 'over))
 (cc-def pick2 ()
-        (cc-return (caddr $s)))
+        (copycat:pick $s 2 'pick2))
 (cc-def pick3 ()
-        (cc-return (cadddr $s)))
+        (copycat:pick $s 3 'pick3))
 (cc-def pick (n)
-        (cc-return (list-ref $s n)))
+        (copycat:pick $s n 'pick))
 
 ;; my own ideas for stack ops:
 
@@ -324,10 +333,16 @@
  (Ok (list -11))
  > (t '(1 2) '(over))
  (Ok (list 2 1 2))
+ > (t '(1) '(over))
+ (Error (copycat-missing-arguments (list 1) 'over 1))
  > (t '(1 2 3) '(pick2))
  (Ok (list 3 1 2 3))
- > (t '(1 2 3) '(2 pick))
- (Ok (list 3 1 2 3))
+ > (t '(1 2) '(pick2))
+ (Error (copycat-missing-arguments (list 1 2) 'pick2 2))
+ > (t '(a b c) '(2 pick))
+ (Ok (list 'c 'a 'b 'c))
+ > (t '(a b c) '(3 pick))
+ (Error (copycat-missing-arguments (list 'a 'b 'c) 'pick 3))
  > (t '(c b a) '(rot))
  (Ok (list 'a 'c 'b))
  > (t '(c b a) '(3 roll))
