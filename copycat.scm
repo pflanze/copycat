@@ -153,6 +153,13 @@
 (cc-defhost dec ([fixnum? n]))
 (cc-defhost square ([number? x]))
 (cc-defhost sqrt ([number? x]))
+(cc-defhost expt ([number? base] [number? exponent]))
+(cc-defhost log ([number? x]))
+(cc-def log2 ([number? x])
+        (cc-return (/ (log x) (log 2))))
+(cc-def log10 ([number? x])
+        (cc-return (/ (log x) (log 10))))
+
 
 (cc-defhost zero? ([number? v]))
 (cc-defhost = ([number? a] [number? b]))
@@ -247,6 +254,9 @@
             (Error (copycat-type-error $s 'dropn 'fixnum-natural0? n))))
 
 (cc-def clear ()
+        (Ok '()))
+;; and with a shorter name:
+(cc-def c ()
         (Ok '()))
 
 ;; -- procedures (for side-effects)
