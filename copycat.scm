@@ -641,7 +641,7 @@
 
 
 
-(def (cc-repl #!optional (stack '())) -> !
+(def (_cc-repl stack) -> !
      (in-monad
       Result
       (pp (reverse stack))
@@ -651,8 +651,12 @@
                      cc-repl
                      (with-input-from-string (read-line) read-all)))
                   (C cc-eval stack _))
-             (cc-repl it)
+             (_cc-repl it)
              (begin
                (warn "Error:" (try-show it))
-               (cc-repl stack)))))
+               (_cc-repl stack)))))
+
+(def (cc-repl #!optional (stack '())) -> !
+     (read-line)
+     (_cc-repl stack))
 
