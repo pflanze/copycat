@@ -375,6 +375,8 @@
   '(c/load "lib/write-csv")
   '(c/load "lib/xhtml"))
 
+(i/load "copycat-interpreter")
+(i/load "copycat-std")
 (i/load "copycat")
 
 
