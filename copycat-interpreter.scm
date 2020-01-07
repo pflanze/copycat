@@ -27,8 +27,8 @@
 ;; --- Symbol table --------------------------------------
 
 ;; table to store the values of words
-(def cc-words
-     (make-table))
+(def-once cc-words
+  (make-table))
 ;; XX: Forth has a *tree* of binding maps? Context dependent? What kind
 ;; of context? Here it's just one map.
 
