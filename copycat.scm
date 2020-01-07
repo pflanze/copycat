@@ -654,7 +654,7 @@
 (def (_cc-repl stack) -> !
      (in-monad
       Result
-      (pp (reverse stack))
+      (pp stack)
       (display "$ ")
       (if-Ok (>>= (let ($s stack)
                     (copycat:try/name
