@@ -283,8 +283,9 @@
  (Error (copycat-type-error '+ "(number? a)" 'f))
  > (t '() '("foo" string->symbol 'bar))
  (Ok (list 'bar 'foo))
+ > (t '() '(1 2 "+" .symbol 1 list eval))
+ (Ok (list 3))
 
- 
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
  > (t '() '(4 (5) eval))
