@@ -34,7 +34,7 @@ instructions there then running `make gambit`.
     > (run-tests ".")
     > ,q
 
-### Run read-eval-print-loop
+### Run read-eval-print loop
 
     cd copycat
     gsc -:tE,dar,t8,f8,-8
