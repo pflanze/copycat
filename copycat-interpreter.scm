@@ -17,6 +17,7 @@
 
 (export cc-eval
         (macros copycat:try-Ok
+                copycat:try
                 cc-def
                 cc-return
                 cc-defhost
@@ -73,6 +74,12 @@
 (defmacro (copycat:try-Ok . body)
   `(with-exception-catcher (C copycat:Error $word _)
                            (lambda () (Ok (begin ,@body)))))
+
+;; Without wrapping the non-exception path with Ok
+(defmacro (copycat:try . body)
+  `(with-exception-catcher (C copycat:Error $word _)
+                           (lambda () ,@body)))
+
 
 (def (copycat:Error $word e)
      (Error
