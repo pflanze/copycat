@@ -165,6 +165,10 @@
         (mdo (copycat:try (write v))
              (cc-return)))
 
+(cc-def show (v)
+        (mdo (copycat:try (pretty-print (try-show v)))
+             (cc-return)))
+
 (cc-def newline ()
         (mdo (copycat:try (newline))
              (cc-return)))
