@@ -13,12 +13,11 @@
          Result
          srfi-1-Maybe
          error ;; for built-in exception .show
-         (cj-typed typed-lambda-expand)
-         )
+         (cj-typed typed-lambda-expand))
 
 (export cc-eval
-        cc-repl
-        (macros cc-def
+        (macros copycat:try
+                cc-def
                 cc-return
                 cc-defhost
                 cc-defhost/try))
