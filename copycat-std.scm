@@ -138,7 +138,7 @@
 ;; -- procedures (for side-effects)
 
 (cc-def eval (v)
-        (cc-eval $s v))
+        (copycat:try (cc-eval $s v)))
 
 (cc-def nop ()
         (cc-return))
