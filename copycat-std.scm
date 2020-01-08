@@ -147,6 +147,8 @@
         (cc-word-set! name prog)
         (cc-return))
 
+(cc-defhost string->symbol ([string? s]))
+
 (cc-def ref (name)
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
