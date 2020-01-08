@@ -59,6 +59,20 @@
 (cc-defhost pair? (a))
 (cc-defhost null? (a))
 
+(def (cc:Rlist $s $word numargs reverse?)
+     (if-Just ((it (Maybe-split-at-reverse $s numargs)))
+              (letv ((rargs stack*) it)
+                    (Ok (cons (if reverse? rargs (reverse rargs))
+                              stack*)))
+              (Error (copycat-missing-arguments $word
+                                                'list ;; ?
+                                                n
+                                                (length $s)))))
+(cc-def list ([fixnum-natural0? n])
+        (cc:Rlist $s $word n #t))
+(cc-def rlist ([fixnum-natural0? n])
+        (cc:Rlist $s $word n #f))
+
 (cc-defhost/try append (a b))
 (cc-defhost string-append ([string? a] [string? b]))
 (cc-defhost/try strings-append (l))
