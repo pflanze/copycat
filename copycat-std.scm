@@ -151,7 +151,7 @@
 ;; -- procedures (for side-effects)
 
 (cc-def eval (v)
-        ;; do not use copycat:try as it wraps non-exception results
+        ;; do not use copycat:try-Ok as it wraps non-exception results
         ;; with Ok
         (with-exception-catcher
          (C copycat:Error $word _)
@@ -177,23 +177,23 @@
         (cc-eval $s (if val truebranch falsebranch)))
 
 (cc-def print (v)
-        (mdo (copycat:try (print v))
+        (mdo (copycat:try-Ok (print v))
              (cc-return)))
 
 (cc-def write (v)
-        (mdo (copycat:try (write v))
+        (mdo (copycat:try-Ok (write v))
              (cc-return)))
 
 (cc-def show (v)
-        (mdo (copycat:try (pretty-print (try-show v)))
+        (mdo (copycat:try-Ok (pretty-print (try-show v)))
              (cc-return)))
 
 (cc-def newline ()
-        (mdo (copycat:try (newline))
+        (mdo (copycat:try-Ok (newline))
              (cc-return)))
 
 (cc-def println (v)
-        (mdo (copycat:try (println v))
+        (mdo (copycat:try-Ok (println v))
              (cc-return)))
 
 
@@ -201,16 +201,16 @@
 
 ;; print stack, enter a repl; enter ,(c $s) to continue!
 (cc-def D ()
-        (mdo (copycat:try (pretty-print $s))
+        (mdo (copycat:try-Ok (pretty-print $s))
              (##repl)))
 
 ;; print stack
 (cc-def P ()
-        (mdo (copycat:try (pretty-print $s))
+        (mdo (copycat:try-Ok (pretty-print $s))
              (cc-return)))
 
 (cc-def P* (a)
-        (mdo (copycat:try (display a)
+        (mdo (copycat:try-Ok (display a)
                           (display ": ")
                           (pretty-print $s))
              (cc-return)))

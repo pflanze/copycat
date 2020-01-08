@@ -16,7 +16,7 @@
          (cj-typed typed-lambda-expand))
 
 (export cc-eval
-        (macros copycat:try
+        (macros copycat:try-Ok
                 cc-def
                 cc-return
                 cc-defhost
@@ -70,7 +70,7 @@
 
 
 ;; like Result:try but converts non-|copycat-runtime-error|s
-(defmacro (copycat:try . body)
+(defmacro (copycat:try-Ok . body)
   `(with-exception-catcher (C copycat:Error $word _)
                            (lambda () (Ok (begin ,@body)))))
 
@@ -136,7 +136,7 @@
 
 (defmacro (cc-defhost/try name args)
   `(cc-def ,name ,args
-           (>>= (copycat:try ,(cons name (source-code args)))
+           (>>= (copycat:try-Ok ,(cons name (source-code args)))
                 (C cc-return _))))
 
 

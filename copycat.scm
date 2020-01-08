@@ -20,7 +20,7 @@
       (display "$ ")
       (if-Ok (>>= (let (($s stack)
                         ($word 'cc-repl))
-                    (copycat:try
+                    (copycat:try-Ok
                      (with-input-from-string (read-line)
                        read-all-source)))
                   (C cc-eval stack _))
