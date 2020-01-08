@@ -192,6 +192,13 @@
         (mdo (copycat:try-Ok (println v))
              (cc-return)))
 
+(cc-def read-source ([string? path])
+        (>>= (copycat:try-Ok
+              (call-with-input-file path read-all-source))
+             (C cc-return _)))
+
+(cc-eval '() '(: load (read-source eval)))
+
 
 ;; -- debugging
 
@@ -353,9 +360,9 @@
  (Ok (list 1))
 
  ;; factorial
- > (t '(0) '(: fact (dup zero? THENELSE (drop 1) (dup 1 - fact *))))
- ;; or:
- > (t '(0) '(: fact (dup zero? (drop 1) (dup 1 - fact *) thenelse)))
+ ;; The variant in examples/fact.scm
+ > (t '() '("examples/fact.scm" load))
+ (Ok (list))
  > (t '(0) '(fact))
  (Ok (list 1))
  > (t '(1) '(fact))
@@ -365,6 +372,10 @@
  > (t '(3) '(fact))
  (Ok (list 6))
  > (t '(20) '(fact))
+ (Ok (list 2432902008176640000))
+ ;; Or, with THENELSE syntax:
+ > (t '(0) '(: fact2 (dup zero? THENELSE (drop 1) (dup 1 - fact *))))
+ > (t '(20) '(fact2))
  (Ok (list 2432902008176640000))
 
  ;; <lis> <code> map
