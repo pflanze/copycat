@@ -149,7 +149,7 @@
 
 (cc-defhost string->symbol ([string? s]))
 
-(cc-def ref (name)
+(cc-def ref ([symbol? name])
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
