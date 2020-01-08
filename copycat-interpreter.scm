@@ -176,8 +176,8 @@
 
 (def (copycat-quoted? v)
      ;; which happens to be the same way Scheme quotes
-     (if-let-pair ((a r) v)
-                  (and (eq? a 'quote)
+     (if-let-pair ((a r) (source-code v))
+                  (and (eq? (source-code a) 'quote)
                        (if-let-pair ((b r) r)
                                     (null? r)
                                     #f))
@@ -252,7 +252,9 @@
                                (C cc-eval _ prog*)))))))
 
                 ((copycat-quoted? item)
-                 (cc-eval (cons (cadr item) stack) prog*))
+                 ;; XX could retain location info on constants. But
+                 ;; will want full context information anyway?
+                 (cc-eval (cons (source-code (cadr item)) stack) prog*))
 
                 (else
                  (cc-eval (cons item stack) prog*)))))))))
