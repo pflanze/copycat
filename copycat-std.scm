@@ -152,7 +152,11 @@
 ;; -- procedures (for side-effects)
 
 (cc-def eval (v)
-        (copycat:try (cc-eval $s v)))
+        ;; do not use copycat:try as it wraps non-exception results
+        ;; with Ok
+        (with-exception-catcher
+         (C copycat:Error $word _)
+         (lambda () (cc-eval $s v))))
 
 (cc-def nop ()
         (cc-return))
