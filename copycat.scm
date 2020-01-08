@@ -21,7 +21,8 @@
       (if-Ok (>>= (let (($s stack)
                         ($word 'cc-repl))
                     (copycat:try
-                     (with-input-from-string (read-line) read-all)))
+                     (with-input-from-string (read-line)
+                       read-all-source)))
                   (C cc-eval stack _))
              (_cc-repl it)
              (begin

@@ -196,9 +196,9 @@
         (.show (cc-eval stack prog)))
  > (t '() '(4 5 5 *))
  (Ok (list 25 4))
- > (t '() '(4 5 5 * -))
+ > (t '() (quote-source (4 5 5 * -)))
  (Ok (list -21))
- > (t '() '(4 5 dup * -))
+ > (t '() (quote-source (4 5 dup * -)))
  (Ok (list -21))
  > (t '() '(4 5 swap dup * -))
  (Ok (list -11))
@@ -208,8 +208,14 @@
  (Error (copycat-missing-arguments 'over 'copycat:pick 2 1))
  > (t '(1 2 3) '(pick2))
  (Ok (list 3 1 2 3))
- > (t '(1 2) '(pick2))
- (Error (copycat-missing-arguments 'pick2 'copycat:pick 3 2))
+ > (t '(1 2)
+      (source* (list (source* 'pick2 '(console) 10 16))
+               '(console) 10 15))
+ (Error (copycat-missing-arguments
+         (source* 'pick2 (list 'console) 10 16)
+         'copycat:pick
+         3
+         2))
  > (t '(a b c) '(2 pick))
  (Ok (list 'c 'a 'b 'c))
  > (t '(a b c) '(3 pick))
