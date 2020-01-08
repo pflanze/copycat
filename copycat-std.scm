@@ -256,7 +256,10 @@
  (Ok (list "foobar"))
  
  > (t '() '('f 42 +))
- (Error (copycat-type-error '+ "(number? a)" (list 'quote 'f)))
+ (Error (copycat-type-error '+ "(number? a)" 'f))
+ > (t '() '("foo" string->symbol 'bar))
+ (Ok (list 'bar 'foo))
+
  
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:

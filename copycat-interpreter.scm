@@ -174,6 +174,15 @@
               (Error (copycat-unbound-symbol word/loc
                                              word))))
 
+(def (copycat-quoted? v)
+     ;; which happens to be the same way Scheme quotes
+     (if-let-pair ((a r) v)
+                  (and (eq? a 'quote)
+                       (if-let-pair ((b r) r)
+                                    (null? r)
+                                    #f))
+                  #f))
+
 (def (cc-eval stack prog/loc) ;; -> copycat-runtime-result? ;; XX don't break TCO!
      (in-monad
       Result
@@ -181,65 +190,71 @@
       (let (prog (source-code prog/loc))
         (if (null? prog)
             (Ok stack)
-            (let-pair ((item/loc prog*) prog)
-                      (let (item (source-code item/loc))
-                        (cond 
-                         ((symbol? item)
-                          ;; check for special syntax (XX should this be
-                          ;; made extensible at runtime by using special
-                          ;; word values?)
-                          (case item
-                            ((:)
-                             ;; takes 2 arguments from program (name,
-                             ;; prog), not stack
-                             (let (missargerr
-                                   (lambda (notpair)
-                                     (Error
-                                      (copycat-missing-arguments
-                                       ;; XX not the same kind of
-                                       ;; missing; missing syntax, not
-                                       ;; runtime arguments
-                                       ':
-                                       notpair ;; XX?
-                                       2
-                                       (length prog*)))))
-                               (if-let-pair
-                                ((name/loc r) prog*)
-                                (if-let-pair
-                                 ((subprog cont) r)
-                                 (if (list? (source-code subprog))
-                                     (begin
-                                       ;; XX could retain name/loc
-                                       (cc-word-set! (source-code name/loc)
-                                                     subprog)
-                                       (cc-eval stack cont))
-                                     (Error
-                                      (copycat-type-error item/loc
-                                                          "list?"
-                                                          subprog)))
-                                 (missargerr r))
-                                (missargerr prog*))))
-                            ((THENELSE)
-                             ;; takes 2 arguments from program (truebranch,
-                             ;; falsebranch), and 1 from stack (test value)
-                             (let ((cont (cddr prog*)))
-                               (>>= (cc-eval (cdr stack)
-                                             (if (car stack)
-                                                 (car prog*)
-                                                 (cadr prog*)))
-                                    (C cc-eval _ cont))))
-                            ((QUOTE)
-                             ;; takes 1 argument from program, puts it on
-                             ;; the stack
-                             (let ((cont (cdr prog*)))
-                               (cc-eval (cons (car prog*) stack) cont)))
-                            (else
-                             (let ((app (thunk (cc-apply stack item item/loc))))
-                               (if (null? prog*)
-                                   (app)
-                                   (>>= (app)
-                                        (C cc-eval _ prog*)))))))
-                         (else
-                          (cc-eval (cons item stack) prog*)))))))))
+
+            (let-pair
+             ((item/loc prog*) prog)
+             (let (item (source-code item/loc))
+               (cond 
+                ((symbol? item)
+                 ;; check for special syntax (XX should this be
+                 ;; made extensible at runtime by using special
+                 ;; word values?)
+                 (case item
+                   ((:)
+                    ;; takes 2 arguments from program (name,
+                    ;; prog), not stack
+                    (let (missargerr
+                          (lambda (notpair)
+                            (Error
+                             (copycat-missing-arguments
+                              ;; XX not the same kind of
+                              ;; missing; missing syntax, not
+                              ;; runtime arguments
+                              ':
+                              notpair ;; XX?
+                              2
+                              (length prog*)))))
+                      (if-let-pair
+                       ((name/loc r) prog*)
+                       (if-let-pair
+                        ((subprog cont) r)
+                        (if (list? (source-code subprog))
+                            (begin
+                              ;; XX could retain name/loc
+                              (cc-word-set! (source-code name/loc)
+                                            subprog)
+                              (cc-eval stack cont))
+                            (Error
+                             (copycat-type-error item/loc
+                                                 "list?"
+                                                 subprog)))
+                        (missargerr r))
+                       (missargerr prog*))))
+                   ((THENELSE)
+                    ;; takes 2 arguments from program (truebranch,
+                    ;; falsebranch), and 1 from stack (test value)
+                    (let ((cont (cddr prog*)))
+                      (>>= (cc-eval (cdr stack)
+                                    (if (car stack)
+                                        (car prog*)
+                                        (cadr prog*)))
+                           (C cc-eval _ cont))))
+                   ((QUOTE)
+                    ;; takes 1 argument from program, puts it on
+                    ;; the stack
+                    (let ((cont (cdr prog*)))
+                      (cc-eval (cons (car prog*) stack) cont)))
+                   (else
+                    (let ((app (thunk (cc-apply stack item item/loc))))
+                      (if (null? prog*)
+                          (app)
+                          (>>= (app)
+                               (C cc-eval _ prog*)))))))
+
+                ((copycat-quoted? item)
+                 (cc-eval (cons (cadr item) stack) prog*))
+
+                (else
+                 (cc-eval (cons item stack) prog*)))))))))
 
 
