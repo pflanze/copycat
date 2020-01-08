@@ -21,7 +21,7 @@
 (cc-def / ([number? a] [number? b])
         (if (and (exact? b)
                  (zero? b))
-            (Error (copycat-division-by-zero $s '/ a b))
+            (Error (copycat-division-by-zero $word a b))
             (cc-return (/ a b))))
 (cc-def inv ([number? x])
         (cc-return (/ x)))
@@ -44,8 +44,7 @@
 (cc-defhost > ([number? a] [number? b]))
 (cc-defhost >= ([number? a] [number? b]))
 (cc-def != (a b)
-        (>>= (copycat:try/name !=
-                               (not (= a b)))
+        (>>= (copycat:try (not (= a b)))
              (C cc-return _)))
 (cc-defhost eq? (a b))
 (cc-def !eq? (a b)
@@ -102,32 +101,33 @@
                         (rappend tmp (cdr stack)))))))
 
 
-(def (copycat:pick $s n name)
+(def (copycat:pick $word $s n)
      (if-Just ((it (list-Maybe-ref $s n)))
               (cc-return it)
               (Error (copycat-missing-arguments
-                      $s
-                      name
-                      ;; proc expected here, evil:
-                      n))))
+                      $word
+                      'copycat:pick ;; XX?
+                      (inc n)
+                      (length $s)))))
 (cc-def over ()
-        (copycat:pick $s 1 'over))
+        (copycat:pick $word $s 1))
 (cc-def pick2 ()
-        (copycat:pick $s 2 'pick2))
+        (copycat:pick $word $s 2))
 (cc-def pick3 ()
-        (copycat:pick $s 3 'pick3))
+        (copycat:pick $word $s 3))
 (cc-def pick (n)
-        (copycat:pick $s n 'pick))
+        (copycat:pick $word $s n))
 
 ;; my own ideas for stack ops:
 
-(cc-def dropn (n)
-        (if (fixnum-natural0? n)
-            (if-Just ((it (Maybe-drop $s n)))
-                     (Ok it)
-                     (Error
-                      (copycat-missing-arguments $s 'dropn n)))
-            (Error (copycat-type-error $s 'dropn 'fixnum-natural0? n))))
+(cc-def dropn ([fixnum-natural0? n])
+        (if-Just ((it (Maybe-drop $s n)))
+                 (Ok it)
+                 (Error
+                  (copycat-missing-arguments $word
+                                             (list 'dropn n)
+                                             n
+                                             (length $s)))))
 
 (cc-def clear ()
         (Ok '()))
@@ -150,29 +150,25 @@
 (cc-def ref (name)
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
-                 (Error (copycat-unbound-symbol $s name))))
+                 (Error (copycat-unbound-symbol $word name))))
 
 (cc-def thenelse (val truebranch falsebranch)
         (cc-eval $s (if val truebranch falsebranch)))
 
 (cc-def print (v)
-        (mdo (copycat:try/name print
-                               (print v))
+        (mdo (copycat:try (print v))
              (cc-return)))
 
 (cc-def write (v)
-        (mdo (copycat:try/name write
-                               (write v))
+        (mdo (copycat:try (write v))
              (cc-return)))
 
 (cc-def newline ()
-        (mdo (copycat:try/name newline
-                               (newline))
+        (mdo (copycat:try (newline))
              (cc-return)))
 
 (cc-def println (v)
-        (mdo (copycat:try/name println
-                               (println v))
+        (mdo (copycat:try (println v))
              (cc-return)))
 
 
@@ -180,21 +176,18 @@
 
 ;; print stack, enter a repl; enter ,(c $s) to continue!
 (cc-def D ()
-        (mdo (copycat:try/name D
-                               (pretty-print $s))
+        (mdo (copycat:try (pretty-print $s))
              (##repl)))
 
 ;; print stack
 (cc-def P ()
-        (mdo (copycat:try/name P
-                               (pretty-print $s))
+        (mdo (copycat:try (pretty-print $s))
              (cc-return)))
 
 (cc-def P* (a)
-        (mdo (copycat:try/name P*
-                               (display a)
-                               (display ": ")
-                               (pretty-print $s))
+        (mdo (copycat:try (display a)
+                          (display ": ")
+                          (pretty-print $s))
              (cc-return)))
 
 
@@ -212,15 +205,15 @@
  > (t '(1 2) '(over))
  (Ok (list 2 1 2))
  > (t '(1) '(over))
- (Error (copycat-missing-arguments (list 1) 'over 1))
+ (Error (copycat-missing-arguments 'over 'copycat:pick 2 1))
  > (t '(1 2 3) '(pick2))
  (Ok (list 3 1 2 3))
  > (t '(1 2) '(pick2))
- (Error (copycat-missing-arguments (list 1 2) 'pick2 2))
+ (Error (copycat-missing-arguments 'pick2 'copycat:pick 3 2))
  > (t '(a b c) '(2 pick))
  (Ok (list 'c 'a 'b 'c))
  > (t '(a b c) '(3 pick))
- (Error (copycat-missing-arguments (list 'a 'b 'c) 'pick 3))
+ (Error (copycat-missing-arguments 'pick 'copycat:pick 4 3))
  > (t '(c b a) '(rot))
  (Ok (list 'a 'c 'b))
  > (t '(c b a) '(3 roll))
@@ -238,15 +231,15 @@
  > (t '(6 7 8) '(3 dropn))
  (Ok (list))
  > (t '(6 7 8) '(4 dropn))
- (Error (copycat-missing-arguments (list 6 7 8) 'dropn 4))
+ (Error (copycat-missing-arguments 'dropn (list 'dropn 4) 4 3))
  > (t '(6 7 8) '(-4 dropn))
- (Error (copycat-type-error (list 6 7 8) 'dropn 'fixnum-natural0? -4))
+ (Error (copycat-type-error 'dropn "(fixnum-natural0? n)" -4))
  > (t '() '("f" inv))
- (Error (copycat-type-error (list) 'inv "(number? x)" "f"))
+ (Error (copycat-type-error 'inv "(number? x)" "f"))
  > (t '() '("f" 5 +))
- (Error (copycat-type-error (list) '+ "(number? a)" "f"))
+ (Error (copycat-type-error '+ "(number? a)" "f"))
  > (t '() '(5 "f" +))
- (Error (copycat-type-error (list) '+ "(number? b)" "f"))
+ (Error (copycat-type-error '+ "(number? b)" "f"))
 
  > (t '() '(() 1 cons))
  (Ok (list (list 1)))
@@ -255,9 +248,7 @@
  (Ok (list "foobar"))
  
  > (t '() '('f 42 +))
- (Error (copycat-type-error
-         (list) '+
-         "(number? a)" (list 'quote 'f)))
+ (Error (copycat-type-error '+ "(number? a)" (list 'quote 'f)))
  
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
@@ -431,9 +422,9 @@
 
  ;; More error testing:
  > (t '() '(: foo))
- (Error (copycat-missing-arguments (list) ': (list)))
+ (Error (copycat-missing-arguments ': (list) 2 1))
  > (t '() '(: foo 4))
  ;; yes, could be more expressive. "not a program". ?
- (Error (copycat-type-error (list) ': 'list? 4))
+ (Error (copycat-type-error ': "list?" 4))
  > (t '() '(: foo () 4))
  (Ok (list 4)))

@@ -46,17 +46,14 @@
 ;; We represent guest language errors as (Error-of
 ;; copycat-runtime-error?):
 
-;; XX Really bundle the stack with the error, or keep those separate?
-(defclass (copycat-runtime-error [copycat-stack? stack])
-  (defclass (copycat-runtime-error/symbol
-             ;; Context, i.e. the word reporting the error, or the
-             ;; word that wasn't found.
-             [symbol? symbol])
-    (defclass (copycat-unbound-symbol))
-    (defclass (copycat-missing-arguments proc))
-    (defclass (copycat-division-by-zero a b))
-    (defclass (copycat-type-error predicate value))
-    (defclass (copycat-host-error exception))))
+(defclass (copycat-runtime-error offending-code) ;; mb with location 
+  (defclass (copycat-unbound-symbol [symbol? name]))
+  (defclass (copycat-missing-arguments proc
+                                       [fixnum-natural0? need]
+                                       [fixnum-natural0? got]))
+  (defclass (copycat-division-by-zero a b))
+  (defclass (copycat-type-error [string? predicate] value))
+  (defclass (copycat-host-error exception)))
 
 (def copycat-stack? (ilist-of any?))
 (def copycat-runtime-result?
@@ -74,17 +71,17 @@
 
 
 ;; like Result:try but converts non-|copycat-runtime-error|s
-(defmacro (copycat:try/name name . body)
-  `(with-exception-catcher (C copycat:Error $s ',name _)
+(defmacro (copycat:try . body)
+  `(with-exception-catcher (C copycat:Error $word _)
                            (lambda () (Ok (begin ,@body)))))
 
-(def (copycat:Error $s name e)
+(def (copycat:Error $word e)
      (Error
       (cond ((copycat-runtime-error? e) e)
             ;;((type-exception? e) ...)
             ;; ^ XX but have to change copycat-type-error to take multiple values.
             (else
-             (copycat-host-error $s name e)))))
+             (copycat-host-error $word e)))))
 
 
 (def (copycat:_type-check-error $s $word
@@ -93,8 +90,7 @@
                                 pred-str
                                 pred
                                 val)
-     (Error (copycat-type-error $s
-                                $word
+     (Error (copycat-type-error $word
                                 ($ "($pred-str $expr-str)")
                                 val)))
 
@@ -142,8 +138,7 @@
 
 (defmacro (cc-defhost/try name args)
   `(cc-def ,name ,args
-           (>>= (copycat:try/name ,name
-                                  ,(cons name (source-code args)))
+           (>>= (copycat:try ,(cons name (source-code args)))
                 (C cc-return _))))
 
 
@@ -152,14 +147,15 @@
 (def (cc-apply [copycat-stack? stack] [symbol? word])
      -> copycat-runtime-result?
      (if-Just ((w (table.Maybe-ref cc-words word)))
-              (let (err
-                    (lambda ()
-                      (Error (copycat-missing-arguments stack
-                                                        word
-                                                        w))))
-                (if (ccforeigncall? w)
-                    (let-ccforeigncall
-                     ((numargs op) w)
+              (if (ccforeigncall? w)
+                  (let-ccforeigncall
+                   ((numargs op) w)
+                   (let (err
+                         (lambda ()
+                           (Error (copycat-missing-arguments word
+                                                             w
+                                                             numargs
+                                                             (length stack)))))
                      (case numargs
                        ((0) (op stack))
                        ((1) (if-let-pair
@@ -173,66 +169,72 @@
                         (if-Just ((it (Maybe-split-at-reverse stack numargs)))
                                  (letv ((rargs stack) it)
                                        (apply op stack rargs))
-                                 (err)))))
-                    (cc-eval stack w)))
-              (Error (copycat-unbound-symbol stack word))))
+                                 (err))))))
+                  (cc-eval stack w))
+              (Error (copycat-unbound-symbol word ;; with location info
+                                             word))))
 
 (def (cc-eval stack prog) ;; -> copycat-runtime-result? ;; XX don't break TCO!
      (in-monad
       Result
       (if (null? prog)
           (Ok stack)
-          (let-pair ((item prog*) prog)
-                    (cond 
-                     ((symbol? item)
-                      ;; check for special syntax (XX should this be
-                      ;; made extensible at runtime by using special
-                      ;; word values?)
-                      (case item
-                        ((:)
-                         ;; takes 2 arguments from program (name,
-                         ;; prog), not stack
-                         (let (err (lambda (notpair)
-                                     (Error
-                                      (copycat-missing-arguments
-                                       stack ':
-                                       ;; XX again, why "proc" argument?
-                                       notpair))))
-                           (if-let-pair
-                            ((name r) prog*)
-                            (if-let-pair
-                             ((subprog cont) r)
-                             (if (list? subprog)
-                                 (begin (cc-word-set! name subprog)
-                                        (cc-eval stack cont))
-                                 (Error
-                                  (copycat-type-error stack
-                                                      ':
-                                                      'list?
-                                                      subprog)))
-                             (err r))
-                            (err prog*))))
-                        ((THENELSE)
-                         ;; takes 2 arguments from program (truebranch,
-                         ;; falsebranch), and 1 from stack (test value)
-                         (let ((cont (cddr prog*)))
-                           (>>= (cc-eval (cdr stack)
-                                         (if (car stack)
-                                             (car prog*)
-                                             (cadr prog*)))
-                                (C cc-eval _ cont))))
-                        ((QUOTE)
-                         ;; takes 1 argument from program, puts it on
-                         ;; the stack
-                         (let ((cont (cdr prog*)))
-                           (cc-eval (cons (car prog*) stack) cont)))
-                        (else
-                         (let ((app (thunk (cc-apply stack item))))
-                           (if (null? prog*)
-                               (app)
-                               (>>= (app)
-                                    (C cc-eval _ prog*)))))))
-                     (else
-                      (cc-eval (cons item stack) prog*)))))))
+          (let-pair ((item/loc prog*) prog)
+                    (let (item (source-code item/loc))
+                      (cond 
+                       ((symbol? item)
+                        ;; check for special syntax (XX should this be
+                        ;; made extensible at runtime by using special
+                        ;; word values?)
+                        (case item
+                          ((:)
+                           ;; takes 2 arguments from program (name,
+                           ;; prog), not stack
+                           (let (missargerr
+                                 (lambda (notpair)
+                                   (Error
+                                    (copycat-missing-arguments
+                                     ;; XX not the same kind of
+                                     ;; missing; missing syntax, not
+                                     ;; runtime arguments
+                                     ':
+                                     notpair ;; XX?
+                                     2
+                                     (length prog*)))))
+                             (if-let-pair
+                              ((name r) prog*)
+                              (if-let-pair
+                               ((subprog cont) r)
+                               (if (list? subprog)
+                                   (begin (cc-word-set! name subprog)
+                                          (cc-eval stack cont))
+                                   (Error
+                                    (copycat-type-error item/loc
+                                                        "list?"
+                                                        subprog)))
+                               (missargerr r))
+                              (missargerr prog*))))
+                          ((THENELSE)
+                           ;; takes 2 arguments from program (truebranch,
+                           ;; falsebranch), and 1 from stack (test value)
+                           (let ((cont (cddr prog*)))
+                             (>>= (cc-eval (cdr stack)
+                                           (if (car stack)
+                                               (car prog*)
+                                               (cadr prog*)))
+                                  (C cc-eval _ cont))))
+                          ((QUOTE)
+                           ;; takes 1 argument from program, puts it on
+                           ;; the stack
+                           (let ((cont (cdr prog*)))
+                             (cc-eval (cons (car prog*) stack) cont)))
+                          (else
+                           (let ((app (thunk (cc-apply stack item/loc))))
+                             (if (null? prog*)
+                                 (app)
+                                 (>>= (app)
+                                      (C cc-eval _ prog*)))))))
+                       (else
+                        (cc-eval (cons item stack) prog*))))))))
 
 

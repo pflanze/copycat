@@ -18,9 +18,9 @@
       Result
       (pp stack)
       (display "$ ")
-      (if-Ok (>>= (let ($s stack)
-                    (copycat:try/name
-                     cc-repl
+      (if-Ok (>>= (let (($s stack)
+                        ($word 'cc-repl))
+                    (copycat:try
                      (with-input-from-string (read-line) read-all)))
                   (C cc-eval stack _))
              (_cc-repl it)
