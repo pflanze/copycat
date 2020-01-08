@@ -163,6 +163,8 @@
 
 (cc-defhost string->symbol ([string? s]))
 
+(cc-defhost/try .symbol (s))
+
 (cc-def ref ([symbol? name])
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
