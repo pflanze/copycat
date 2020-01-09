@@ -204,7 +204,10 @@
               (call-with-input-file path read-all-source))
              (C cc-return _)))
 
-(cc-eval '() '(: load (read-source eval)))
+(cc-eval '() (quote-source
+              ((: load [string? path]
+                  "read and evaluate the given file"
+                  (read-source eval)))))
 
 
 ;; -- debugging
