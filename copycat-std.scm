@@ -15,48 +15,48 @@
 ;; symbol table?
 
 
-(cc-defhost + ([number? a] [number? b]))
-(cc-defhost - ([number? a] [number? b]))
-(cc-defhost * ([number? a] [number? b]))
-(cc-def / ([number? a] [number? b])
+(cc-defhost + ([number? a] [number? b] -> number?))
+(cc-defhost - ([number? a] [number? b] -> number?))
+(cc-defhost * ([number? a] [number? b] -> number?))
+(cc-def / ([number? a] [number? b] -> number?)
         (if (and (exact? b)
                  (zero? b))
             (Error (copycat-division-by-zero $word a b))
             (cc-return (/ a b))))
-(cc-def inv ([number? x])
+(cc-def inv ([number? x] -> number?)
         (cc-return (/ x)))
-(cc-defhost inc ([fixnum? n]))
-(cc-defhost dec ([fixnum? n]))
-(cc-defhost square ([number? x]))
-(cc-defhost sqrt ([number? x]))
-(cc-defhost expt ([number? base] [number? exponent]))
-(cc-defhost log ([number? x]))
-(cc-def log2 ([number? x])
+(cc-defhost inc ([fixnum? n] -> fixnum?))
+(cc-defhost dec ([fixnum? n] -> fixnum?))
+(cc-defhost square ([number? x] -> number?))
+(cc-defhost sqrt ([number? x] -> number?))
+(cc-defhost expt ([number? base] [number? exponent] -> number?))
+(cc-defhost log ([number? x] -> number?))
+(cc-def log2 ([number? x] -> number?)
         (cc-return (/ (log x) (log 2))))
-(cc-def log10 ([number? x])
+(cc-def log10 ([number? x] -> number?)
         (cc-return (/ (log x) (log 10))))
 
 
-(cc-defhost zero? ([number? v]))
-(cc-defhost = ([number? a] [number? b]))
-(cc-defhost < ([number? a] [number? b]))
-(cc-defhost <= ([number? a] [number? b]))
-(cc-defhost > ([number? a] [number? b]))
-(cc-defhost >= ([number? a] [number? b]))
-(cc-def != ([number? a] [number? b])
+(cc-defhost zero? ([number? v] -> boolean?))
+(cc-defhost = ([number? a] [number? b] -> boolean?))
+(cc-defhost < ([number? a] [number? b] -> boolean?))
+(cc-defhost <= ([number? a] [number? b] -> boolean?))
+(cc-defhost > ([number? a] [number? b] -> boolean?))
+(cc-defhost >= ([number? a] [number? b] -> boolean?))
+(cc-def != ([number? a] [number? b] -> boolean?)
         (cc-return (not (= a b))))
-(cc-defhost eq? (a b))
-(cc-def !eq? (a b)
+(cc-defhost eq? (a b -> boolean?))
+(cc-def !eq? (a b -> boolean?)
         (cc-return (not (eq? a b))))
 
-(cc-def cons (a b)
+(cc-def cons (a b -> pair?)
         (cc-return (cons b a)))
-(cc-defhost car ([pair? a]))
-(cc-defhost cdr ([pair? a]))
-(cc-defhost first ([pair? a]))
-(cc-defhost rest ([pair? a]))
-(cc-defhost pair? (a))
-(cc-defhost null? (a))
+(cc-defhost car ([pair? a] -> any?))
+(cc-defhost cdr ([pair? a] -> any?))
+(cc-defhost first ([pair? a] -> any?))
+(cc-defhost rest ([pair? a] -> any?))
+(cc-defhost pair? (a -> boolean?))
+(cc-defhost null? (a -> boolean?))
 
 (def (cc:Rlist $s $word numargs reverse?)
      (if-Just ((it (Maybe-split-at-reverse $s numargs)))
@@ -67,39 +67,40 @@
                                                 'list ;; ?
                                                 n
                                                 (length $s)))))
-(cc-def list ([fixnum-natural0? n])
+(cc-def list ([fixnum-natural0? n] -> (list-of-length n))
         (cc:Rlist $s $word n #t))
-(cc-def rlist ([fixnum-natural0? n])
+(cc-def rlist ([fixnum-natural0? n] -> (list-of-length n))
         (cc:Rlist $s $word n #f))
 
-(cc-defhost/try append (a b))
-(cc-defhost string-append ([string? a] [string? b]))
-(cc-defhost/try strings-append (l))
+(cc-defhost/try append (a b -> ilist?))
+(cc-defhost string-append ([string? a] [string? b] -> string?))
+(cc-defhost/try strings-append (l -> string?))
 (cc-defhost string-split ([string? str]
                           ;; XX todo: allow forth preds by
                           ;; wrapping
-                          [char? char-or-pred]))
+                          [char? char-or-pred]
+                          -> (ilist-of string?)))
 
-(cc-defhost error/1 (a))
-(cc-defhost error/2 (a))
+;; (cc-defhost error/1 (a))
+;; (cc-defhost error/2 (a))
 
 ;; -- stack ops
 ;; as shown on http://wiki.laptop.org/go/Forth_stack_operators
 
-(cc-def dup (a)
+(cc-def dup (a -> a a)
         (cc-return a a))
-(cc-def drop (a)
+(cc-def drop (a ->)
         (cc-return))
-(cc-def swap (a b)
+(cc-def swap (a b -> b a)
         (cc-return b a))
-(cc-def rot (a b c)
+(cc-def rot (a b c -> b c a)
         (cc-return b c a))
-(cc-def -rot (a b c)
+(cc-def -rot (a b c -> c a b)
         (cc-return c a b))
-(cc-def nip (a b)
+(cc-def nip (a b -> b)
         (cc-return b))
 
-(cc-def roll (n)
+(cc-def roll (n ->)
         ;; (letv ((args stack*) (split-at $s n))
         ;;       (append (cons (last args) (butlast args)) stack*))
         ;;or, saving on intermediates:
@@ -122,18 +123,18 @@
                       'copycat:pick ;; XX?
                       (inc n)
                       (length $s)))))
-(cc-def over ()
+(cc-def over (-> any?)
         (copycat:pick $word $s 1))
-(cc-def pick2 ()
+(cc-def pick2 (-> any?)
         (copycat:pick $word $s 2))
-(cc-def pick3 ()
+(cc-def pick3 (-> any?)
         (copycat:pick $word $s 3))
-(cc-def pick (n)
+(cc-def pick (n -> any?)
         (copycat:pick $word $s n))
 
 ;; my own ideas for stack ops:
 
-(cc-def dropn ([fixnum-natural0? n])
+(cc-def dropn ([fixnum-natural0? n] ->)
         (if-Just ((it (Maybe-drop $s n)))
                  (Ok it)
                  (Error
@@ -153,46 +154,46 @@
 (cc-def eval (v)
         (copycat:try (cc-eval $s v)))
 
-(cc-def nop ()
+(cc-def nop (->)
         (cc-return))
 
-(cc-def set! (prog name)
+(cc-def set! ([(either ilist? ccproc?) prog] [symbol? name] ->)
         (cc-word-set! name prog)
         (cc-return))
 
-(cc-defhost string->symbol ([string? s]))
+(cc-defhost string->symbol ([string? s] -> symbol?))
 
-(cc-defhost/try .symbol (s))
+(cc-defhost/try .symbol (s -> symbol?))
 
-(cc-def ref ([symbol? name])
+(cc-def ref ([symbol? name] -> ccproc?)
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
 
-(cc-def thenelse (val truebranch falsebranch)
+(cc-def thenelse ([boolean? val] truebranch falsebranch)
         (cc-eval $s (if val truebranch falsebranch)))
 
-(cc-def print (v)
+(cc-def print (v ->)
         (mdo (copycat:try-Ok (print v))
              (cc-return)))
 
-(cc-def write (v)
+(cc-def write (v ->)
         (mdo (copycat:try-Ok (write v))
              (cc-return)))
 
-(cc-def show (v)
+(cc-def show (v ->)
         (mdo (copycat:try-Ok (pretty-print (try-show v)))
              (cc-return)))
 
-(cc-def newline ()
+(cc-def newline (->)
         (mdo (copycat:try-Ok (newline))
              (cc-return)))
 
-(cc-def println (v)
+(cc-def println (v ->)
         (mdo (copycat:try-Ok (println v))
              (cc-return)))
 
-(cc-def read-source ([string? path])
+(cc-def read-source ([string? path] -> ilist?)
         (>>= (copycat:try-Ok
               (call-with-input-file path read-all-source))
              (C cc-return _)))
@@ -208,11 +209,11 @@
              (##repl)))
 
 ;; print stack
-(cc-def P ()
+(cc-def P (->)
         (mdo (copycat:try-Ok (pretty-print $s))
              (cc-return)))
 
-(cc-def P* (a)
+(cc-def P* (a ->)
         (mdo (copycat:try-Ok (display a)
                           (display ": ")
                           (pretty-print $s))
