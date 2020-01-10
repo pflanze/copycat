@@ -24,39 +24,63 @@
             (Error (copycat-division-by-zero $word a b))
             (cc-return (/ a b))))
 (cc-def inv ([number? x] -> number?)
+        "1/x"
         (cc-return (/ x)))
-(cc-defhost inc ([fixnum? n] -> fixnum?))
-(cc-defhost dec ([fixnum? n] -> fixnum?))
-(cc-defhost square ([number? x] -> number?))
-(cc-defhost sqrt ([number? x] -> number?))
-(cc-defhost expt ([number? base] [number? exponent] -> number?))
-(cc-defhost log ([number? x] -> number?))
+(cc-defhost inc ([fixnum? n] -> fixnum?)
+            "the successor number to n")
+(cc-defhost dec ([fixnum? n] -> fixnum?)
+            "the predecessor number to n")
+(cc-defhost square ([number? x] -> number?)
+            "x * x")
+(cc-defhost sqrt ([number? x] -> number?)
+            "the square root of x")
+(cc-defhost expt ([number? base] [number? exponent] -> number?)
+            "the base `base` raised to the power of `exponent`")
+(cc-defhost log ([number? x] -> number?)
+            "the logarithm of x with base e")
 (cc-def log2 ([number? x] -> number?)
+        "the logarithm of x with base 2"
         (cc-return (/ (log x) (log 2))))
 (cc-def log10 ([number? x] -> number?)
+        "the logarithm of x with base 10"
         (cc-return (/ (log x) (log 10))))
 
 
-(cc-defhost zero? ([number? v] -> boolean?))
-(cc-defhost = ([number? a] [number? b] -> boolean?))
-(cc-defhost < ([number? a] [number? b] -> boolean?))
-(cc-defhost <= ([number? a] [number? b] -> boolean?))
-(cc-defhost > ([number? a] [number? b] -> boolean?))
-(cc-defhost >= ([number? a] [number? b] -> boolean?))
+(cc-defhost zero? ([number? a] -> boolean?)
+            "whether a is zero")
+(cc-defhost = ([number? a] [number? b] -> boolean?)
+            "whether a is numerically equal to b")
+(cc-defhost < ([number? a] [number? b] -> boolean?)
+            "whether a is smaller than b")
+(cc-defhost <= ([number? a] [number? b] -> boolean?)
+            "whether a is smaller than or equal to b")
+(cc-defhost > ([number? a] [number? b] -> boolean?)
+            "whether a is larger than b")
+(cc-defhost >= ([number? a] [number? b] -> boolean?)
+            "whether a is larger than or equal to b")
 (cc-def != ([number? a] [number? b] -> boolean?)
+        "whether a and b are unequal"
         (cc-return (not (= a b))))
-(cc-defhost eq? (a b -> boolean?))
+(cc-defhost eq? (a b -> boolean?)
+            "whether a and b are the same objects")
 (cc-def !eq? (a b -> boolean?)
+        "whether a and b are *not* the same objects"
         (cc-return (not (eq? a b))))
 
-(cc-def cons (a b -> pair?)
-        (cc-return (cons b a)))
-(cc-defhost car ([pair? a] -> any?))
-(cc-defhost cdr ([pair? a] -> any?))
-(cc-defhost first ([pair? a] -> any?))
-(cc-defhost rest ([pair? a] -> any?))
-(cc-defhost pair? (a -> boolean?))
-(cc-defhost null? (a -> boolean?))
+(cc-def cons (l e -> pair?) "prepend e to the given list l"
+        (cc-return (cons e l)))
+(cc-defhost car ([pair? a] -> any?)
+            "return the element slot from the given pair")
+(cc-defhost cdr ([pair? a] -> any?)
+            "return the rest slot of the given pair")
+(cc-defhost first ([pair? l] -> any?)
+            "return the first element of the given list")
+(cc-defhost rest ([pair? l] -> any?)
+            "drop the first element from the given list")
+(cc-defhost pair? (a -> boolean?)
+            "whether a is a pair (non-empty list)")
+(cc-defhost null? (a -> boolean?)
+            "whether a is an empty list")
 
 (def (cc:Rlist $s $word numargs reverse?)
      (if-Just ((it (Maybe-split-at-reverse $s numargs)))
@@ -68,8 +92,10 @@
                                                 n
                                                 (length $s)))))
 (cc-def list ([fixnum-natural0? n] -> (list-of-length n))
+        "takes n elements from the stack and returns them as a list"
         (cc:Rlist $s $word n #t))
 (cc-def rlist ([fixnum-natural0? n] -> (list-of-length n))
+        "takes n elements from the stack and returns them as a reversed list"
         (cc:Rlist $s $word n #f))
 
 (cc-defhost/try append (a b -> ilist?))
@@ -117,7 +143,9 @@ style one"
 (cc-def nip (a b -> b)
         (cc-return b))
 
-(cc-def roll (n ->)
+(cc-def roll ([fixnum-natural0? n] ->)
+        "take the last n elements on the stack, roll them around so
+that the oldest one becomes the newest"
         ;; (letv ((args stack*) (split-at $s n))
         ;;       (append (cons (last args) (butlast args)) stack*))
         ;;or, saving on intermediates:
@@ -141,17 +169,22 @@ style one"
                       (inc n)
                       (length $s)))))
 (cc-def over (-> any?)
+        "copy the second-last element from the stack"
         (copycat:pick $word $s 1))
 (cc-def pick2 (-> any?)
+        "copy the third-last element from the stack"
         (copycat:pick $word $s 2))
 (cc-def pick3 (-> any?)
+        "copy the fourth-last element from the stack"
         (copycat:pick $word $s 3))
 (cc-def pick (n -> any?)
+        "copy the element from the stack found after skipping n elements"
         (copycat:pick $word $s n))
 
 ;; my own ideas for stack ops:
 
 (cc-def dropn ([fixnum-natural0? n] ->)
+        "drop the n last elements from the stack"
         (if-Just ((it (Maybe-drop $s n)))
                  (Ok it)
                  (Error
@@ -161,20 +194,27 @@ style one"
                                              (length $s)))))
 
 (cc-def clear ()
+        "drop all elements from the stack"
         (Ok '()))
 ;; and with a shorter name:
 (cc-def c ()
+        "drop all elements from the stack"
         (Ok '()))
 
 ;; -- procedures (for side-effects)
 
-(cc-def eval (v)
-        (copycat:try (cc-eval $s v)))
+(cc-def eval (prog)
+        "evaluate prog (a list of instructions)"
+        (copycat:try (cc-eval $s prog)))
 
 (cc-def nop (->)
+        "no operation"
         (cc-return))
 
 (cc-def set! ([(either ilist? ccproc?) prog] [symbol? name] ->)
+        "set the word with the given name to prog, which must be
+either a list of instructions, or a ccproc data structure as retrieved
+from `ref`"
         (let (prog (xcond ((ccproc? prog)
                            prog)
                           ((ilist? prog)
@@ -184,11 +224,18 @@ style one"
           (cc-word-set! name prog))
         (cc-return))
 
-(cc-defhost string->symbol ([string? s] -> symbol?))
+(cc-defhost string->symbol ([string? s] -> symbol?)
+            "turn s into a symbol with the same name")
 
-(cc-defhost/try .symbol (s -> symbol?))
+(cc-defhost/try .symbol (s -> symbol?)
+                "generic to try to turn s into a symbol")
+
+(cc-defhost symbol->string ([symbol? s] -> string?)
+            "return the underlying name string of the given symbol")
 
 (cc-def ref ([symbol? name] -> ccproc?)
+        "return the ccproc data structure associated with name (giving
+an error if not bound)"
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
@@ -203,7 +250,8 @@ style one"
 (def (pretty-string v)
      (fst (with-output-to-string (& (pretty-print (cj-desourcify v))))))
 
-(cc-defhost pretty-string (s -> string?))
+(cc-defhost pretty-string (s -> string?)
+            "pretty-print s to a string")
 
 (cc-eval '() (quote-source
               (
@@ -223,7 +271,7 @@ style one"
                   "print help on the given word"
                   (help-string println)))))
 
-(cc-def thenelse ([boolean? val] truebranch falsebranch)
+(cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
         (cc-eval $s (if val truebranch falsebranch)))
 
 (cc-def print (v ->)
@@ -247,32 +295,38 @@ style one"
              (cc-return)))
 
 (cc-def read-source ([string? path] -> ilist?)
+        "read the contents of the file at path as a list of
+s-expressions, enriched with location information"
         (>>= (copycat:try-Ok
               (call-with-input-file path read-all-source))
              (C cc-return _)))
 
 (cc-eval '() (quote-source
-              ((: load [string? path]
+              (
+               (: load [string? path]
                   "read and evaluate the given file"
                   (read-source eval)))))
 
 
 ;; -- debugging
 
-;; print stack, enter a repl; enter ,(c $s) to continue!
 (cc-def D ()
+        "(for debugging) print stack, enter a repl; enter ,(c (Ok $s))
+to continue!"
         (mdo (copycat:try-Ok (pretty-print $s))
              (##repl)))
 
-;; print stack
 (cc-def P (->)
+        "(for debugging) print the location of P and then the current
+stack"
         (mdo (copycat:try-Ok
               (show-source-location $word)
               (pretty-print $s))
              (cc-return)))
 
-(cc-def P* (a ->)
-        (mdo (copycat:try-Ok (display a)
+(cc-def P* ([string? msg] ->)
+        "(for debugging) print msg and then the current stack"
+        (mdo (copycat:try-Ok (display msg)
                              (display ": ")
                              (pretty-print $s))
              (cc-return)))
