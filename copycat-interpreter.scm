@@ -26,7 +26,7 @@
 
 ;; --- Symbol table --------------------------------------
 
-;; table to store the values of words
+;; table to store the values of words (which are ccproc?s)
 (def-once cc-words
   (make-table))
 ;; XX: Forth has a *tree* of binding maps? Context dependent? What kind
@@ -37,8 +37,8 @@
 ;; the lookups to a parsing step (symbol creation, store as part of
 ;; symbol data structure). ("Linker step")
 
-(def (cc-word-set! [symbol? name] val) -> void?
-     (table-set! cc-words name val))
+(def (cc-word-set! [symbol? name] [ccproc? proc]) -> void?
+     (table-set! cc-words name proc))
 
 
 ;; --- Errors --------------------------------------------
@@ -115,13 +115,16 @@
 ;; Procedure values
 
 (defclass ((ccproc #f)
-           [(maybe string?) docstring]
+           [(maybe (possibly-source-of string?)) docstring]
            [cc-type? type]))
 
 ;; Defined in guest language:
 
-(defclass (ccguestproc [ilist? code])
-  extends: ccproc)
+(defclass (ccguestproc [(possibly-source-of ilist?) code])
+  extends: ccproc
+  
+  (defmethod (cc-apply s stack word/loc)
+    (cc-eval stack code)))
 
 ;; Primitives:
 
@@ -130,7 +133,30 @@
 
 (defclass (ccforeigncall [natural0? numargs]
                          [procedure? op])
-  extends: ccproc)
+  extends: ccproc
+
+  (defmethod (cc-apply s stack word/loc)
+    (let (err
+          (lambda ()
+            (Error (copycat-missing-arguments word/loc
+                                              s
+                                              numargs
+                                              (length stack)))))
+      (case numargs
+        ((0) (op word/loc stack))
+        ((1) (if-let-pair
+              ((a r) stack)
+              (op word/loc r a)
+              (err)))
+        ((2) (if (length->= stack 2)
+                 (op word/loc (cddr stack)
+                     (cadr stack) (car stack))
+                 (err)))
+        (else
+         (if-Just ((it (Maybe-split-at-reverse stack numargs)))
+                  (letv ((rargs stack) it)
+                        (apply op word/loc stack rargs))
+                  (err)))))))
 
 
 ;; like Result:try but converts non-|copycat-runtime-error|s
@@ -254,31 +280,7 @@
 (def (cc-apply [copycat-stack? stack] [symbol? word] word/loc)
      -> copycat-runtime-result?
      (if-Just ((w (table.Maybe-ref cc-words word)))
-              (if (ccforeigncall? w)
-                  (let.-static
-                   (ccforeigncall. (numargs op) w)
-                   (let (err
-                         (lambda ()
-                           (Error (copycat-missing-arguments word/loc
-                                                             w
-                                                             numargs
-                                                             (length stack)))))
-                     (case numargs
-                       ((0) (op word/loc stack))
-                       ((1) (if-let-pair
-                             ((a r) stack)
-                             (op word/loc r a)
-                             (err)))
-                       ((2) (if (length->= stack 2)
-                                (op word/loc (cddr stack)
-                                    (cadr stack) (car stack))
-                                (err)))
-                       (else
-                        (if-Just ((it (Maybe-split-at-reverse stack numargs)))
-                                 (letv ((rargs stack) it)
-                                       (apply op word/loc stack rargs))
-                                 (err))))))
-                  (cc-eval stack w))
+              (.cc-apply w stack word/loc)
               (Error (copycat-unbound-symbol word/loc
                                              word))))
 
@@ -303,14 +305,15 @@
              ((item/loc prog*) prog)
              (let (item (source-code item/loc))
                (cond 
+
                 ((symbol? item)
                  ;; check for special syntax (XX should this be
                  ;; made extensible at runtime by using special
                  ;; word values?)
                  (case item
                    ((:)
-                    ;; takes 2 arguments from program (name,
-                    ;; prog), not stack
+                    ;; Simple (non-delimited) variant of |:|; takes 2
+                    ;; arguments from program (name, prog), not stack
                     (let (missargerr
                           (lambda (notpair)
                             (Error
@@ -329,8 +332,11 @@
                         (if (list? (source-code subprog))
                             (begin
                               ;; XX could retain name/loc
+                              ;; XX allow docstring still?
                               (cc-word-set! (source-code name/loc)
-                                            subprog)
+                                            (ccguestproc #f ;;
+                                                         (cc-type-unknown)
+                                                         subprog))
                               (cc-eval stack cont))
                             (Error
                              (copycat-type-error item/loc
@@ -359,12 +365,70 @@
                           (>>= (app)
                                (C cc-eval _ prog*)))))))
 
-                ((copycat-quoted? item)
-                 ;; XX could retain location info on constants. But
-                 ;; will want full context information anyway?
-                 (cc-eval (cons (source-code (cadr item)) stack) prog*))
-
                 (else
-                 (cc-eval (cons item stack) prog*)))))))))
+                 (let (cont-literal
+                       (lambda ()
+                         (cc-eval (cons item stack) prog*)))
+                   (if-let-pair
+                    ((a r) item)
+
+                    (case (source-code a)
+                      ((quote)
+                       (if (and (pair? r)
+                                (null? (cdr r)))
+                           ;; XX could retain location info on constants. But
+                           ;; will want full context information anyway?
+                           (cc-eval (cons (source-code (car r)) stack) prog*)
+                           (cont-literal)))
+
+                      ((:)
+                       ;; More featureful, delimited variant of |:|;
+                       ;; expects a program as the last item in the
+                       ;; list, optionally docstring before that, name
+                       ;; as the first, and the part inbetween as type
+
+                       (if-let-pair
+                        ((name r) r)
+                        (if-let-pair
+                         ((prog rr) (reverse r))
+
+                         (let (cont-ccguestproc
+                               (lambda (?docstring type)
+                                 (cc-word-set! (source-code name) ;; XX loc ?
+                                               (ccguestproc ?docstring
+                                                            type
+                                                            prog))
+                                 ;; Actually don't return with Ok, but
+                                 ;; continue *here* (restructure by looping
+                                 ;; around outside? no?):
+                                 (cc-eval stack prog*)))
+                           (if-let-pair
+                            ((?docstring rr*) rr)
+                            (if (string? (source-code ?docstring))
+                                (>>= (cc-parse-type (reverse rr*))
+                                     (lambda (type)
+                                       (cont-ccguestproc ?docstring
+                                                         type)))
+                                (>>= (cc-parse-type (reverse rr))
+                                     (lambda (type)
+                                       (cont-ccguestproc #f
+                                                         type))))
+                            (cont-ccguestproc #f
+                                              (cc-type-unknown))))
+                         (Error (copycat-missing-arguments
+                                 item/loc
+                                 "missing program argument" ;; proc, XX evil?
+                                 2 1)))
+                        (Error (copycat-missing-arguments
+                                item/loc
+                                "missing name argument" ;; ditto
+                                2 0))))
+                    
+                      (else
+                       ;; "quoted" program
+                       (cont-literal)))
+
+                    ;; literal ("presumably")
+                    (cont-literal)))))))))))
 
 

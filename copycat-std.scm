@@ -158,7 +158,13 @@
         (cc-return))
 
 (cc-def set! ([(either ilist? ccproc?) prog] [symbol? name] ->)
-        (cc-word-set! name prog)
+        (let (prog (xcond ((ccproc? prog)
+                           prog)
+                          ((ilist? prog)
+                           (ccguestproc #f ;; docstring
+                                        (cc-type-unknown)
+                                        prog))))
+          (cc-word-set! name prog))
         (cc-return))
 
 (cc-defhost string->symbol ([string? s] -> symbol?))
