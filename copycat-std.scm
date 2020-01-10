@@ -240,11 +240,15 @@ an error if not bound)"
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
 
-(cc-defhost/try .docstring (s)) ;; including source
+(cc-defhost/try .docstring (s))
 (cc-defhost/try .string (s))
 (cc-defhost/try .type (s))
 (cc-defhost/try .maybe-original (s))
-(cc-defhost/try source-code (s))
+(cc-defhost source-code (s)
+            "strips location information from source (i.e. return the
+code embedded in a source object); if s is not a source object, return
+s (i.e. never fails)")
+
 
 ;; XX lib
 (def (pretty-string v)
