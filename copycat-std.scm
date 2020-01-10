@@ -318,6 +318,11 @@ s (i.e. never fails)")
                   "print help on the given word"
                   (help-string println)))))
 
+(TEST
+ > (t '() '('help help-string))
+ (Ok (list "help: ([symbol? word] ->)\n\nprint help on the given word")))
+
+
 (cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
         (cc-eval $s (if val truebranch falsebranch)))
 
