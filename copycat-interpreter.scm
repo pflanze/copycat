@@ -298,15 +298,6 @@
               (Error (copycat-unbound-symbol word/loc
                                              word))))
 
-(def (copycat-quoted? v)
-     ;; which happens to be the same way Scheme quotes
-     (if-let-pair ((a r) (source-code v))
-                  (and (eq? (source-code a) 'quote)
-                       (if-let-pair ((b r) r)
-                                    (null? r)
-                                    #f))
-                  #f))
-
 (def (cc-eval stack prog/loc) ;; -> copycat-runtime-result? ;; XX don't break TCO!
      (in-monad
       Result
