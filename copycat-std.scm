@@ -193,7 +193,16 @@ that the oldest one becomes the newest"
         "takes n elements from the stack and returns them as a reversed list"
         (cc:Rlist $s $word n #f))
 
-(cc-defhost/try append (a b -> ilist?))
+(cc-defhost list? (v -> boolean?)
+            "return true if v is a proper list")
+(cc-defhost ilist? (v -> boolean?)
+            "return true if v starts off as a proper list (careful,
+does not check to the end of the list, for performance)")
+(cc-defhost/try append (a b -> ilist?)
+                ;; XX argument order?
+                "append the lists a and b")
+
+(cc-defhost string? (v -> boolean?))
 (cc-defhost string-append ([string? a] [string? b] -> string?))
 (cc-defhost/try strings-append (l -> string?))
 (cc-defhost/try strings-join ([(ilist-of string?) l] [string? inbetween]
