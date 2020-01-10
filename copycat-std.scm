@@ -75,11 +75,28 @@
 (cc-defhost/try append (a b -> ilist?))
 (cc-defhost string-append ([string? a] [string? b] -> string?))
 (cc-defhost/try strings-append (l -> string?))
+(cc-defhost/try strings-join ([(ilist-of string?) l] [string? inbetween]
+                              -> string?))
 (cc-defhost string-split ([string? str]
                           ;; XX todo: allow forth preds by
                           ;; wrapping
                           [char? char-or-pred]
                           -> (ilist-of string?)))
+
+(cc-def and ([any? a] [ilist? b] -> any?)
+        "this is not strictly a boolean operator, but a 'maybe' type
+style one (monadic >>)"
+        (if a
+            (cc-eval $s b)
+            (cc-return a)))
+
+(cc-def or ([any? a] [ilist? b] -> any?)
+        "this is not strictly a boolean operator, but a 'maybe' type
+style one"
+        (if a
+            (cc-return a)
+            (cc-eval $s b)))
+
 
 ;; (cc-defhost error/1 (a))
 ;; (cc-defhost error/2 (a))
@@ -171,11 +188,40 @@
 
 (cc-defhost/try .symbol (s -> symbol?))
 
-(cc-defhost/try .maybe-original (s))
 (cc-def ref ([symbol? name] -> ccproc?)
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
+
+(cc-defhost/try .docstring (s)) ;; including source
+(cc-defhost/try .string (s))
+(cc-defhost/try .type (s))
+(cc-defhost/try .maybe-original (s))
+(cc-defhost/try source-code (s))
+
+;; XX lib
+(def (pretty-string v)
+     (fst (with-output-to-string (& (pretty-print (cj-desourcify v))))))
+
+(cc-defhost pretty-string (s -> string?))
+
+(cc-eval '() (quote-source
+              (
+               (: help-string [symbol? word] -> string?
+                  "give help string on the given word"
+                  (
+                   dup .string ": " string-append ;; intro
+                   swap ref
+                   dup
+                   .type .maybe-original pretty-string ;; type
+                   swap
+                   .docstring source-code ("(no help text)") or ;; help
+                   2 list "\n" strings-join
+                   2 list strings-append))
+
+               (: help [symbol? word] ->
+                  "print help on the given word"
+                  (help-string println)))))
 
 (cc-def thenelse ([boolean? val] truebranch falsebranch)
         (cc-eval $s (if val truebranch falsebranch)))
