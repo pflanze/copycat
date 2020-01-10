@@ -219,7 +219,9 @@
 
 ;; print stack
 (cc-def P (->)
-        (mdo (copycat:try-Ok (pretty-print $s))
+        (mdo (copycat:try-Ok
+              (show-source-location $word)
+              (pretty-print $s))
              (cc-return)))
 
 (cc-def P* (a ->)
