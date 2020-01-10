@@ -213,6 +213,18 @@ does not check to the end of the list, for performance)")
                           [char? char-or-pred]
                           -> (ilist-of string?)))
 
+
+(cc-defhost char? (v)
+            "whether v is a character")
+(cc-defhost char->integer ([char? c] -> fixnum?))
+(cc-defhost/try integer->char (n -> char?))
+
+(cc-defhost string->list ([string? s] -> (ilist-of char?))
+            "convert string s into a list of all of its characters")
+(cc-defhost list->string ([(list-of char?) l] -> string?)
+            "convert string s into a list of all of its characters")
+
+
 (cc-def and ([any? a] [ilist? b] -> any?)
         "this is not strictly a boolean operator, but a 'maybe' type
 style one (monadic >>)"
