@@ -270,7 +270,7 @@
   '(c/load "lib/math/integral")
   '(c/load "lib/math/interpolate")
   '(c/load "lib/math/predicates")
-  '(c/load "lib/maybe")
+  (c/load "lib/maybe")
   '(c/load "lib/try")
   '(c/load "lib/range")
   '(c/load "lib/vector-binsearch")
