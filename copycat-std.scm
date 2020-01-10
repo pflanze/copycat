@@ -666,3 +666,12 @@ stack"
  (Error (copycat-type-error ': "list?" 4))
  > (t '() '(: foo () 4))
  (Ok (list 4)))
+
+
+;; source handling
+(TEST
+ > (t '() (quote-source (9 .string)))
+ (Ok (list "9"))
+ > (t '() (quote-source ((10) first .string)))
+ (Ok (list "10")))
+
