@@ -373,7 +373,7 @@
                 (else
                  (let (cont-literal
                        (lambda ()
-                         (cc-eval (cons item stack) prog*)))
+                         (cc-eval (cons item/loc stack) prog*)))
                    (if-let-pair
                     ((a r) item)
 
@@ -381,9 +381,7 @@
                       ((quote)
                        (if (and (pair? r)
                                 (null? (cdr r)))
-                           ;; XX could retain location info on constants. But
-                           ;; will want full context information anyway?
-                           (cc-eval (cons (source-code (car r)) stack) prog*)
+                           (cc-eval (cons (car r) stack) prog*)
                            (cont-literal)))
 
                       ((:)
