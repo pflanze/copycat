@@ -98,6 +98,18 @@ that the oldest one becomes the newest"
 
 ;; -- pure functions (except for error handling!)
 
+;; Numbers
+
+(cc-defhost number? (v -> boolean?))
+(cc-defhost exact? ([number? v] -> boolean?))
+(cc-defhost inexact? ([number? v] -> boolean?))
+(cc-defhost real? (v -> boolean?))
+(cc-defhost rational? (v -> boolean?)
+            "same as `real?` (and thus useless)?")
+(cc-defhost complex? (v -> boolean?))
+(cc-defhost integer? (v -> boolean?))
+(cc-defhost fixnum? (v -> boolean?))
+
 (cc-defhost + ([number? a] [number? b] -> number?))
 (cc-defhost - ([number? a] [number? b] -> number?))
 (cc-defhost * ([number? a] [number? b] -> number?))
