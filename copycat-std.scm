@@ -224,8 +224,8 @@
 
 (cc-def P* (a ->)
         (mdo (copycat:try-Ok (display a)
-                          (display ": ")
-                          (pretty-print $s))
+                             (display ": ")
+                             (pretty-print $s))
              (cc-return)))
 
 
