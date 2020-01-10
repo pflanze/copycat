@@ -16,7 +16,7 @@
 (def (_cc-repl stack) -> !
      (in-monad
       Result
-      (pp stack)
+      (pretty-print (cj-desourcify stack)) ;; XX display modes?
       (display "$ ")
       (if-Ok (>>= (let (($s stack)
                         ($word 'cc-repl))
