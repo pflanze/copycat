@@ -263,10 +263,11 @@
 (defmacro (cc-return . es)
   `(Ok (cons* ,@(reverse es) $s)))
 
-(defmacro (cc-defhost name args/type)
+(defmacro (cc-defhost name args/type #!optional docstring)
   ;; argh, have to cc-parse-type twice? COPY-PASTE.
   (if-Ok (cc-parse-type args/type)
          `(cc-def ,name ,args/type
+                  ,@(if docstring (list docstring) (list))
                   (cc-return ,(cons name
                                     (map perhaps-typed.var
                                          (.inputs it)))))
@@ -274,10 +275,11 @@
                        ;; XX .show ?
                        it)))
 
-(defmacro (cc-defhost/try name args/type)
+(defmacro (cc-defhost/try name args/type #!optional docstring)
   ;; ditto
   (if-Ok (cc-parse-type args/type)
          `(cc-def ,name ,args/type
+                  ,@(if docstring (list docstring) (list))
                   (>>= (copycat:try-Ok ,(cons name
                                               (map perhaps-typed.var
                                                    (.inputs it))))
