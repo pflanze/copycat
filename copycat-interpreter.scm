@@ -12,7 +12,7 @@
          Maybe
          Result
          srfi-1-Maybe
-         error ;; for built-in exception .show
+         error ;; to enable .show on Gambit exceptions
          (cj-typed typed-lambda-expand))
 
 (export cc-eval
