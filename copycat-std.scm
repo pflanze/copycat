@@ -14,6 +14,13 @@
 ;; XX offer them in an exported fashion instead of mutating the global
 ;; symbol table?
 
+
+;; Add test function when running test suite
+(TEST
+  > (def (t stack prog)
+         (.show (cc-eval stack prog))))
+
+
 ;; -- stack ops
 ;; as shown on http://wiki.laptop.org/go/Forth_stack_operators
 
@@ -340,8 +347,6 @@ stack"
 
 
 (TEST
- > (def (t stack prog)
-        (.show (cc-eval stack prog)))
  > (t '() '(4 5 5 *))
  (Ok (list 25 4))
  > (t '() (quote-source (4 5 5 * -)))
