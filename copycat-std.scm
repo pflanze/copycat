@@ -162,7 +162,7 @@
                            prog)
                           ((ilist? prog)
                            (ccguestproc #f ;; docstring
-                                        (cc-type-unknown)
+                                        (cc-type-unknown #f)
                                         prog))))
           (cc-word-set! name prog))
         (cc-return))
@@ -171,6 +171,7 @@
 
 (cc-defhost/try .symbol (s -> symbol?))
 
+(cc-defhost/try .maybe-original (s))
 (cc-def ref ([symbol? name] -> ccproc?)
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)

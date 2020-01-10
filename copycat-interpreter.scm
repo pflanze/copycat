@@ -67,27 +67,39 @@
 ;; Type parsing
 
 (definterface cc-type
-  (defclass (cc-type-unknown)
+  
+  (defclass (cc-type-unknown maybe-location)
     (defmethod (inputs _) '())
     (defmethod (maybe-results _) #f)
+    (defmethod (maybe-original _) #f)
+
     (defclass (cc-type/unknown-results [ilist? inputs])
+      (defmethod (maybe-original _)
+        (possibly-sourcify inputs maybe-location))
+
       (defclass (cc-type/results [ilist? results])
-        (defmethod (maybe-results _) results)))))
+        (defmethod (maybe-results _) results)
+        (defmethod (maybe-original _)
+          (possibly-sourcify (append inputs
+                                     '(->) ;; XX missing location info
+                                     results)
+                             maybe-location))))))
 
 (def (cc-parse-type l)
      -> (Result-of cc-type?
                    copycat-runtime-error?)
-     (let (l* (cj-desourcify l))
+     (let ((l* (cj-desourcify l))
+           (loc (maybe-source-location l)))
        (if (list? l*)
            (if (null? l*)
-               (Ok (cc-type-unknown))
+               (Ok (cc-type-unknown loc))
                (let (parts (list-split l* '->))
                  (case (length parts)
-                   ((1) (Ok (cc-type/unknown-results
-                             (first parts))))
-                   ((2) (Ok (cc-type/results
-                             (first parts)
-                             (second parts))))
+                   ((1) (Ok (cc-type/unknown-results loc
+                                                     (first parts))))
+                   ((2) (Ok (cc-type/results loc
+                                             (first parts)
+                                             (second parts))))
                    (else
                     ;; hmm curried functions?
                     (Error (copycat-invalid-type
@@ -96,13 +108,13 @@
 
 (TEST
  > (cc-parse-type '())
- [(Ok) [(cc-type-unknown)]]
+ [(Ok) [(cc-type-unknown) #f]]
  > (cc-parse-type '(a b -> b))
- [(Ok) [(cc-type/results) (a b) (b)]]
+ [(Ok) [(cc-type/results) #f (a b) (b)]]
  > (cc-parse-type '(-> any?))
- [(Ok) [(cc-type/results) () (any?)]]
+ [(Ok) [(cc-type/results) #f () (any?)]]
  > (cc-parse-type '([list? l] -> any?))
- [(Ok) [(cc-type/results) ([list? l]) (any?)]]
+ [(Ok) [(cc-type/results) #f ([list? l]) (any?)]]
  > (cc-parse-type 'foo)
  [(Error) [(copycat-invalid-type) foo "not a list"]]
  > (cc-parse-type '([list? l] -> any? -> foo?))
@@ -335,7 +347,7 @@
                               ;; XX allow docstring still?
                               (cc-word-set! (source-code name/loc)
                                             (ccguestproc #f ;;
-                                                         (cc-type-unknown)
+                                                         (cc-type-unknown #f)
                                                          subprog))
                               (cc-eval stack cont))
                             (Error
@@ -414,7 +426,7 @@
                                        (cont-ccguestproc #f
                                                          type))))
                             (cont-ccguestproc #f
-                                              (cc-type-unknown))))
+                                              (cc-type-unknown #f))))
                          (Error (copycat-missing-arguments
                                  item/loc
                                  "missing program argument" ;; proc, XX evil?
