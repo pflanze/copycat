@@ -14,6 +14,82 @@
 ;; XX offer them in an exported fashion instead of mutating the global
 ;; symbol table?
 
+;; -- stack ops
+;; as shown on http://wiki.laptop.org/go/Forth_stack_operators
+
+(cc-def dup (a -> a a)
+        (cc-return a a))
+(cc-def drop (a ->)
+        (cc-return))
+(cc-def swap (a b -> b a)
+        (cc-return b a))
+(cc-def rot (a b c -> b c a)
+        (cc-return b c a))
+(cc-def -rot (a b c -> c a b)
+        (cc-return c a b))
+(cc-def nip (a b -> b)
+        (cc-return b))
+
+(cc-def roll ([fixnum-natural0? n] ->)
+        "take the last n elements on the stack, roll them around so
+that the oldest one becomes the newest"
+        ;; (letv ((args stack*) (split-at $s n))
+        ;;       (append (cons (last args) (butlast args)) stack*))
+        ;;or, saving on intermediates:
+        (let lp ((n n)
+                 (tmp '())
+                 (stack $s))
+          (if (> n 1)
+              (lp (dec n)
+                  (cons (car stack) tmp)
+                  (cdr stack))
+              (Ok (cons (car stack)
+                        (rappend tmp (cdr stack)))))))
+
+
+(def (copycat:pick $word $s n)
+     (if-Just ((it (list-Maybe-ref $s n)))
+              (cc-return it)
+              (Error (copycat-missing-arguments
+                      $word
+                      'copycat:pick ;; XX?
+                      (inc n)
+                      (length $s)))))
+(cc-def over (-> any?)
+        "copy the second-last element from the stack"
+        (copycat:pick $word $s 1))
+(cc-def pick2 (-> any?)
+        "copy the third-last element from the stack"
+        (copycat:pick $word $s 2))
+(cc-def pick3 (-> any?)
+        "copy the fourth-last element from the stack"
+        (copycat:pick $word $s 3))
+(cc-def pick (n -> any?)
+        "copy the element from the stack found after skipping n elements"
+        (copycat:pick $word $s n))
+
+;; my own ideas for stack ops:
+
+(cc-def dropn ([fixnum-natural0? n] ->)
+        "drop the n last elements from the stack"
+        (if-Just ((it (Maybe-drop $s n)))
+                 (Ok it)
+                 (Error
+                  (copycat-missing-arguments $word
+                                             (list 'dropn n)
+                                             n
+                                             (length $s)))))
+
+(cc-def clear ()
+        "drop all elements from the stack"
+        (Ok '()))
+;; and with a shorter name:
+(cc-def c ()
+        "drop all elements from the stack"
+        (Ok '()))
+
+
+;; -- pure functions (except for error handling!)
 
 (cc-defhost + ([number? a] [number? b] -> number?))
 (cc-defhost - ([number? a] [number? b] -> number?))
@@ -127,79 +203,6 @@ style one"
 ;; (cc-defhost error/1 (a))
 ;; (cc-defhost error/2 (a))
 
-;; -- stack ops
-;; as shown on http://wiki.laptop.org/go/Forth_stack_operators
-
-(cc-def dup (a -> a a)
-        (cc-return a a))
-(cc-def drop (a ->)
-        (cc-return))
-(cc-def swap (a b -> b a)
-        (cc-return b a))
-(cc-def rot (a b c -> b c a)
-        (cc-return b c a))
-(cc-def -rot (a b c -> c a b)
-        (cc-return c a b))
-(cc-def nip (a b -> b)
-        (cc-return b))
-
-(cc-def roll ([fixnum-natural0? n] ->)
-        "take the last n elements on the stack, roll them around so
-that the oldest one becomes the newest"
-        ;; (letv ((args stack*) (split-at $s n))
-        ;;       (append (cons (last args) (butlast args)) stack*))
-        ;;or, saving on intermediates:
-        (let lp ((n n)
-                 (tmp '())
-                 (stack $s))
-          (if (> n 1)
-              (lp (dec n)
-                  (cons (car stack) tmp)
-                  (cdr stack))
-              (Ok (cons (car stack)
-                        (rappend tmp (cdr stack)))))))
-
-
-(def (copycat:pick $word $s n)
-     (if-Just ((it (list-Maybe-ref $s n)))
-              (cc-return it)
-              (Error (copycat-missing-arguments
-                      $word
-                      'copycat:pick ;; XX?
-                      (inc n)
-                      (length $s)))))
-(cc-def over (-> any?)
-        "copy the second-last element from the stack"
-        (copycat:pick $word $s 1))
-(cc-def pick2 (-> any?)
-        "copy the third-last element from the stack"
-        (copycat:pick $word $s 2))
-(cc-def pick3 (-> any?)
-        "copy the fourth-last element from the stack"
-        (copycat:pick $word $s 3))
-(cc-def pick (n -> any?)
-        "copy the element from the stack found after skipping n elements"
-        (copycat:pick $word $s n))
-
-;; my own ideas for stack ops:
-
-(cc-def dropn ([fixnum-natural0? n] ->)
-        "drop the n last elements from the stack"
-        (if-Just ((it (Maybe-drop $s n)))
-                 (Ok it)
-                 (Error
-                  (copycat-missing-arguments $word
-                                             (list 'dropn n)
-                                             n
-                                             (length $s)))))
-
-(cc-def clear ()
-        "drop all elements from the stack"
-        (Ok '()))
-;; and with a shorter name:
-(cc-def c ()
-        "drop all elements from the stack"
-        (Ok '()))
 
 ;; -- procedures (for side-effects)
 
