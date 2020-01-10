@@ -10,6 +10,7 @@
          (oo-util-lazy ilist-of)
          table
          Maybe
+         maybe
          Result
          srfi-1-Maybe
          error ;; to enable .show on Gambit exceptions
@@ -21,7 +22,66 @@
                 cc-def
                 cc-return
                 cc-defhost
-                cc-defhost/try))
+                cc-defhost/try)
+        possibly-source?)
+
+
+(def (Maybe-find-deeply pred v) -> (Maybe any?)
+     (cond ((pred v)
+            (Just v))
+           ((pair? v)
+            (let-pair ((a r) v)
+                      (Maybe:or (Maybe-find-deeply pred a)
+                                (Maybe-find-deeply pred r))))
+           (else
+            (Nothing))))
+
+(TEST
+ > (Maybe-find-deeply string? '(a b "c" d e "f" g))
+ [(Just) "c"]
+ > (Maybe-find-deeply boolean? '(a b "c" d e "f" g))
+ [(Nothing)]
+ > (Maybe-find-deeply boolean? '(a b "c" d e "f" (#f) g))
+ [(Just) #f])
+
+(def (contains-deeply? v pred) -> boolean?
+     ;; (yeah, optimize automatically? Rust will?)
+     (Just? (Maybe-find-deeply pred v)))
+
+(TEST
+ > (map (C contains-deeply? '(a (("x" #f) (((b . c))))) _)
+        (list (C eq? _ 'a)
+              (C eq? _ 'c)
+              not
+              (C eq? _ #t)))
+ (#t #t #t #f))
+
+
+(def (possibly-source? v)
+     "same as `any?`, but expresses intent to accept source code"
+     #t)
+
+(def (copycat:predicate-accepts-source? expr)
+     ;; allocates, stupid, but only used at compile time
+     (contains-deeply? (cj-desourcify expr)
+                       (lambda (v)
+                         (case v
+                           ((possibly-source-of
+                             possibly-source?
+                             source-of
+                             source?)
+                            #t)
+                           (else
+                            #f)))))
+
+(TEST
+ > (map copycat:predicate-accepts-source?
+        '((source-of list?)
+          list?
+          (values-of (possibly-source-of symbol?) boolean?)
+          (list-of possibly-source?)
+          (list-of string?)))
+ (#t #f #t #t #f))
 
 
 ;; --- Symbol table --------------------------------------
@@ -215,8 +275,25 @@
                               ,val))
 
 (defmacro (copycat-lambda args . body)
-  (typed-lambda-expand stx args body '##begin
-                       `copycat:type-check-error))
+  ;; have to remove location information *before* entering
+  ;; typed-lambda, hence wrap the typed-lambda with an untyped one:
+  (let* ((args* (source-code args))
+         (vars (map perhaps-typed.var args*)))
+    `(lambda ,vars
+       ,(fold-right (lambda (arg expr)
+                      (if (in-monad
+                           maybe
+                           (>>= (perhaps-typed.maybe-predicate arg)
+                                copycat:predicate-accepts-source?))
+                          expr
+                          (let (var (perhaps-typed.var arg))
+                            `(let (,var (source-code ,var))
+                               ,expr))))
+                    `(,(typed-lambda-expand stx args body
+                                            '##begin
+                                            `copycat:type-check-error)
+                      ,@vars)
+                    args*))))
 
 
 (def (cc-parse-body perhaps-docstring+body)
@@ -243,7 +320,9 @@
                                  ,(.show it) ;; type
                                  ,(length inputs) ;; numargs
                                  (copycat-lambda
-                                  ,(cons* '$word '$s inputs)
+                                  ,(cons* '[possibly-source? $word]
+                                          '[possibly-source? $s]
+                                          inputs)
                                   ;; ^ HEH that |source-code| is
                                   ;; required. otherwise gambit has a
                                   ;; problem, 'Identifier expected'

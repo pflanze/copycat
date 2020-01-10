@@ -320,7 +320,9 @@ an error if not bound)"
 (cc-defhost/try .string (s))
 (cc-defhost/try .type (s))
 (cc-defhost/try .maybe-original (s))
-(cc-defhost source-code (s)
+(cc-defhost source? ([possibly-source? s])
+            "whether s is a value wrapped with location information")
+(cc-defhost source-code ([possibly-source? s])
             "strips location information from source (i.e. return the
 code embedded in a source object); if s is not a source object, return
 s (i.e. never fails)")
@@ -559,8 +561,10 @@ stack"
  ;; The variant in examples/fact.scm
  > (t '() '("examples/fact.scm" load))
  (Ok (list))
- > (t '(0) '(fact))
- (Ok (list 1))
+ ;; > (t '(0) '(fact))
+ ;; (Ok (list (source* 1 "examples/fact.scm" 2 25)))
+ > (t '(0) '(fact source?))
+ (Ok (list #t))
  > (t '(1) '(fact))
  (Ok (list 1))
  > (t '(2) '(fact))
