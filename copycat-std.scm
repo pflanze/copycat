@@ -211,6 +211,39 @@ style one"
 ;; (cc-defhost error/2 (a))
 
 
+;; -- Result
+
+(cc-defhost Ok (v)
+            "Wrap v in an Ok (Result type)")
+(cc-defhost Error (v)
+            "Wrap v in an Error (Result type)")
+(cc-def try ([ilist? prog])
+        "eval prog, catching exceptions, returning a Result -- either
+an Ok-wrapped stack, or an Error-wrapped copycat error object"
+        (cc-return (cc-eval $s prog)))
+(cc-def set-stack ([ilist? stack])
+        (Ok stack))
+(cc-def if-Ok ([Result? v] [ilist? then] [ilist? else])
+        (if-Ok v
+               (cc-eval (cons it $s) then)
+               (cc-eval (cons it $s) else)))
+
+(TEST ;; Result
+ > (t '() '(39 Ok ("yes") ("no") if-Ok))
+ (Ok (list "yes" 39))
+ >  (t '() '(40 Error ("yes") ("no") if-Ok))
+ (Ok (list "no" 40))
+ > (t '() '("before" ("yes") try))
+ (Ok (list (Ok (list "yes" "before")) "before"))
+ > (t '() '("before" ("hi" "yes" inc) try))
+ ;; Errors drop the intermediate results (and don't retain them in the
+ ;; exception value anymore, unlike in some earlier version of
+ ;; copycat).
+ (Ok (list (Error (copycat-type-error 'inc "(fixnum? n)" "yes")) "before"))
+ > (t '() '("before" ("yes") try (set-stack) ("bug") if-Ok))
+ (Ok (list "yes" "before")))
+
+
 ;; -- procedures (for side-effects)
 
 (cc-def eval (prog)
