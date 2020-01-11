@@ -507,6 +507,17 @@ stack, via .show and with location info not stripped"
              (cc-return)))
 
 
+(cc-def time ([ilist? prog])
+        "Runs prog then prints how long it took"
+        (time-thunk (lambda ()
+                      (cc-eval $s prog))
+                    ;; Still showed in a Scheme-y way of course,
+                    ;; though, `(time ,prog). Todo: improve?
+                    (cj-desourcify prog)))
+
+
+;; -- Remaining tests for functionality above -------------------
+
 (TEST
  > (t '() '(4 5 5 *))
  (Ok (list 25 4))
