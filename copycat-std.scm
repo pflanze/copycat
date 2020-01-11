@@ -124,9 +124,9 @@ that the oldest one becomes the newest"
 (cc-def inv ([number? x] -> number?)
         "1/x"
         (cc-return (/ x)))
-(cc-defhost inc ([fixnum? n] -> fixnum?)
+(cc-defhost inc ([incrementable-fixnum? n] -> fixnum?)
             "the successor number to n")
-(cc-defhost dec ([fixnum? n] -> fixnum?)
+(cc-defhost dec ([decrementable-fixnum? n] -> fixnum?)
             "the predecessor number to n")
 (cc-defhost square ([number? x] -> number?)
             "x * x")
@@ -345,7 +345,8 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
  ;; Errors drop the intermediate results (and don't retain them in the
  ;; exception value anymore, unlike in some earlier version of
  ;; copycat).
- (Ok (list (Error (copycat-type-error 'inc "(fixnum? n)" "yes")) "before"))
+ (Ok (list (Error (copycat-type-error 'inc "(incrementable-fixnum? n)" "yes"))
+           "before"))
  > (t '() '("before" ("yes") try (set-stack) ("bug") if-Ok))
  (Ok (list "yes" "before")))
 
