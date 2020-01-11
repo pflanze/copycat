@@ -80,6 +80,12 @@ that the oldest one becomes the newest"
 
 ;; my own ideas for stack ops:
 
+(cc-def drop2 (a b ->)
+        (cc-return))
+(cc-def drop3 (a b c ->)
+        (cc-return))
+(cc-def drop4 (a b c d->)
+        (cc-return))
 (cc-def dropn ([fixnum-natural0? n] ->)
         "drop the n last elements from the stack"
         (if-Just ((it (Maybe-drop $s n)))
