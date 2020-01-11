@@ -114,7 +114,9 @@
   (defclass (copycat-division-by-zero a b))
   (defclass (copycat-type-error [string? predicate] value))
   (defclass (copycat-host-error exception))
-  (defclass (copycat-invalid-type [string? reason])))
+  (defclass (copycat-invalid-type [string? reason]))
+  (defclass (copycat-out-of-bounds-access asked
+                                          [fixnum-natural0? length])))
 
 (def copycat-stack? (ilist-of any?))
 (def copycat-runtime-result?

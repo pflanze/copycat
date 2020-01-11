@@ -15,6 +15,9 @@
 ;; symbol table?
 
 
+"The standard library for Copycat"
+
+
 ;; Add test function when running test suite
 (TEST
   > (def (t stack prog)
@@ -183,8 +186,8 @@ that the oldest one becomes the newest"
                     (Ok (cons (if reverse? rargs (reverse rargs))
                               stack*)))
               (Error (copycat-missing-arguments $word
-                                                'list ;; ?
-                                                n
+                                                'Rlist ;; ?
+                                                numargs
                                                 (length $s)))))
 (cc-def list ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a list"
@@ -192,6 +195,76 @@ that the oldest one becomes the newest"
 (cc-def rlist ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a reversed list"
         (cc:Rlist $s $word n #f))
+
+(def (cc:Rvector $s $word numargs reverse? drop-args?)
+     (let ((v (make-vector numargs))
+           (end (dec numargs)))
+       (let lp ((i end)
+                (s $s))
+         (if (negative? i)
+             (if drop-args?
+                 (Ok (cons v (drop $s numargs)))
+                 (cc-return v))
+             (if-let-pair ((a r) s)
+                          (begin (vector-set! v
+                                              (if reverse? i (- end i))
+                                              a)
+                                 (lp (dec i) r))
+                          (Error (copycat-missing-arguments $word
+                                                            'Rvector ;; ?
+                                                            numargs
+                                                            (length $s))))))))
+(cc-def vector ([fixnum-natural0? n] -> (list-of-length n))
+        "takes n elements from the stack and returns them as a vector"
+        (cc:Rvector $s $word n #t #t))
+(cc-def rvector ([fixnum-natural0? n] -> (list-of-length n))
+        "takes n elements from the stack and returns them as a
+reversed vector"
+        (cc:Rvector $s $word n #f #t))
+
+(cc-def copy-vector ([fixnum-natural0? n] -> (vector-of-length n))
+        "copy n elements from the stack (leaving them there) and
+returns them as a vector"
+        (cc:Rvector $s $word n #t #f))
+(cc-def copy-rvector ([fixnum-natural0? n] -> (vector-of-length n))
+        "copy n elements from the stack (leaving them there) and
+returns them as a reversed vector"
+        (cc:Rvector $s $word n #f #f))
+
+(cc-def vector-ref ([vector? v] [fixnum-natural0? i] -> any?)
+        "retrieve from v the element at index i"
+        (if (< i (vector-length v))
+            (cc-return (vector-ref v i))
+            (Error (copycat-out-of-bounds-access $word
+                                                 i
+                                                 (vector-length v)))))
+
+(cc-def vector-set! ([vector? v] [fixnum-natural0? i] val -> vector?)
+        "set the element at index i in v to val via mutation; returns v"
+        (if (< i (vector-length v))
+            (begin (vector-set! v i val)
+                   (cc-return v))
+            (Error (copycat-out-of-bounds-access $word
+                                                 i
+                                                 (vector-length v)))))
+
+
+(TEST
+ > (t '() '('a 'b 'c 2 rvector)) 
+ (Ok (list (vector 'c 'b) 'a))
+ > (t '() '('a 'b 'c 2 vector)) 
+ (Ok (list (vector 'b 'c) 'a))
+ > (t '() '('a 'b 'c 2 copy-rvector)) 
+ (Ok (list (vector 'c 'b) 'c 'b 'a))
+ > (t '() '('a 'b 'c 2 copy-vector)) 
+ (Ok (list (vector 'b 'c) 'c 'b 'a))
+ > (t '() '([a b c] 2 vector-ref))
+ (Ok (list 'c))
+ > (t '() '([a b c] 3 vector-ref))
+ (Error (copycat-out-of-bounds-access 'vector-ref 3 3))
+ > (t '() '([a b c] 0 "hi" vector-set!))
+ (Ok (list (vector "hi" 'b 'c))))
+
 
 (cc-defhost list? (v -> boolean?)
             "return true if v is a proper list")
