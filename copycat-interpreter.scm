@@ -106,7 +106,7 @@
 ;; We represent guest language errors as (Error-of
 ;; copycat-runtime-error?):
 
-(defclass (copycat-runtime-error offending-code) ;; mb with location 
+(defclass (copycat-runtime-error offending-code) ;; maybe with location 
   (defclass (copycat-unbound-symbol [symbol? name]))
   (defclass (copycat-missing-arguments proc
                                        [fixnum-natural0? need]
@@ -249,7 +249,8 @@
      (Error
       (cond ((copycat-runtime-error? e) e)
             ;;((type-exception? e) ...)
-            ;; ^ XX but have to change copycat-type-error to take multiple values.
+            ;; ^ XX but have to change copycat-type-error to take
+            ;;   multiple values.
             (else
              (copycat-host-error $word e)))))
 
