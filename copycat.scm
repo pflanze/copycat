@@ -13,23 +13,38 @@
 (export cc-repl)
 
 
-(def (_cc-repl stack) -> !
+(def (_cc-repl stack past future) -> !
      (in-monad
       Result
       (pretty-print (cj-desourcify stack)) ;; XX display modes?
       (display "$ ")
-      (if-Ok (>>= (let (($s stack)
-                        ($word 'cc-repl))
-                    (copycat:try-Ok
-                     (with-input-from-string (read-line)
-                       read-all-source)))
-                  (C cc-eval stack _))
-             (_cc-repl it)
-             (begin
-               (warn "Error:" (try-show it))
-               (_cc-repl stack)))))
+      (let (err (lambda (e)
+                  (warn "Error:" (try-show e))
+                  (_cc-repl stack past future)))
+        (if-Ok (>>= (let (($s stack)
+                          ($word 'cc-repl))
+                      (copycat:try-Ok
+                       (with-input-from-string (read-line)
+                         read-all-source)))
+                    (lambda (prog)
+                      (mcase prog
+                             ;; handle pseudo commands
+                             (`(undo)
+                              (if-let-pair ((p past*) past)
+                                           (_cc-repl p
+                                                     past*
+                                                     (cons stack future))
+                                           (err (XXX))))
+                             (`(redo)
+                              XXX)
+                             (else
+                              (cc-eval stack prog)))))
+               (_cc-repl it
+                         (cons it (rappend future (cons stack past)))
+                         '())
+               (err it)))))
 
 (def (cc-repl #!optional (stack '())) -> !
      (read-line)
-     (_cc-repl stack))
+     (_cc-repl stack '() '()))
 
