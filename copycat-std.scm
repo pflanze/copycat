@@ -260,8 +260,7 @@ after putting v on the stack and running prog"
                                      prog) ;; XX evil
                                1
                                0)))))
-               (Error (copycat-invalid-type $word
-                                            "improper list"))))))
+               (Error (copycat-type-error $word "list?" l))))))
 
 (cc-defhost list-reverse ([list? l] -> ilist?))
 
@@ -281,8 +280,9 @@ stack and running prog"
        ;; reports list-rmap location within list-map; how to track original?
        ;; Well, todo call stack inspection. Anyway, strip it here:
        Error.value
-       copycat-invalid-type.reason)
- "improper list")
+       ((dup copycat-type-error.predicate
+             (comp source-code copycat-type-error.value))))
+ ("list?" 5))
 
 
 ;; --- Vectors

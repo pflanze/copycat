@@ -107,17 +107,35 @@
 ;; We represent guest language errors as (Error-of
 ;; copycat-runtime-error?):
 
-(defclass (copycat-runtime-error offending-code) ;; maybe with location 
-  (defclass (copycat-unbound-symbol [symbol? name]))
+(defclass ((copycat-runtime-error #f) [possibly-source? offending-code])
+  (defclass (copycat-unbound-symbol [symbol? name])
+    (defmethod (explanation s)
+      "the given word is not defined"))
   (defclass (copycat-missing-arguments proc
                                        [fixnum-natural0? need]
-                                       [fixnum-natural0? got]))
-  (defclass (copycat-division-by-zero a b))
-  (defclass (copycat-type-error [string? predicate] value))
-  (defclass (copycat-host-error exception))
-  (defclass (copycat-invalid-type [string? reason]))
+                                       [fixnum-natural0? got])
+    (defmethod (explanation s)
+      ($ "the given operation needs more arguments than are "
+         "available (either on the stack, or (in the case of "
+         "special syntax) in the program)")))
+  (defclass (copycat-division-by-zero a b) ;; why capture b ?
+    (defmethod (explanation s)
+      "attempt to divide by exactly 0"))
   (defclass (copycat-out-of-bounds-access asked
-                                          [fixnum-natural0? length])))
+                                          [fixnum-natural0? length])
+    (defmethod (explanation s)
+      "attempt to access an index outside the range of valid indices"))
+  
+  (defclass (copycat-type-error [string? predicate] value)
+    (defmethod (explanation s)
+      "value encountered does not match given type declaration"))
+  (defclass (copycat-host-error exception)
+    (defmethod (explanation s)
+      "an exception was thrown from code implemented in the host language"))
+  (defclass (copycat-invalid-type [string? reason])
+    (defmethod (explanation s)
+      "the given type declaration is syntactically invalid")))
+
 
 (def copycat-stack? (ilist-of any?))
 (def copycat-runtime-result?
