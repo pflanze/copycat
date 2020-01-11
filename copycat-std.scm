@@ -358,6 +358,12 @@ s (i.e. never fails)")
  (Ok (list "help: ([symbol? word] ->)\n\nprint help on the given word")))
 
 
+(cc-def dir (-> ilist?)
+        "returns the list of defined words"
+        (cc-return (table.sorted-keys cc-words)))
+
+
+
 (cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
         (cc-eval $s (if val truebranch falsebranch)))
 
