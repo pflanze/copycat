@@ -248,12 +248,11 @@ after putting v on the stack and running prog"
 
 (cc-defhost list-reverse ([list? l] -> ilist?))
 
-(cc-eval '() (quote-source
-              ((: list-map [ilist? l] [ilist? prog] -> ilist?
-                  "create the list that, for each element value v in l,
+(cc-defguest (: list-map [ilist? l] [ilist? prog] -> ilist?
+                "create the list that, for each element value v in l,
 contains the value left at the top of the stack after putting v on the
 stack and running prog"
-                  (list-rmap list-reverse)))))
+                (list-rmap list-reverse)))
 
 (TEST
  > (t '() '((1 4 5) (inc square) list-map))
@@ -475,23 +474,21 @@ s (i.e. never fails)")
 (cc-defhost pretty-string (s -> string?)
             "pretty-print s to a string")
 
-(cc-eval '() (quote-source
-              (
-               (: help-string [symbol? word] -> string?
-                  "give help string on the given word"
-                  (
-                   dup .string ": " string-append ;; intro
-                   swap ref
-                   dup
-                   .type .maybe-original pretty-string ;; type
-                   swap
-                   .docstring source-code ("(no help text)") or ;; help
-                   2 list "\n" strings-join
-                   2 list strings-append))
+(cc-defguest (: help-string [symbol? word] -> string?
+                "give help string on the given word"
+                (
+                 dup .string ": " string-append ;; intro
+                 swap ref
+                 dup
+                 .type .maybe-original pretty-string ;; type
+                 swap
+                 .docstring source-code ("(no help text)") or ;; help
+                 2 list "\n" strings-join
+                 2 list strings-append))
 
-               (: help [symbol? word] ->
-                  "print help on the given word"
-                  (help-string println)))))
+             (: help [symbol? word] ->
+                "print help on the given word"
+                (help-string println)))
 
 (TEST
  > (t '() '('help help-string))
@@ -534,11 +531,9 @@ s-expressions, enriched with location information"
               (call-with-input-file path read-all-source))
              (C cc-return _)))
 
-(cc-eval '() (quote-source
-              (
-               (: load [string? path]
-                  "read and evaluate the given file"
-                  (read-source eval)))))
+(cc-defguest (: load [string? path]
+                "read and evaluate the given file"
+                (read-source eval)))
 
 
 ;; -- debugging

@@ -22,7 +22,8 @@
                 cc-def
                 cc-return
                 cc-defhost
-                cc-defhost/try)
+                cc-defhost/try
+                cc-defguest)
         possibly-source?)
 
 
@@ -370,6 +371,18 @@
          (source-error args/type "args/type parsing error"
                        ;; XX .show ?
                        it)))
+
+
+(def (cc-unwrap [copycat-runtime-result? v])
+     (if-Ok v it (raise it)))
+
+(def (cc-defguest-run expr)
+     (assert (null? (cc-unwrap (cc-eval '() expr)))))
+
+(defmacro (cc-defguest . prog)
+  "cc-eval's prog with an empty stack, throwing an exception if the
+result is an Error or if there are any values left"
+  `(cc-defguest-run (quote-source ,prog)))
 
 
 ;; --- Interpreter -------------------------------------------
