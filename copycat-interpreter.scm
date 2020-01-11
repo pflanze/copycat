@@ -143,7 +143,8 @@
         (defmethod (maybe-results _) results)
         (defmethod (maybe-original _)
           (possibly-sourcify (append inputs
-                                     '(->) ;; XX missing location info
+                                     (list (possibly-sourcify
+                                            '-> maybe-location))
                                      results)
                              maybe-location))))))
 
