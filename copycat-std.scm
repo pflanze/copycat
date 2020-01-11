@@ -405,17 +405,25 @@ to continue!"
 
 (cc-def P (->)
         "(for debugging) print the location of P and then the current
-stack"
+stack (with location info stripped)"
         (mdo (copycat:try-Ok
               (show-source-location $word)
-              (pretty-print $s))
+              (pretty-print (cj-desourcify $s)))
              (cc-return)))
 
-(cc-def P* ([string? msg] ->)
+(cc-def PM ([string? msg] ->)
         "(for debugging) print msg and then the current stack"
         (mdo (copycat:try-Ok (display msg)
                              (display ": ")
-                             (pretty-print $s))
+                             (pretty-print (cj-desourcify $s)))
+             (cc-return)))
+
+(cc-def PS (->)
+        "(for debugging) print the location of P and then the current
+stack, via .show and with location info not stripped"
+        (mdo (copycat:try-Ok
+              (show-source-location $word)
+              (pretty-print (.show $s)))
              (cc-return)))
 
 
