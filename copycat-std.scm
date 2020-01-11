@@ -165,6 +165,15 @@ that the oldest one becomes the newest"
         "whether a and b are *not* the same objects"
         (cc-return (not (eq? a b))))
 
+
+;; --- Lists
+
+(cc-defhost list? (v -> boolean?)
+            "return true if v is a proper list")
+(cc-defhost ilist? (v -> boolean?)
+            "return true if v starts off as a proper list (careful,
+does not check to the end of the list, for performance)")
+
 (cc-def cons (l e -> pair?) "prepend e to the given list l"
         (cc-return (cons e l)))
 (cc-defhost car ([pair? a] -> any?)
@@ -195,6 +204,72 @@ that the oldest one becomes the newest"
 (cc-def rlist ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a reversed list"
         (cc:Rlist $s $word n #f))
+
+(cc-defhost/try append (a b -> ilist?)
+                ;; XX argument order?
+                "append the lists a and b")
+
+(cc-defhost/try list-drop ([ilist? l] [fixnum-natural0? n] -> ilist?)
+                "drop n elements from the start of l")
+;; ^ Todo: better error messages would be good. Really want
+;; Maybe-list-drop or even Result-list-drop. Or proper exceptions.
+
+(cc-defhost/try list-take ([ilist? l] [fixnum-natural0? n] -> ilist?)
+                "take n elements from the start of l")
+
+(cc-def list-rmap ([ilist? l] [ilist? prog] -> ilist?)
+        "create the list that, for each element value v in reverse
+order of those in l, contains the value left at the top of the stack
+after putting v on the stack and running prog"
+        ;; also see alternative map definition created in the test
+        ;; suite below!
+        (let lp ((res '())
+                 (l l)
+                 (stack $s))
+          (if (null? l)
+              (cc-return res)
+              (if-let-pair
+               ((a l*) l)
+               (>>= (cc-eval (cons a stack) prog)
+                    (lambda (stack*)
+                      (if-let-pair
+                       ((b stack**) stack*)
+                       (lp (cons b res)
+                           l*
+                           stack**)
+                       (Error (copycat-missing-arguments
+                               $word
+                               (list "empty stack after running prog:"
+                                     prog) ;; XX evil
+                               1
+                               0)))))
+               (Error (copycat-invalid-type $word
+                                            "improper list"))))))
+
+(cc-defhost list-reverse ([list? l] -> ilist?))
+
+(cc-eval '() (quote-source
+              ((: list-map [ilist? l] [ilist? prog] -> ilist?
+                  "create the list that, for each element value v in l,
+contains the value left at the top of the stack after putting v on the
+stack and running prog"
+                  (list-rmap list-reverse)))))
+
+(TEST
+ > (t '() '((1 4 5) (inc square) list-map))
+ (Ok (list (list 4 25 36)))
+ > (t '() (quote-source ((1 4 5) (inc square) list-rmap)))
+ (Ok (list (list 36 25 4)))
+
+ > (=> (cc-eval '() (quote-source ((1 4 . 5) (inc square) list-map)))
+       ;; reports list-rmap location within list-map; how to track original?
+       ;; Well, todo call stack inspection. Anyway, strip it here:
+       Error.value
+       copycat-invalid-type.reason)
+ "improper list")
+
+
+;; --- Vectors
 
 (def (cc:Rvector $s $word numargs reverse? drop-args?)
      (let ((v (make-vector numargs))
@@ -265,15 +340,6 @@ returns them as a reversed vector"
  > (t '() '([a b c] 0 "hi" vector-set!))
  (Ok (list (vector "hi" 'b 'c))))
 
-
-(cc-defhost list? (v -> boolean?)
-            "return true if v is a proper list")
-(cc-defhost ilist? (v -> boolean?)
-            "return true if v starts off as a proper list (careful,
-does not check to the end of the list, for performance)")
-(cc-defhost/try append (a b -> ilist?)
-                ;; XX argument order?
-                "append the lists a and b")
 
 (cc-defhost string? (v -> boolean?))
 (cc-defhost string-append ([string? a] [string? b] -> string?))
