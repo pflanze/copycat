@@ -112,6 +112,8 @@ that the oldest one becomes the newest"
 (cc-defhost number? (v -> boolean?))
 (cc-defhost exact? ([number? v] -> boolean?))
 (cc-defhost inexact? ([number? v] -> boolean?))
+(cc-defhost even? ([integer? v] -> boolean?))
+(cc-defhost odd? ([integer? v] -> boolean?))
 (cc-defhost real? (v -> boolean?))
 (cc-defhost rational? (v -> boolean?)
             "same as `real?` (and thus useless)?")
