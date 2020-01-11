@@ -192,6 +192,15 @@ does not check to the end of the list, for performance)")
             "return the first element of the given list")
 (cc-defhost rest ([pair? l] -> any?)
             "drop the first element from the given list")
+(cc-def first+rest ([pair? l] -> any? any?)
+        "returns the two slots in the pair"
+        ;; XX should cc-return generally work in the other direction?
+        (cc-return (rest l) (first l)))
+
+(TEST
+ > (t '() '((3 4 5) first+rest))
+ (Ok (list 3 (list 4 5))))
+
 (cc-defhost pair? (a -> boolean?)
             "whether a is a pair (non-empty list)")
 (cc-defhost null? (a -> boolean?)
