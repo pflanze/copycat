@@ -410,6 +410,7 @@ style one"
 an Ok-wrapped stack, or an Error-wrapped copycat error object"
         (cc-return (cc-eval $s prog)))
 (cc-def set-stack ([ilist? stack])
+        "replace the stack contents with `stack`"
         (Ok stack))
 (cc-def if-Ok ([Result? v] [ilist? then] [ilist? else])
         (if-Ok v
