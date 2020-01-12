@@ -62,9 +62,9 @@
     (defmethod (process v state)
       (let. ((stack) state)
             (if (pair? stack)
-                (chain state
-                       (.turtlepos-set (car stack))
-                       (.stack-set (cdr stack)))
+                (=> state
+                    (.turtlepos-set (car stack))
+                    (.stack-set (cdr stack)))
                 (error "svg-logo stack is empty")))))
 
   (defclass (svg-logo#dup)
@@ -156,12 +156,12 @@
         (let-jump ;; <- ah and here's a difference
          ((distance) v)
          (let. ((pos angle) (.turtlepos state))
-               (chain state
-                      (.turtlepos-set
-                       (turtlepos
-                        (.+ pos (.point (2d-polar angle distance)))
-                        angle))
-                      (.pen-down?-set #f))))))
+               (=> state
+                   (.turtlepos-set
+                    (turtlepos
+                     (.+ pos (.point (2d-polar angle distance)))
+                     angle))
+                   (.pen-down?-set #f))))))
  
     (defclass (rotate [real? angle])
       (defmethod (process v state)
@@ -206,10 +206,10 @@
         (let ((state*
                (_svn-logo-process
                 (.path-commands v)
-                (chain state
-                       (.paintoptionss-update
-                        (C cons (.paintoptions v) _))
-                       (.pen-down?-set #f)))))
+                (=> state
+                    (.paintoptionss-update
+                     (C cons (.paintoptions v) _))
+                    (.pen-down?-set #f)))))
           (drawing-state
            (.turtlepos state*)
            #f
@@ -223,9 +223,9 @@
       ;; ^ have to avoid name conflict, gah
       (defmethod (process v state)
         (drawing-state
-         (.turtlepos state)               ;; unchanged pos?
-         (.pen-down? state)               ;; or #f ?
-         (.closed? state)                 ;; or #f ?
+         (.turtlepos state)     ;; unchanged pos?
+         (.pen-down? state)     ;; or #f ?
+         (.closed? state)       ;; or #f ?
          (.paintoptionss state) ;; hmm pass to fragment *function*?
          (cons (svg-fragment ((.value/pos v)
                               (.turtlepos state)))
