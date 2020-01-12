@@ -25,232 +25,215 @@
 
 (def north-angle (° -90))
 
-(class
- turtlepos
- (struct #(2d-point? pos)
-	 #(real? angle)))
+(defclass (turtlepos [2d-point? pos]
+                     [real? angle]))
 
-(class
- ;; (turtle-state ? No, it also carries shapes.)
- drawing-state
- (struct #(turtlepos? turtlepos)
-	 #(boolean? pen-down?) ;; the 'man' (cursor, actor) lifts the
-			       ;; pen after any action that doesn't
-			       ;; draw
-	 #(boolean? closed?) ;; whether new paths should be closed
-	 #((list-of paintoptions?) paintoptionss)
-	 #((either pair? null?) shapes)
-	 #(list? stack)))
+;; (turtle-state ? No, it also carries shapes.)
+(defclass (drawing-state [turtlepos? turtlepos]
+                         [boolean? pen-down?]
+                         ;; ^ the (cursor, actor) lifts the pen after
+                         ;;   any action that doesn't draw
+                         [boolean? closed?]
+                         ;; ^ whether new paths should be closed
+                         [(list-of paintoptions?) paintoptionss]
+                         [(either pair? null?) shapes]
+                         [list? stack]))
 
-(class
- logo-command
+(definterface logo-command
 
- (subclass start
-  	   (struct #(real? x)
-		   #(real? y))
-	   (method (process v state)
-		   (drawing-state
-		    (let-start ((x y) v)
-			       (turtlepos (2d-point x y)
-					  north-angle))
-		    #f
-		    (.closed? state)
-		    (.paintoptionss state)
-		    (.shapes state)
-		    (.stack state))))
+  (defclass (start [real? x]
+		   [real? y])
+    (defmethod (process v state)
+      (drawing-state (let-start ((x y) v)
+                                (turtlepos (2d-point x y)
+                                           north-angle))
+                     #f
+                     (.closed? state)
+                     (.paintoptionss state)
+                     (.shapes state)
+                     (.stack state))))
 
- (subclass push-pos
-	   (struct)
-	   (method (process v state)
-		   (.stack-update state (C cons (.turtlepos state) _))))
+  (defclass (push-pos)
+    (defmethod (process v state)
+      (.stack-update state (C cons (.turtlepos state) _))))
 
- (subclass pop-pos
-	   (struct)
-	   (method (process v state)
-		   (let. ((stack) state)
-			 (if (pair? stack)
-			     (chain state
-				    (.turtlepos-set (car stack))
-				    (.stack-set (cdr stack)))
-			     (error "svg-logo stack is empty")))))
+  (defclass (pop-pos)
+    (defmethod (process v state)
+      (let. ((stack) state)
+            (if (pair? stack)
+                (chain state
+                       (.turtlepos-set (car stack))
+                       (.stack-set (cdr stack)))
+                (error "svg-logo stack is empty")))))
 
- (subclass dup
-	   (struct)
-	   (method (process v state)
-		   (.stack-update state
-				  (lambda (stack)
-				    (if (pair? stack)
-					(cons (car stack)
-					      stack)
-					(error "svg-logo stack is empty"))))))
+  (defclass (dup)
+    (defmethod (process v state)
+      (.stack-update state
+                     (lambda (stack)
+                       (if (pair? stack)
+                           (cons (car stack)
+                                 stack)
+                           (error "svg-logo stack is empty"))))))
  
- (subclass cursor
-	   (struct)
-	   (method (process v state)
-		   (let-turtlepos
-		    ((pos angle) (.turtlepos state))
-		    (let ((pos* (.+ pos
-				    (.point (2d-polar angle 2)))))
-		      (.shapes-update
-		       state
-		       (C cons*
-			  (painted
-			   (paint fill-color: (colorstring "yellow")
-				  ;; mis-use of stroke-width for radius
-				  stroke-width: 0.7)
-			   pos*)
-			  (painted
-			   (colorstring "red")
-			   (2d-line pos pos*))
-			  _))))))
+  (defclass (cursor)
+    (defmethod (process v state)
+      (let-turtlepos
+       ((pos angle) (.turtlepos state))
+       (let ((pos* (.+ pos
+                       (.point (2d-polar angle 2)))))
+         (.shapes-update
+          state
+          (C cons*
+             (painted
+              (paint fill-color: (colorstring "yellow")
+                     ;; mis-use of stroke-width for radius
+                     stroke-width: 0.7)
+              pos*)
+             (painted
+              (colorstring "red")
+              (2d-line pos pos*))
+             _))))))
  
 
- (subclass
-  path-command
+  (definterface path-command
 
-  (subclass draw
-	    (struct #(real? distance))
+    (defclass (draw [real? distance])
 
-	    ;; (should this be a method? (one of the "delegates, now
-	    ;; they're coming?.." style?))
-	    (def (perhaps-de-paint v)
-		 (if (painted? v)
-		     (painted.value v)
-		     v))
+      ;; (should this be a method? (one of the "delegates, now
+      ;; they're coming?.." style?))
+      (def (perhaps-de-paint v)
+           (if (painted? v)
+               (painted.value v)
+               v))
 	    
-	    (method (process v state)
-		    (let-draw
-		     ((distance) v)
-		     (let. ((shapes closed? paintoptionss stack) state)
-			   (let-turtlepos
-			    ((pos angle) (.turtlepos state))
-			    (let ((pos* (.+ pos (.point (2d-polar angle distance)))))
-			      (drawing-state
-			       (turtlepos pos*
-					  angle)
-			       #t
-			       closed?
-			       paintoptionss
-			       (let* ((otherwise
-				       (&
-					(cons (painted
-					       paintoptionss
-					       (2d-path (list pos* pos)
-							;; ^ in reverse to
-							;; match .points-add
-							closed?))
-					      shapes)))
-				      (maybe-shape
-				       (and (pair? shapes)
-					    (car shapes))))
-				 (if maybe-shape
-				     (let-painted
-				      ((opts bareshape) maybe-shape)
-				      (if (and (2d-path? bareshape)
-					       (.pen-down? state))
-					  (begin
-					    (assert
-					     (.almost=
-					      (car (.points bareshape))
-					      pos
-					      1e-10))
-					    (cons (painted opts
-							   (.points-add bareshape
-									pos*))
-						  (cdr shapes)))
-					  (otherwise)))
-				     (otherwise)))
-			       stack)))))))
+      (defmethod (process v state)
+        (let-draw
+         ((distance) v)
+         (let. ((shapes closed? paintoptionss stack) state)
+               (let-turtlepos
+                ((pos angle) (.turtlepos state))
+                (let ((pos* (.+ pos (.point (2d-polar angle distance)))))
+                  (drawing-state
+                   (turtlepos pos*
+                              angle)
+                   #t
+                   closed?
+                   paintoptionss
+                   (let* ((otherwise
+                           (&
+                            (cons (painted
+                                   paintoptionss
+                                   (2d-path (list pos* pos)
+                                            ;; ^ in reverse to
+                                            ;; match .points-add
+                                            closed?))
+                                  shapes)))
+                          (maybe-shape
+                           (and (pair? shapes)
+                                (car shapes))))
+                     (if maybe-shape
+                         (let-painted
+                          ((opts bareshape) maybe-shape)
+                          (if (and (2d-path? bareshape)
+                                   (.pen-down? state))
+                              (begin
+                                (assert
+                                 (.almost=
+                                  (car (.points bareshape))
+                                  pos
+                                  1e-10))
+                                (cons (painted opts
+                                               (.points-add bareshape
+                                                            pos*))
+                                      (cdr shapes)))
+                              (otherwise)))
+                         (otherwise)))
+                   stack)))))))
 
-  (subclass jump
-	    (struct #(real? distance))
-	    (method (process v state)
-		    (let-jump ;; <- ah and here's a difference
-		     ((distance) v)
-		     (let. ((pos angle) (.turtlepos state))
-			   (chain state
-				  (.turtlepos-set
-				   (turtlepos
-				    (.+ pos (.point (2d-polar angle distance)))
-				    angle))
-				  (.pen-down?-set #f))))))
+    (defclass (jump [real? distance])
+      (defmethod (process v state)
+        (let-jump ;; <- ah and here's a difference
+         ((distance) v)
+         (let. ((pos angle) (.turtlepos state))
+               (chain state
+                      (.turtlepos-set
+                       (turtlepos
+                        (.+ pos (.point (2d-polar angle distance)))
+                        angle))
+                      (.pen-down?-set #f))))))
  
-  (subclass rotate
-	    (struct #(real? angle))
-	    (method (process v state)
-		    (let-rotate
-		     ((angle2) v)
-		     (.turtlepos-update state
-					(C .angle-update _ (C + _ angle2))))))
+    (defclass (rotate [real? angle])
+      (defmethod (process v state)
+        (let-rotate
+         ((angle2) v)
+         (.turtlepos-update state
+                            (C .angle-update _ (C + _ angle2))))))
 
-  (subclass closed
-	    (struct constructor-name: _closed
-		    #((list-of path-command?) path-commands))
-	    (def (closed . cmds)
-		 (_closed (flatten cmds)))
-	    (method (process v state)
-		    (let ((state*
-			   (_svn-logo-process (.path-commands v)
-					      (drawing-state (.turtlepos state)
-							     #f
-							     #t
-							     (.paintoptionss state)
-							     '()
-							     (.stack state)))))
-		      (drawing-state
-		       (.turtlepos state*)
-		       #f
-		       (.closed? state)
-		       (.paintoptionss state)
-		       ;; ^ not state*, right? (don't have set, just wrap)
+    (defclass ((closed _closed)
+               [(list-of path-command?) path-commands])
+      (def (closed . cmds)
+           (_closed (flatten cmds)))
+      (defmethod (process v state)
+        (let ((state*
+               (_svn-logo-process (.path-commands v)
+                                  (drawing-state (.turtlepos state)
+                                                 #f
+                                                 #t
+                                                 (.paintoptionss state)
+                                                 '()
+                                                 (.stack state)))))
+          (drawing-state
+           (.turtlepos state*)
+           #f
+           (.closed? state)
+           (.paintoptionss state)
+           ;; ^ not state*, right? (don't have set, just wrap)
 
-		       ;; Can't use rappend, it would destroy
-		       ;; the z layering.
-		       (append (.shapes state*)
-			       (.shapes state))
-		       (.stack state*)))))
+           ;; Can't use rappend, it would destroy
+           ;; the z layering.
+           (append (.shapes state*)
+                   (.shapes state))
+           (.stack state*)))))
 
-  (subclass paintopts ;; can't reuse name |painted|, nor type paintoptions
-	    (struct constructor-name: _paintopts
-		    #(paintoptions? paintoptions)
-		    #((list-of path-command?) path-commands))
-	    (def (paintopts opts . cmds)
-		 (_paintopts opts (flatten cmds)))
-	    (method (process v state)
-		    (let ((state*
-			   (_svn-logo-process
-			    (.path-commands v)
-			    (chain state
-				   (.paintoptionss-update
-				    (C cons (.paintoptions v) _))
-				   (.pen-down?-set #f)))))
-		      (drawing-state
-		       (.turtlepos state*)
-		       #f
-		       (.closed? state) ;; should be == in state*
-		       (.paintoptionss state)
-		       (.shapes state*)
-		       (.stack state*)))))
+    ;; can't reuse name |painted|, nor type paintoptions
+    (defclass ((paintopts _paintopts)
+               [paintoptions? paintoptions]
+               [(list-of path-command?) path-commands])
+      (def (paintopts opts . cmds)
+           (_paintopts opts (flatten cmds)))
+      (defmethod (process v state)
+        (let ((state*
+               (_svn-logo-process
+                (.path-commands v)
+                (chain state
+                       (.paintoptionss-update
+                        (C cons (.paintoptions v) _))
+                       (.pen-down?-set #f)))))
+          (drawing-state
+           (.turtlepos state*)
+           #f
+           (.closed? state) ;; should be == in state*
+           (.paintoptionss state)
+           (.shapes state*)
+           (.stack state*)))))
 
-  ;; hmm does this fit here? HACK anyway?
-  (subclass svgfragment ;; have to avoid name conflict, gah
-	    (struct #(procedure? value/pos))
-	    (method (process v state)
-		    (drawing-state
-		     (.turtlepos state) ;; unchanged pos?
-		     (.pen-down? state) ;; or #f ?
-		     (.closed? state) ;; or #f ?
-		     (.paintoptionss state) ;; hmm pass to fragment *function*?
-		     (cons (svg-fragment ((.value/pos v)
-					  (.turtlepos state)))
-			   (.shapes state))
-		     (.stack state))))
-
-  ))
+    ;; hmm does this fit here? HACK anyway?
+    (defclass (svgfragment [procedure? value/pos])
+      ;; ^ have to avoid name conflict, gah
+      (defmethod (process v state)
+        (drawing-state
+         (.turtlepos state)               ;; unchanged pos?
+         (.pen-down? state)               ;; or #f ?
+         (.closed? state)                 ;; or #f ?
+         (.paintoptionss state) ;; hmm pass to fragment *function*?
+         (cons (svg-fragment ((.value/pos v)
+                              (.turtlepos state)))
+               (.shapes state))
+         (.stack state))))))
 
 
 
-(def (_repeat #(natural0? n) l)
+(def (_repeat [natural0? n] l)
      (cond ((zero? n)
 	    '())
 	   ((= n 1)
@@ -400,7 +383,7 @@
 (TEST
  > (def ps (coordinates.2d-points (list 1 2 4 5 6 5 6 -1)))
  > ps
- (#((2d-point) 1 2) #((2d-point) 4 5) #((2d-point) 6 5) #((2d-point) 6 -1)))
+ ([(2d-point) 1 2] [(2d-point) 4 5] [(2d-point) 6 5] [(2d-point) 6 -1]))
 
 
 (def (2d-point.path-command a b)
@@ -417,10 +400,10 @@
 
 (TEST
  > (list.diffs (flip .-) ps)
- (#((2d-point) 3 3) #((2d-point) 2 0) #((2d-point) 0 -6))
+ ([(2d-point) 3 3] [(2d-point) 2 0] [(2d-point) 0 -6])
  > (2d-points.path-commands ps)
- ((#((rotate) -.7853981633974483) #((draw) 2))
-  (#((rotate) -1.5707963267948966) #((draw) 6))))
+ (([(rotate) -.7853981633974483] [(draw) 2])
+  ([(rotate) -1.5707963267948966] [(draw) 6])))
 
 (def coordinates.path-commands
      (compose 2d-points.path-commands coordinates.2d-points))
@@ -432,7 +415,7 @@
 
 (TEST
  > (path-coordinates 1 2 4 5 6 5)
- ((#((rotate) -.7853981633974483) #((draw) 2)))
+ (([(rotate) -.7853981633974483] [(draw) 2]))
  ;; need at least 3 coordinate pairs, first just used for direction of
  ;; pointer
  > (path-coordinates 1 2 4 5)

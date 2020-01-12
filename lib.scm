@@ -1,4 +1,4 @@
-(require easy test);; ?
+(require easy test)
 
 ;XXX move elsewhere
 
@@ -24,7 +24,7 @@
  > (list.pairs '(1 2))
  ((1 2))
  > (%try-error (list.pairs '(1 2 3)))
- #(error "list does not contain even number of elements")
+ [error "list does not contain even number of elements"]
  > (list.pairs '(1 2 3 4))
  ((1 2) (3 4)))
 
