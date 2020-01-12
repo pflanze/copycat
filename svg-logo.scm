@@ -380,8 +380,8 @@
 
 (TEST
  > (def ps (coordinates.2d-points (list 1 2 4 5 6 5 6 -1)))
- > ps
- ([(2d-point) 1 2] [(2d-point) 4 5] [(2d-point) 6 5] [(2d-point) 6 -1]))
+ > (.show ps)
+ (list (2d-point 1 2) (2d-point 4 5) (2d-point 6 5) (2d-point 6 -1)))
 
 
 (def (2d-point.path-command a b)
@@ -397,11 +397,11 @@
        cs))
 
 (TEST
- > (list.diffs (flip .-) ps)
- ([(2d-point) 3 3] [(2d-point) 2 0] [(2d-point) 0 -6])
- > (2d-points.path-commands ps)
- (([(rotate) -.7853981633974483] [(draw) 2])
-  ([(rotate) -1.5707963267948966] [(draw) 6])))
+ > (.show (list.diffs (flip .-) ps))
+ (list (2d-point 3 3) (2d-point 2 0) (2d-point 0 -6))
+ > (.show (2d-points.path-commands ps))
+ (list (list (rotate -.7853981633974483) (draw 2))
+       (list (rotate -1.5707963267948966) (draw 6))))
 
 (def coordinates.path-commands
      (compose 2d-points.path-commands coordinates.2d-points))
@@ -412,8 +412,8 @@
      (coordinates.path-commands vs))
 
 (TEST
- > (path-coordinates 1 2 4 5 6 5)
- (([(rotate) -.7853981633974483] [(draw) 2]))
+ > (.show (path-coordinates 1 2 4 5 6 5))
+ (list (list (rotate -.7853981633974483) (draw 2)))
  ;; need at least 3 coordinate pairs, first just used for direction of
  ;; pointer
  > (path-coordinates 1 2 4 5)
