@@ -16,15 +16,15 @@
 (def p 2d-point)
 
 
-(def (° deg)
+(def (svg-logo#° deg)
      (* (/ deg 360) 2 pi))
 
 (TEST
- > (° 180)
+ > (svg-logo#° 180)
  3.141592653589793)
 
 
-(def north-angle (° -90))
+(def north-angle (svg-logo#° -90))
 
 (defclass (turtlepos [2d-point? pos]
                      [real? angle]))
@@ -324,9 +324,9 @@
 (def m draw) ;; malen
 (def g jump) ;; gehen
 (def (r° deg) ;; rechts
-     (rotate (° deg)))
+     (rotate (svg-logo#° deg)))
 (def (l° deg) ;; links
-     (rotate (- (° deg))))
+     (rotate (- (svg-logo#° deg))))
 
 (def (rr part) ;; rechts
      (rotate (* 2 pi part)))
