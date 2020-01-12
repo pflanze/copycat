@@ -67,7 +67,7 @@
                        (.stack-set (cdr stack)))
                 (error "svg-logo stack is empty")))))
 
-  (defclass (dup)
+  (defclass (svg-logo#dup)
     (defmethod (process v state)
       (.stack-update state
                      (lambda (stack)
