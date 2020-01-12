@@ -9,7 +9,8 @@
 (require easy
 	 svg ;; lib/svg
 	 2d-shape
-	 2d-polar)
+	 2d-polar
+         svg-logo-lib)
 
 
 (def p 2d-point)
@@ -373,9 +374,6 @@
 
 
 ;; to help convert <path d="..."/> into turtle graphics (path-commands):
-
-;; XX hacky
-(include "lib.scm")
 
 (def coordinates.2d-points
      (compose (cut map (applying 2d-point) <>) list.pairs))
