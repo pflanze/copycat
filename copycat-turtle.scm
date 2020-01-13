@@ -62,6 +62,10 @@
          (show-svn-logo (get-turtle-commands))
          (cc-return)))
 
+(cc-def sleep ([nonnegative-real? seconds] ->)
+        (thread-sleep! seconds)
+        (cc-return))
+
 ;; 'delegates'
 
 (defmacro (turtle-def-delegate/0 name)
@@ -100,6 +104,7 @@
              (: °r (° rechts))
              (: links [angle? x] -> (.neg rechts))
              (: °l (° links))
+             (: l (links))
              (: forwärts [real? x] -> (draw))
              (: zurück [real? x] -> (neg draw))
              (: f (forwärts))
