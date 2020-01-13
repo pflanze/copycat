@@ -436,6 +436,12 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
  (Ok (list "yes" "before")))
 
 
+;; -- Control flow
+
+(cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
+        (cc-eval $s (if val truebranch falsebranch)))
+
+
 ;; -- procedures (for side-effects)
 
 (cc-def eval (prog)
@@ -487,42 +493,8 @@ code embedded in a source object); if s is not a source object, return
 s (i.e. never fails)")
 
 
-;; XX lib
-(def (pretty-string v)
-     (fst (with-output-to-string (& (pretty-print (cj-desourcify v))))))
 
-(cc-defhost pretty-string (s -> string?)
-            "pretty-print s to a string")
-
-(cc-defguest (: help-string [symbol? word] -> string?
-                "give help string on the given word"
-                (
-                 dup .string ": " string-append ;; intro
-                 swap ref
-                 dup
-                 .type .maybe-original pretty-string ;; type
-                 swap
-                 .docstring source-code ("(no help text)") or ;; help
-                 2 list "\n" strings-join
-                 2 list strings-append))
-
-             (: help [symbol? word] ->
-                "print help on the given word"
-                (help-string println)))
-
-(TEST
- > (t '() '('help help-string))
- (Ok (list "help: ([symbol? word] ->)\n\nprint help on the given word")))
-
-
-(cc-def dir (-> ilist?)
-        "returns the list of defined words"
-        (cc-return (table.sorted-keys cc-words)))
-
-
-
-(cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
-        (cc-eval $s (if val truebranch falsebranch)))
+;; I/O
 
 (cc-def print (v ->)
         (mdo (copycat:try-Ok (print v))
@@ -595,6 +567,39 @@ stack, via .show and with location info not stripped"
                     ;; Still showed in a Scheme-y way of course,
                     ;; though, `(time ,prog). Todo: improve?
                     (cj-desourcify prog)))
+
+
+;; XX lib
+(def (pretty-string v)
+     (fst (with-output-to-string (& (pretty-print (cj-desourcify v))))))
+
+(cc-defhost pretty-string (s -> string?)
+            "pretty-print s to a string")
+
+(cc-defguest (: help-string [symbol? word] -> string?
+                "give help string on the given word"
+                (
+                 dup .string ": " string-append ;; intro
+                 swap ref
+                 dup
+                 .type .maybe-original pretty-string ;; type
+                 swap
+                 .docstring source-code ("(no help text)") or ;; help
+                 2 list "\n" strings-join
+                 2 list strings-append))
+
+             (: help [symbol? word] ->
+                "print help on the given word"
+                (help-string println)))
+
+(TEST
+ > (t '() '('help help-string))
+ (Ok (list "help: ([symbol? word] ->)\n\nprint help on the given word")))
+
+
+(cc-def dir (-> ilist?)
+        "returns the list of defined words"
+        (cc-return (table.sorted-keys cc-words)))
 
 
 ;; -- Remaining tests for functionality above -------------------
