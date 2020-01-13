@@ -38,7 +38,8 @@
                              (`(redo)
                               XXX)
                              (else
-                              (cc-eval stack prog)))))
+                              ;; XHACK
+                              (cc-eval stack (append prog '(zeig)))))))
                (_cc-repl it
                          (cons it (rappend future (cons stack past)))
                          '())
