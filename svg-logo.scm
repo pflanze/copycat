@@ -10,7 +10,8 @@
 	 svg ;; lib/svg
 	 2d-shape
 	 2d-polar
-         svg-logo-lib)
+         svg-logo-lib
+         (table-1 table-delete!))
 
 
 (def p 2d-point)
@@ -284,17 +285,49 @@
       '()
       '()))
 
+(defparameter svg-logo:current-path "logo.svg") ;; path-string?
+(defparameter svg-logo:current-viewer-cmd '("eog" "--new-instance"))
+;; (nonempty-list-of string?) # or, #f hole for path? function?
+
+(def svg-logo:viewer-instances ;; path => future
+     ;; XX mutex wrapper needed
+     (table))
+
+(def (svg-logo:possibly-start-viewer-for [path-string? svg-logo-path])
+     (let (t svg-logo:viewer-instances)
+       (or (table-ref t svg-logo-path #f)
+           (let (v
+                 (let-pair ((cmdpath cmdargs) (svg-logo:current-viewer-cmd))
+                           (future
+                            (let (p (open-process
+                                     `(
+                                       path:
+                                       ,cmdpath
+                                       arguments:
+                                       ,(append cmdargs
+                                                (list svg-logo-path))
+                                       stderr-redirection: #t
+                                       stdout-redirection: #t)))
+                              (future (loop (read-line p)));;?
+                              ;; HACK to try to avoid race....
+                              (thread-sleep! 1)
+                              (process-status p)
+                              (table-delete! t svg-logo-path)))))
+             (table-set! t svg-logo-path v)
+             v))))
+
 (def (show-svn-logo . cmds)
-     (xsystem "killall" "display")
-     (showsvg*
-      (2d-point 400 400) ;; just wtever  scaling danach klar
-      (2d-window (2d-point -50 -50)
-		 (2d-point 150 150))
-      (svn-logo-process (flatten
-			 (list cmds
-			       (cursor)))
-			default-drawing-state)
-      background-color: (colorstring "white")))
+     (let (path (svg-logo:current-path))
+       (.sxml-file (svg (2d-point 400 400) ;; just wtever  scaling danach klar
+                        (2d-window (2d-point -50 -50)
+                                   (2d-point 150 150))
+                        (svn-logo-process (flatten
+                                           (list cmds
+                                                 (cursor)))
+                                          default-drawing-state)
+                        background-color: (colorstring "white"))
+                   path)
+       (svg-logo:possibly-start-viewer-for path)))
 
 (def (save-svn-logo . options)
      (lambda cmds
