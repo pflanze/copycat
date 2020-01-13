@@ -342,10 +342,20 @@ returns them as a reversed vector"
                                                  (vector-length v)))))
 
 (cc-def vector-set! ([vector? v] [fixnum-natural0? i] val -> vector?)
-        "set the element at index i in v to val via mutation; returns v"
+        "set the element at index i in v to val, via mutation; returns v"
         (if (< i (vector-length v))
             (begin (vector-set! v i val)
                    (cc-return v))
+            (Error (copycat-out-of-bounds-access $word
+                                                 i
+                                                 (vector-length v)))))
+
+(cc-def vector-set ([vector? v] [fixnum-natural0? i] val -> vector?)
+        "returns a copy of v with the element at index i set to val"
+        (if (< i (vector-length v))
+            (let (v (vector-copy v))
+              (vector-set! v i val)
+              (cc-return v))
             (Error (copycat-out-of-bounds-access $word
                                                  i
                                                  (vector-length v)))))
@@ -364,8 +374,10 @@ returns them as a reversed vector"
  (Ok (list 'c))
  > (t '() '([a b c] 3 vector-ref))
  (Error (copycat-out-of-bounds-access 'vector-ref 3 3))
- > (t '() '([a b c] 0 "hi" vector-set!))
- (Ok (list (vector "hi" 'b 'c))))
+ > (t '() '([a b c] dup 0 "hi" vector-set!))
+ (Ok (list (vector "hi" 'b 'c) (vector "hi" 'b 'c)))
+ > (t '() '([a b c] dup 0 "hi" vector-set))
+ (Ok (list (vector "hi" 'b 'c) (vector 'a 'b 'c))))
 
 
 (cc-defhost string? (v -> boolean?))
