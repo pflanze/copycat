@@ -293,7 +293,8 @@
       (svn-logo-process (flatten
 			 (list cmds
 			       (cursor)))
-			default-drawing-state)))
+			default-drawing-state)
+      background-color: (colorstring "white")))
 
 (def (save-svn-logo . options)
      (lambda cmds
