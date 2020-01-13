@@ -123,8 +123,17 @@ that the oldest one becomes the newest"
 
 (cc-defhost + ([number? a] [number? b] -> number?))
 (cc-defhost - ([number? a] [number? b] -> number?))
+
 (cc-def neg ([number? a] -> number?)
         (cc-return (- a)))
+
+;; for non-numbers as well:
+(cc-defhost/try .neg (x -> -x)
+                "negate x (generic)")
+;; make .neg also work on normal numbers:
+(def. (number.neg x) (- x))
+
+
 (cc-defhost * ([number? a] [number? b] -> number?))
 (cc-def / ([number? a] [number? b] -> number?)
         (if (and (exact? b)

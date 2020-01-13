@@ -89,14 +89,26 @@
 (cc-def rotate ([angle? x])
         (parameter-push! turtle-commands (rotate (.rad x)))
         (cc-return))
-;;(turtle-def-delegate/1 closed)
-;;(turtle-def-delegate/1 paintopts)
+
+;; oops, and we are in first-class approach (monad)
+;; XX try it out...
+(cc-def closed ([(list-of path-command?) l] -> path-command?)
+        ""
+        (cc-return (_closed l)))
+
+(cc-def paintopts ([(list-of path-command?) l] [paintoptions? opts]
+                   -> path-command?)
+        (cc-return (_paintopts opts l)))
+
 ;;(turtle-def-delegate/1 svgfragment)
+
+;; XX and/but these *currently* (even, already) don't allow to inspect
+;; the pushed state.
 (turtle-def-delegate/0 push-pos)
 (turtle-def-delegate/0 pop-pos)
+
 (turtle-def-delegate/2 start real? real?)
 
-(cc-defhost/try .neg (x -> x))
 
 (cc-defguest (: drehen [angle? x] -> (rotate))
              (: rechts (drehen))
