@@ -123,6 +123,8 @@ that the oldest one becomes the newest"
 
 (cc-defhost + ([number? a] [number? b] -> number?))
 (cc-defhost - ([number? a] [number? b] -> number?))
+(cc-def neg ([number? a] -> number?)
+        (cc-return (- a)))
 (cc-defhost * ([number? a] [number? b] -> number?))
 (cc-def / ([number? a] [number? b] -> number?)
         (if (and (exact? b)
