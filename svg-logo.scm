@@ -359,9 +359,12 @@
              (table-set! t svg-logo-path v)
              v))))
 
+(defparameter svg-logo:canvas-length 800)
+
 (def (show-svn-logo . cmds)
      (let (path (svg-logo:current-path))
-       (.sxml-file (svg (2d-point 600 600) ;; just wtever  scaling danach klar
+       (.sxml-file (svg (2d-point (svg-logo:canvas-length)
+                                  (svg-logo:canvas-length))
                         (2d-window (2d-point -50 -50)
                                    (2d-point 150 150))
                         (svn-logo-process (flatten
