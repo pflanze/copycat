@@ -13,6 +13,38 @@
          svg-logo-lib
          (table-1 table-delete!))
 
+(export save-svn-logo
+        svg-logo#°
+        north-angle
+        (class turtlepos)
+        (class drawing-state)
+        (interface logo-command
+          (class start)
+          (class push-pos)
+          (class pop-pos)
+          (class svg-logo#dup)
+          (class cursor)
+          (interface path-command
+            (class draw)
+            (class jump)
+            (class rotate)
+            (class closed)
+            (class paintopts)
+            (class svgfragment)))
+        list-repeat
+        svn-logo-process
+        show-svn-logo
+        save-svn-logo
+        ;; aliases
+        p
+        #!optional
+        default-drawing-state
+        coordinates.2d-points
+        2d-point.path-command
+        2d-points.path-commands
+        coordinates.path-commands
+        path-coordinates)
+
 
 (def p 2d-point)
 
@@ -348,70 +380,6 @@
 	      options)))
 
 
-;; Deutsch
-
-(defmacro (wieder name forms . body)
-  `(##let ,name
-	  ,(source-map (lambda (form)
-			 (mcase form
-				(`(`var `val)
-				 ;; ah, unchanged
-				 form)))
-		       forms)
-	  (##list ,@body)))
-
-(defmacro (wenn c e)
-  `(##if ,c
-	 ,e
-	 '()))
-
-;; start
-(def m draw) ;; malen
-(def g jump) ;; gehen
-(def (r° deg) ;; rechts
-     (rotate (svg-logo#° deg)))
-(def (l° deg) ;; links
-     (rotate (- (svg-logo#° deg))))
-
-(def (rr part) ;; rechts
-     (rotate (* 2 pi part)))
-(def (ll part) ;; links
-     (rotate (- (* 2 pi part))))
-
-(def (r angle)
-     (rotate angle))
-(def (l angle)
-     (rotate (- angle)))
-
-(def w list-repeat) ;; wieder
-(def zeig show-svn-logo) ;; zeigen  zeichnen
-
-(def zu closed)
-
-(def (zeig* width #!optional (border 4))
-     (save-svn-logo size: (partial-2d-point width #f)
-		    border: border))
-
-
-;; English:
-
-;; start --?
-;; push-pos
-;; pop-pos
-;; dup
-;; cursor --? ah  internally gl
-
-(def d draw)
-(def j jump)
-;; r°
-;; l°
-;; r
-;; l
-;; closed
-(def sshow show-svn-logo)
-(def sshow* zeig*)
-;; (z is only defined locally in logo-arrows.scm)
-(def rep list-repeat)
 
 ;; paintopts
 
