@@ -112,11 +112,9 @@
 
 (cc-defguest (: drehen [angle? x] -> (rotate))
              (: rechts (drehen))
-             (: r (drehen))
-             (: °r (° rechts))
+             (: r (° rechts))
              (: links [angle? x] -> (.neg rechts))
-             (: °l (° links))
-             (: l (links))
+             (: l (° links))
              (: forwärts [real? x] -> (draw))
              (: zurück [real? x] -> (neg draw))
              (: f (forwärts))
