@@ -36,7 +36,7 @@
         show-svn-logo
         save-svn-logo
         ;; aliases
-        p
+        ;;p
         #!optional
         default-drawing-state
         coordinates.2d-points
@@ -46,7 +46,7 @@
         path-coordinates)
 
 
-(def p 2d-point)
+;; (def p 2d-point)
 
 
 (def (svg-logo#° deg)
