@@ -441,6 +441,22 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 (cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
         (cc-eval $s (if val truebranch falsebranch)))
 
+;; XX can't implement that properly in copycat, right? Really need
+;; lexicals? Also, this drops all of the stack when failing at any
+;; point; maybe this is correct though.
+(cc-def repeat ([ilist? prog] [fixnum-natural0? n])
+        "repeat prog n times"
+        (let lp ((n n)
+                 (stack $s))
+          (if (zero? n)
+              (Ok stack)
+              (>>= (cc-eval stack prog)
+                   (C lp (dec n) _)))))
+
+(TEST
+ > (t '() '(10 (1 +) 5 repeat))
+ (Ok (list 15)))
+
 
 ;; -- procedures (for side-effects)
 
