@@ -293,6 +293,15 @@
      ;; XX mutex wrapper needed
      (table))
 
+
+(defmacro (while test . body)
+  (with-gensym
+   LP
+   `(let ,LP ()
+         (when ,test
+           ,@body
+           (,LP)))))
+
 (def (svg-logo:possibly-start-viewer-for [path-string? svg-logo-path])
      (let (t svg-logo:viewer-instances)
        (or (table-ref t svg-logo-path #f)
@@ -308,7 +317,9 @@
                                                 (list svg-logo-path))
                                        stderr-redirection: #t
                                        stdout-redirection: #t)))
-                              (future (loop (read-line p)));;?
+                              (future
+                               ;; redirect to dev null instead?
+                               (while (not (eof-object? (read-line p)))))
                               ;; HACK to try to avoid race....
                               (thread-sleep! 1)
                               (process-status p)
