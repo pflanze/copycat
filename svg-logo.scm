@@ -114,7 +114,7 @@
       (let-turtlepos
        ((pos angle) (.turtlepos state))
        (let ((pos* (.+ pos
-                       (.point (2d-polar angle 2)))))
+                       (.point (2d-polar angle 3)))))
          (.shapes-update
           state
           (C cons*
@@ -361,7 +361,7 @@
 
 (def (show-svn-logo . cmds)
      (let (path (svg-logo:current-path))
-       (.sxml-file (svg (2d-point 400 400) ;; just wtever  scaling danach klar
+       (.sxml-file (svg (2d-point 600 600) ;; just wtever  scaling danach klar
                         (2d-window (2d-point -50 -50)
                                    (2d-point 150 150))
                         (svn-logo-process (flatten
