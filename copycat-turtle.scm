@@ -48,16 +48,16 @@
 
 ;; all side effects on I/O ~
 
-(cc-def neu (->)
+(cc-def new (->)
         "starte frische Grafik"
         (turtle-commands '())
         (cc-return))
 
-(cc-def kommandos (-> (list-of logo-command?))
+(cc-def commands (-> (list-of logo-command?))
         "zeig die aktuellen Grafik kommandos"
         (cc-return (get-turtle-commands)))
 
-(cc-def zeig (->)
+(cc-def view (->)
         (copycat:try
          (show-svn-logo (get-turtle-commands))
          (cc-return)))
@@ -115,10 +115,16 @@
              (: r (° rechts))
              (: links [angle? x] -> (.neg rechts))
              (: l (° links))
-             (: forwärts [real? x] -> (draw))
-             (: zurück [real? x] -> (neg draw))
-             (: f (forwärts))
+             (: forward [real? x] -> (draw))
+             (: back [real? x] -> (neg draw))
+             (: vorwärts (forward))
+             (: zurück (back))
+             (: f (forward))
+             (: v (vorwärts))
+             (: b (back))
              (: z (zeig))
+             (: kommandos (commands))
              (: k (kommandos))
-             (: n (neu)))
+             (: zeig (view))
+             (: neu (new)))
 
