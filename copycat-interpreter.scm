@@ -16,7 +16,7 @@
          error ;; to enable .show on Gambit exceptions
          (cj-typed typed-lambda-expand))
 
-(export cc-eval
+(export (class cc-interpreter)
         (macros copycat:try-Ok
                 copycat:try
                 cc-def
@@ -108,6 +108,7 @@
 ;; copycat-runtime-error?):
 
 (defclass ((copycat-runtime-error #f) [possibly-source? offending-code])
+  (defclass (copycat-out-of-fuel))
   (defclass (copycat-unbound-symbol [symbol? name])
     (defmethod (explanation s)
       "the given word is not defined"))
@@ -138,10 +139,22 @@
 
 
 (def copycat-stack? (ilist-of any?))
-(def copycat-runtime-result?
-     (Result-of copycat-stack?
-                copycat-runtime-error?))
+;; copycat-runtime-result? see further down
 
+
+(def (copycat:rest v offending-code [fixnum-natural0? need])
+     (if (pair? v)
+         (Ok (rest v))
+         (Error 
+          (if (null? v)
+              (copycat-missing-arguments offending-code
+                                         'copycat:rest
+                                         need
+                                         0)
+              ;; XX or should this be a host language error?
+              (copycat-type-error offending-code
+                                  "list?"
+                                  v)))))
 
 ;; --- Procedures -----------------------------------------
 
@@ -395,7 +408,8 @@
      (if-Ok v it (raise it)))
 
 (def (cc-defguest-run expr)
-     (assert (null? (cc-unwrap (cc-eval '() expr)))))
+     (assert (null? (cc-unwrap (cc-interpreter.eval (fresh-cc-interpreter)
+                                                    expr)))))
 
 (defmacro (cc-defguest . prog)
   "cc-eval's prog with an empty stack, throwing an exception if the
@@ -405,151 +419,177 @@ result is an Error or if there are any values left"
 
 ;; --- Interpreter -------------------------------------------
 
-(def (cc-apply [copycat-stack? stack] [symbol? word] word/loc)
-     -> copycat-runtime-result?
-     (if-Just ((w (table.Maybe-ref cc-words word)))
-              (.cc-apply w stack word/loc)
-              (Error (copycat-unbound-symbol word/loc
-                                             word))))
+(defclass (cc-interpreter [copycat-stack? stack]
+                          [fixnum-natural0? fuel])
 
-(def (cc-eval stack prog/loc) ;; -> copycat-runtime-result? ;; XX don't break TCO!
-     (in-monad
-      Result
+  (defmethod (drop s offending-code) -> (Result-of cc-interpreter?)
+    "free drop operation"
+    (==> (copycat:rest stack offending-code 1)
+         (cc-interpreter fuel)))
 
-      (let (prog (source-code prog/loc))
-        (if (null? prog)
-            (Ok stack)
+  (defmethod (drop* s offending-code) -> (Result-of cc-interpreter?)
+    "drop operation that takes fuel"
+    (if (zero? fuel)
+        (Error (copycat-out-of-fuel offending-code))
+        (==> (copycat:rest stack offending-code 1)
+             (cc-interpreter (dec fuel)))))
 
-            (let-pair
-             ((item/loc prog*) prog)
-             (let (item (source-code item/loc))
-               (cond 
 
-                ((symbol? item)
-                 ;; check for special syntax (XX should this be
-                 ;; made extensible at runtime by using special
-                 ;; word values?)
-                 (case item
-                   ((:)
-                    ;; Simple (non-delimited) variant of |:|; takes 2
-                    ;; arguments from program (name, prog), not stack
-                    (let (missargerr
-                          (lambda (notpair)
-                            (Error
-                             (copycat-missing-arguments
-                              ;; XX not the same kind of
-                              ;; missing; missing syntax, not
-                              ;; runtime arguments
-                              ':
-                              notpair ;; XX?
-                              2
-                              (length prog*)))))
+  (defmethod (apply s [symbol? word] word/loc)
+    -> copycat-runtime-result?
+    (if-Just ((w (table.Maybe-ref cc-words word)))
+             (.cc-apply w stack word/loc)
+             (Error (copycat-unbound-symbol word/loc
+                                            word))))
+
+  (defmethod (eval s prog/loc)
+    ;; -> copycat-runtime-result? ;; XX don't break TCO!
+    (in-monad
+     Result
+
+     (let (prog (source-code prog/loc))
+       (if (null? prog)
+           (Ok s)
+
+           (let-pair
+            ((item/loc prog*) prog)
+            (let (item (source-code item/loc))
+              (cond 
+
+               ((symbol? item)
+                ;; check for special syntax (XX should this be
+                ;; made extensible at runtime by using special
+                ;; word values?)
+                (case item
+                  ((:)
+                   ;; Simple (non-delimited) variant of |:|; takes 2
+                   ;; arguments from program (name, prog), not stack
+                   (let (missargerr
+                         (lambda (notpair)
+                           (Error
+                            (copycat-missing-arguments
+                             ;; XX not the same kind of
+                             ;; missing; missing syntax, not
+                             ;; runtime arguments
+                             ':
+                             notpair ;; XX?
+                             2
+                             (length prog*)))))
+                     (if-let-pair
+                      ((name/loc r) prog*)
                       (if-let-pair
-                       ((name/loc r) prog*)
+                       ((subprog cont) r)
+                       (if (list? (source-code subprog))
+                           (begin
+                             ;; XX could retain name/loc
+                             ;; XX allow docstring still?
+                             (cc-word-set! (source-code name/loc)
+                                           (ccguestproc #f ;;
+                                                        (cc-type-unknown #f)
+                                                        subprog))
+                             (cc-interpreter.eval s cont))
+                           (Error
+                            (copycat-type-error item/loc
+                                                "list?"
+                                                subprog)))
+                       (missargerr r))
+                      (missargerr prog*))))
+                  ((THENELSE)
+                   ;; takes 2 arguments from program (truebranch,
+                   ;; falsebranch), and 1 from stack (test value)
+                   (let ((cont (cddr prog*)))
+                     (==> (cc-interpreter.drop s)
+                          (cc-interpreter.eval 
+                           (if (car stack)
+                               (car prog*)
+                               (cadr prog*)))
+                          (cc-interpreter.eval cont))))
+                  ((QUOTE)
+                   ;; takes 1 argument from program, puts it on
+                   ;; the stack
+                   (let ((cont (cdr prog*)))
+                     (cc-interpreter.eval (cons (car prog*) stack) cont)))
+                  (else
+                   (let ((app (thunk (cc-apply stack item item/loc))))
+                     (if (null? prog*)
+                         (app)
+                         (>>= (app)
+                              (C cc-interpreter.eval _ prog*)))))))
+
+               (else
+                (let (cont-literal
+                      (lambda ()
+                        (cc-interpreter.eval (cons item/loc stack) prog*)))
+                  (if-let-pair
+                   ((a r) item)
+
+                   (case (source-code a)
+                     ((quote)
+                      (if (and (pair? r)
+                               (null? (cdr r)))
+                          (cc-interpreter.eval (cons (car r) stack) prog*)
+                          (cont-literal)))
+
+                     ((:)
+                      ;; More featureful, delimited variant of |:|;
+                      ;; expects a program as the last item in the
+                      ;; list, optionally docstring before that, name
+                      ;; as the first, and the part inbetween as type
+
+                      (if-let-pair
+                       ((name r) r)
                        (if-let-pair
-                        ((subprog cont) r)
-                        (if (list? (source-code subprog))
-                            (begin
-                              ;; XX could retain name/loc
-                              ;; XX allow docstring still?
-                              (cc-word-set! (source-code name/loc)
-                                            (ccguestproc #f ;;
-                                                         (cc-type-unknown #f)
-                                                         subprog))
-                              (cc-eval stack cont))
-                            (Error
-                             (copycat-type-error item/loc
-                                                 "list?"
-                                                 subprog)))
-                        (missargerr r))
-                       (missargerr prog*))))
-                   ((THENELSE)
-                    ;; takes 2 arguments from program (truebranch,
-                    ;; falsebranch), and 1 from stack (test value)
-                    (let ((cont (cddr prog*)))
-                      (>>= (cc-eval (cdr stack)
-                                    (if (car stack)
-                                        (car prog*)
-                                        (cadr prog*)))
-                           (C cc-eval _ cont))))
-                   ((QUOTE)
-                    ;; takes 1 argument from program, puts it on
-                    ;; the stack
-                    (let ((cont (cdr prog*)))
-                      (cc-eval (cons (car prog*) stack) cont)))
-                   (else
-                    (let ((app (thunk (cc-apply stack item item/loc))))
-                      (if (null? prog*)
-                          (app)
-                          (>>= (app)
-                               (C cc-eval _ prog*)))))))
+                        ((prog rr) (reverse r))
 
-                (else
-                 (let (cont-literal
-                       (lambda ()
-                         (cc-eval (cons item/loc stack) prog*)))
-                   (if-let-pair
-                    ((a r) item)
-
-                    (case (source-code a)
-                      ((quote)
-                       (if (and (pair? r)
-                                (null? (cdr r)))
-                           (cc-eval (cons (car r) stack) prog*)
-                           (cont-literal)))
-
-                      ((:)
-                       ;; More featureful, delimited variant of |:|;
-                       ;; expects a program as the last item in the
-                       ;; list, optionally docstring before that, name
-                       ;; as the first, and the part inbetween as type
-
-                       (if-let-pair
-                        ((name r) r)
-                        (if-let-pair
-                         ((prog rr) (reverse r))
-
-                         (let (cont-ccguestproc
-                               (lambda (?docstring type)
-                                 (if (list? (source-code prog))
-                                     (cc-word-set! (source-code name) ;; XX loc ?
-                                                   (ccguestproc ?docstring
-                                                                type
-                                                                prog))
-                                     (Error
-                                      (copycat-invalid-type prog
-                                                            "not a list")))
-                                 ;; Actually don't return with Ok, but
-                                 ;; continue *here* (restructure by looping
-                                 ;; around outside? no?):
-                                 (cc-eval stack prog*)))
-                           (if-let-pair
-                            ((?docstring rr*) rr)
-                            (if (string? (source-code ?docstring))
-                                (>>= (cc-parse-type (reverse rr*))
-                                     (lambda (type)
-                                       (cont-ccguestproc ?docstring
-                                                         type)))
-                                (>>= (cc-parse-type (reverse rr))
-                                     (lambda (type)
-                                       (cont-ccguestproc #f
-                                                         type))))
-                            (cont-ccguestproc #f
-                                              (cc-type-unknown #f))))
-                         (Error (copycat-missing-arguments
-                                 item/loc
-                                 "missing program argument" ;; proc, XX evil?
-                                 2 1)))
+                        (let (cont-ccguestproc
+                              (lambda (?docstring type)
+                                (if (list? (source-code prog))
+                                    (cc-word-set! (source-code name) ;; XX loc ?
+                                                  (ccguestproc ?docstring
+                                                               type
+                                                               prog))
+                                    (Error
+                                     (copycat-invalid-type prog
+                                                           "not a list")))
+                                ;; Actually don't return with Ok, but
+                                ;; continue *here* (restructure by looping
+                                ;; around outside? no?):
+                                (cc-interpreter.eval stack prog*)))
+                          (if-let-pair
+                           ((?docstring rr*) rr)
+                           (if (string? (source-code ?docstring))
+                               (>>= (cc-parse-type (reverse rr*))
+                                    (lambda (type)
+                                      (cont-ccguestproc ?docstring
+                                                        type)))
+                               (>>= (cc-parse-type (reverse rr))
+                                    (lambda (type)
+                                      (cont-ccguestproc #f
+                                                        type))))
+                           (cont-ccguestproc #f
+                                             (cc-type-unknown #f))))
                         (Error (copycat-missing-arguments
                                 item/loc
-                                "missing name argument" ;; ditto
-                                2 0))))
+                                "missing program argument" ;; proc, XX evil?
+                                2 1)))
+                       (Error (copycat-missing-arguments
+                               item/loc
+                               "missing name argument" ;; ditto
+                               2 0))))
                     
-                      (else
-                       ;; "quoted" program
-                       (cont-literal)))
+                     (else
+                      ;; "quoted" program
+                      (cont-literal)))
 
-                    ;; literal ("presumably")
-                    (cont-literal)))))))))))
+                   ;; literal ("presumably")
+                   (cont-literal))))))))))))
 
 
+(defparameter copycat-default-fuel 1000)
+
+(def (fresh-cc-interpreter)
+     (cc-interpreter '() (copycat-default-fuel)))
+
+(def copycat-runtime-result?
+     (Result-of cc-interpreter?
+                copycat-runtime-error?))
