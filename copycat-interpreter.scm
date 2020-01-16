@@ -544,17 +544,18 @@ result is an Error or if there are any values left"
                         (let (cont-ccguestproc
                               (lambda (?docstring type)
                                 (if (list? (source-code prog))
-                                    (cc-word-set! (source-code name) ;; XX loc ?
-                                                  (ccguestproc ?docstring
-                                                               type
-                                                               prog))
+                                    (begin
+                                      (cc-word-set! (source-code name) ;; XX loc ?
+                                                    (ccguestproc ?docstring
+                                                                 type
+                                                                 prog))
+                                      ;; Actually don't return with Ok, but
+                                      ;; continue *here* (restructure by looping
+                                      ;; around outside? no?):
+                                      (cc-interpreter.eval stack prog*))
                                     (Error
                                      (copycat-invalid-type prog
-                                                           "not a list")))
-                                ;; Actually don't return with Ok, but
-                                ;; continue *here* (restructure by looping
-                                ;; around outside? no?):
-                                (cc-interpreter.eval stack prog*)))
+                                                           "not a list")))))
                           (if-let-pair
                            ((?docstring rr*) rr)
                            (if (string? (source-code ?docstring))
