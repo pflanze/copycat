@@ -536,47 +536,49 @@ result is an Error or if there are any values left"
                       ;; list, optionally docstring before that, name
                       ;; as the first, and the part inbetween as type
 
-                      (if-let-pair
-                       ((name r) r)
-                       (if-let-pair
-                        ((prog rr) (reverse r))
+                      (let (err-missing
+                            (lambda (msg mgotten)
+                              (Error (copycat-missing-arguments
+                                      item/loc
+                                      msg ;; proc, XX evil?
+                                      2 ngotten))))
+                        (if-let-pair
+                         ((name r) r)
+                         (if-let-pair
+                          ((prog rr) (reverse r))
 
-                        (let (cont-ccguestproc
-                              (lambda (?docstring type)
-                                (if (list? (source-code prog))
-                                    (begin
-                                      (cc-word-set! (source-code name) ;; XX loc ?
-                                                    (ccguestproc ?docstring
-                                                                 type
-                                                                 prog))
-                                      ;; Actually don't return with Ok, but
-                                      ;; continue *here* (restructure by looping
-                                      ;; around outside? no?):
-                                      (cc-interpreter.eval stack prog*))
-                                    (Error
-                                     (copycat-invalid-type prog
-                                                           "not a list")))))
-                          (if-let-pair
-                           ((?docstring rr*) rr)
-                           (if (string? (source-code ?docstring))
-                               (>>= (cc-parse-type (reverse rr*))
-                                    (lambda (type)
-                                      (cont-ccguestproc ?docstring
-                                                        type)))
-                               (>>= (cc-parse-type (reverse rr))
-                                    (lambda (type)
-                                      (cont-ccguestproc #f
-                                                        type))))
-                           (cont-ccguestproc #f
-                                             (cc-type-unknown #f))))
-                        (Error (copycat-missing-arguments
-                                item/loc
-                                "missing program argument" ;; proc, XX evil?
-                                2 1)))
-                       (Error (copycat-missing-arguments
-                               item/loc
-                               "missing name argument" ;; ditto
-                               2 0))))
+                          (let (cont-ccguestproc
+                                (lambda (?docstring type)
+                                  (if (list? (source-code prog))
+                                      (begin
+                                        (cc-word-set! (source-code name)
+                                                      ;; XX loc ?
+                                                      (ccguestproc ?docstring
+                                                                   type
+                                                                   prog))
+                                        ;; Actually don't return with
+                                        ;; Ok, but continue *here*
+                                        ;; (restructure by looping
+                                        ;; around outside? no?):
+                                        (cc-interpreter.eval stack prog*))
+                                      (Error
+                                       (copycat-invalid-type prog
+                                                             "not a list")))))
+                            (if-let-pair
+                             ((?docstring rr*) rr)
+                             (if (string? (source-code ?docstring))
+                                 (>>= (cc-parse-type (reverse rr*))
+                                      (lambda (type)
+                                        (cont-ccguestproc ?docstring
+                                                          type)))
+                                 (>>= (cc-parse-type (reverse rr))
+                                      (lambda (type)
+                                        (cont-ccguestproc #f
+                                                          type))))
+                             (cont-ccguestproc #f
+                                               (cc-type-unknown #f))))
+                          (err-missing "missing program argument" 1))
+                         (err-missing "missing name argument" 0))))
                     
                      (else
                       ;; "quoted" program
