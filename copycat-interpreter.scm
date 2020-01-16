@@ -548,14 +548,14 @@ result is an Error or if there are any values left"
                           ((prog rr) (reverse r))
 
                           (let (cont-ccguestproc
-                                (lambda (?docstring type)
+                                (lambda (maybe-docstring type)
                                   (if (list? (source-code prog))
                                       (begin
-                                        (cc-word-set! (source-code name)
-                                                      ;; XX loc ?
-                                                      (ccguestproc ?docstring
-                                                                   type
-                                                                   prog))
+                                        (cc-word-set!
+                                         (source-code name) ;; XX loc ?
+                                         (ccguestproc maybe-docstring
+                                                      type
+                                                      prog))
                                         ;; Actually don't return with
                                         ;; Ok, but continue *here*
                                         ;; (restructure by looping
