@@ -375,7 +375,9 @@
   '(c/load "lib/write-csv")
   '(c/load "lib/xhtml"))
 
+(generate-proper-tail-calls #t)
 (i/load "copycat-interpreter")
+;; (generate-proper-tail-calls #f)
 (i/load "copycat-std")
 (i/load "copycat")
 
