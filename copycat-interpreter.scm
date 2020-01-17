@@ -14,7 +14,11 @@
          Result
          srfi-1-Maybe
          error ;; to enable .show on Gambit exceptions
-         (cj-typed typed-lambda-expand))
+         (cj-typed typed-lambda-expand)
+         cc-type
+         (copycat-interpreter-util possibly-source?
+                                   copycat:predicate-accepts-source?)
+         copycat-runtime-error)
 
 (export (class cc-interpreter)
         (macros copycat:try-Ok
@@ -28,63 +32,6 @@
 
 (include "lib/cj-standarddeclares.scm")
 
-
-(def (Maybe-find-deeply pred v) -> (Maybe any?)
-     (cond ((pred v)
-            (Just v))
-           ((pair? v)
-            (let-pair ((a r) v)
-                      (Maybe:or (Maybe-find-deeply pred a)
-                                (Maybe-find-deeply pred r))))
-           (else
-            (Nothing))))
-
-(TEST
- > (Maybe-find-deeply string? '(a b "c" d e "f" g))
- [(Just) "c"]
- > (Maybe-find-deeply boolean? '(a b "c" d e "f" g))
- [(Nothing)]
- > (Maybe-find-deeply boolean? '(a b "c" d e "f" (#f) g))
- [(Just) #f])
-
-(def (contains-deeply? v pred) -> boolean?
-     ;; (yeah, optimize automatically? Rust will?)
-     (Just? (Maybe-find-deeply pred v)))
-
-(TEST
- > (map (C contains-deeply? '(a (("x" #f) (((b . c))))) _)
-        (list (C eq? _ 'a)
-              (C eq? _ 'c)
-              not
-              (C eq? _ #t)))
- (#t #t #t #f))
-
-
-(def (possibly-source? v)
-     "same as `any?`, but expresses intent to accept source code"
-     #t)
-
-(def (copycat:predicate-accepts-source? expr)
-     ;; allocates, stupid, but only used at compile time
-     (contains-deeply? (cj-desourcify expr)
-                       (lambda (v)
-                         (case v
-                           ((possibly-source-of
-                             possibly-source?
-                             source-of
-                             source?)
-                            #t)
-                           (else
-                            #f)))))
-
-(TEST
- > (map copycat:predicate-accepts-source?
-        '((source-of list?)
-          list?
-          (values-of (possibly-source-of symbol?) boolean?)
-          (list-of possibly-source?)
-          (list-of string?)))
- (#t #f #t #t #f))
 
 
 ;; --- Symbol table --------------------------------------
@@ -106,43 +53,14 @@
 
 ;; --- Errors --------------------------------------------
 
-;; We represent guest language errors as (Error-of
-;; copycat-runtime-error?):
+;; See copycat-runtime-error.scm
 
-(defclass ((copycat-runtime-error #f) [possibly-source? offending-code])
-  (defclass (copycat-out-of-fuel))
-  (defclass (copycat-unbound-symbol [symbol? name])
-    (defmethod (explanation s)
-      "the given word is not defined"))
-  (defclass (copycat-missing-arguments proc
-                                       [fixnum-natural0? need]
-                                       [fixnum-natural0? got])
-    (defmethod (explanation s)
-      ($ "the given operation needs more arguments than are "
-         "available (either on the stack, or (in the case of "
-         "special syntax) in the program)")))
-  (defclass (copycat-division-by-zero a b) ;; why capture b ?
-    (defmethod (explanation s)
-      "attempt to divide by exactly 0"))
-  (defclass (copycat-out-of-bounds-access asked
-                                          [fixnum-natural0? length])
-    (defmethod (explanation s)
-      "attempt to access an index outside the range of valid indices"))
-  (defclass (copycat-out-of-range [string? predicate] value)
-    (defmethod (explanation s)
-      "value is not in range for given predicate"))
-  (defclass (copycat-type-error [string? predicate] value)
-    (defmethod (explanation s)
-      "value encountered does not match given type declaration"))
-  (defclass (copycat-host-error exception)
-    (defmethod (explanation s)
-      "an exception was thrown from code implemented in the host language"))
-  (defclass (copycat-invalid-type [string? reason])
-    (defmethod (explanation s)
-      "the given type declaration is syntactically invalid")))
+(def (cc-unwrap [copycat-runtime-result? v])
+     (if-Ok v it (raise it)))
 
-
+;; XX ilist? is still used in many places
 (def copycat-stack? (ilist-of any?))
+
 ;; copycat-runtime-result? see further down
 
 
@@ -161,66 +79,6 @@
                                   v)))))
 
 ;; --- Procedures -----------------------------------------
-
-;; Type parsing
-
-(definterface cc-type
-  
-  (defclass (cc-type-unknown maybe-location)
-    (defmethod (inputs _) '())
-    (defmethod (maybe-results _) #f)
-    (defmethod (maybe-original _) #f)
-
-    (defclass (cc-type/unknown-results [ilist? inputs])
-      (defmethod (maybe-original _)
-        (possibly-sourcify inputs maybe-location))
-
-      (defclass (cc-type/results [ilist? results])
-        (defmethod (maybe-results _) results)
-        (defmethod (maybe-original _)
-          (possibly-sourcify (append inputs
-                                     (list (possibly-sourcify
-                                            '-> maybe-location))
-                                     results)
-                             maybe-location))))))
-
-(def (cc-parse-type l)
-     -> (Result-of cc-type?
-                   copycat-runtime-error?)
-     (let ((l* (cj-desourcify l))
-           (loc (maybe-source-location l)))
-       (if (list? l*)
-           (if (null? l*)
-               (Ok (cc-type-unknown loc))
-               (let (parts (list-split l* '->))
-                 (case (length parts)
-                   ((1) (Ok (cc-type/unknown-results loc
-                                                     (first parts))))
-                   ((2) (Ok (cc-type/results loc
-                                             (first parts)
-                                             (second parts))))
-                   (else
-                    ;; hmm curried functions?
-                    (Error (copycat-invalid-type
-                            l "at most one '-> is allowed"))))))
-           (Error (copycat-invalid-type l "not a list")))))
-
-(TEST
- > (cc-parse-type '())
- [(Ok) [(cc-type-unknown) #f]]
- > (cc-parse-type '(a b -> b))
- [(Ok) [(cc-type/results) #f (a b) (b)]]
- > (cc-parse-type '(-> any?))
- [(Ok) [(cc-type/results) #f () (any?)]]
- > (cc-parse-type '([list? l] -> any?))
- [(Ok) [(cc-type/results) #f ([list? l]) (any?)]]
- > (cc-parse-type 'foo)
- [(Error) [(copycat-invalid-type) foo "not a list"]]
- > (cc-parse-type '([list? l] -> any? -> foo?))
- [(Error)
-  [(copycat-invalid-type)
-   ([list? l] -> any? -> foo?)
-   "at most one '-> is allowed"]])
 
 
 ;; Procedure values
@@ -438,9 +296,6 @@ $s     the stack (out of $cci)
                        ;; XX .show ?
                        it)))
 
-
-(def (cc-unwrap [copycat-runtime-result? v])
-     (if-Ok v it (raise it)))
 
 (def (cc-defguest-run expr)
      (=> (cc-interpreter.eval (fresh-cc-interpreter) expr)
