@@ -20,8 +20,12 @@
 
 ;; Add test function when running test suite
 (TEST
-  > (def (t stack prog)
-         (.show (cc-eval stack prog))))
+ > (def (t stack prog)
+        (=> (in-monad Result
+                      (==> (cc-interpreter.eval (cc-interpreter stack 1000) prog)
+                           ((comp return cc-interpreter.stack))))
+            
+            .show)))
 
 
 ;; -- stack ops
@@ -53,11 +57,13 @@ that the oldest one becomes the newest"
               (lp (dec n)
                   (cons (car stack) tmp)
                   (cdr stack))
-              (Ok (cons (car stack)
-                        (rappend tmp (cdr stack)))))))
+              (Ok (cc-interpreter.stack-set
+                   $cci
+                   (cons (car stack)
+                         (rappend tmp (cdr stack))))))))
 
 
-(def (copycat:pick $word $s n)
+(def (copycat:pick $word $cci $s n)
      (if-Just ((it (list-Maybe-ref $s n)))
               (cc-return it)
               (Error (copycat-missing-arguments
@@ -67,16 +73,16 @@ that the oldest one becomes the newest"
                       (length $s)))))
 (cc-def over (-> any?)
         "copy the second-last element from the stack"
-        (copycat:pick $word $s 1))
+        (copycat:pick $word $cci $s 1))
 (cc-def pick2 (-> any?)
         "copy the third-last element from the stack"
-        (copycat:pick $word $s 2))
+        (copycat:pick $word $cci $s 2))
 (cc-def pick3 (-> any?)
         "copy the fourth-last element from the stack"
-        (copycat:pick $word $s 3))
+        (copycat:pick $word $cci $s 3))
 (cc-def pick (n -> any?)
         "copy the element from the stack found after skipping n elements"
-        (copycat:pick $word $s n))
+        (copycat:pick $word $cci $s n))
 
 ;; my own ideas for stack ops:
 
@@ -89,7 +95,7 @@ that the oldest one becomes the newest"
 (cc-def dropn ([fixnum-natural0? n] ->)
         "drop the n last elements from the stack"
         (if-Just ((it (Maybe-drop $s n)))
-                 (Ok it)
+                 (Ok (cc-interpreter.stack-set $cci it))
                  (Error
                   (copycat-missing-arguments $word
                                              (list 'dropn n)
@@ -98,11 +104,11 @@ that the oldest one becomes the newest"
 
 (cc-def clear ()
         "drop all elements from the stack"
-        (Ok '()))
+        (Ok (cc-interpreter.stack-set $cci '())))
 ;; and with a shorter name:
 (cc-def c ()
         "drop all elements from the stack"
-        (Ok '()))
+        (Ok (cc-interpreter.stack-set $cci '())))
 
 
 ;; -- pure functions (except for error handling!)
@@ -217,21 +223,23 @@ does not check to the end of the list, for performance)")
 (cc-defhost null? (a -> boolean?)
             "whether a is an empty list")
 
-(def (cc:Rlist $s $word numargs reverse?)
+(def (cc:Rlist $cci $s $word numargs reverse?)
      (if-Just ((it (Maybe-split-at-reverse $s numargs)))
               (letv ((rargs stack*) it)
-                    (Ok (cons (if reverse? rargs (reverse rargs))
-                              stack*)))
+                    (Ok (cc-interpreter.stack-set
+                         $cci
+                         (cons (if reverse? rargs (reverse rargs))
+                               stack*))))
               (Error (copycat-missing-arguments $word
                                                 'Rlist ;; ?
                                                 numargs
                                                 (length $s)))))
 (cc-def list ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a list"
-        (cc:Rlist $s $word n #t))
+        (cc:Rlist $cci $s $word n #t))
 (cc-def rlist ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a reversed list"
-        (cc:Rlist $s $word n #f))
+        (cc:Rlist $cci $s $word n #f))
 
 (cc-defhost/try append (a b -> ilist?)
                 ;; XX argument order?
@@ -253,25 +261,33 @@ after putting v on the stack and running prog"
         ;; suite below!
         (let lp ((res '())
                  (l l)
-                 (stack $s))
+                 ($cci $cci))
           (if (null? l)
-              (cc-return res)
+              (let ($s (cc-interpreter.stack $cci))
+                ;; onto current $cci and $s:
+                (cc-return res))
               (if-let-pair
                ((a l*) l)
-               (>>= (cc-eval (cons a stack) prog)
-                    (lambda (stack*)
-                      (if-let-pair
-                       ((b stack**) stack*)
-                       (lp (cons b res)
-                           l*
-                           stack**)
-                       (Error (copycat-missing-arguments
-                               $word
-                               (list "empty stack after running prog:"
-                                     prog) ;; XX evil
-                               1
-                               0)))))
-               (Error (copycat-type-error $word "list?" l))))))
+               (==> (cc-interpreter.push* $cci a $word) ;; or use free push ?
+                    (cc-interpreter.eval prog)
+                    ((lambda (cci*)
+                       (if-let-pair
+                        ((b stack**) (cc-interpreter.stack cci*))
+                        (lp (cons b res)
+                            l*
+                            (cc-interpreter.stack-set cci* stack**))
+                        (Error (copycat-missing-arguments
+                                $word
+                                ;; (XX why do I check for stack type
+                                ;; errors below but not here? Use
+                                ;; typed-list ?)
+                                (list "empty stack after running prog:"
+                                      prog) ;; XX evil
+                                1
+                                0))))))
+               (Error (copycat-type-error $word
+                                          "invalid stack: list?"
+                                          l))))))
 
 (cc-defhost list-reverse ([list? l] -> ilist?))
 
@@ -287,25 +303,30 @@ stack and running prog"
  > (t '() (quote-source ((1 4 5) (inc square) list-rmap)))
  (Ok (list (list 36 25 4)))
 
- > (=> (cc-eval '() (quote-source ((1 4 . 5) (inc square) list-map)))
+ > (=> (.eval (fresh-cc-interpreter)
+              (quote-source ((1 4 . 5) (inc square) list-map)))
        ;; reports list-rmap location within list-map; how to track original?
        ;; Well, todo call stack inspection. Anyway, strip it here:
        Error.value
        ((dup copycat-type-error.predicate
              (comp source-code copycat-type-error.value))))
- ("list?" 5))
+ ("invalid stack: list?" 5))
 
 
 ;; --- Vectors
 
-(def (cc:Rvector $s $word numargs reverse? drop-args?)
+(def (cc:Rvector $word $cci $s numargs reverse? drop-args?)
+     -> copycat-runtime-result?
      (let ((v (make-vector numargs))
            (end (dec numargs)))
        (let lp ((i end)
                 (s $s))
          (if (negative? i)
              (if drop-args?
-                 (Ok (cons v (drop $s numargs)))
+                 (=> (cc-interpreter.stack-set $cci
+                                               (drop $s numargs)) ;; XXX == s ?
+                     (cc-interpreter.push v)
+                     Ok)
                  (cc-return v))
              (if-let-pair ((a r) s)
                           (begin (vector-set! v
@@ -318,20 +339,20 @@ stack and running prog"
                                                             (length $s))))))))
 (cc-def vector ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a vector"
-        (cc:Rvector $s $word n #t #t))
+        (cc:Rvector $word $cci $s n #t #t))
 (cc-def rvector ([fixnum-natural0? n] -> (list-of-length n))
         "takes n elements from the stack and returns them as a
 reversed vector"
-        (cc:Rvector $s $word n #f #t))
+        (cc:Rvector $word $cci $s n #f #t))
 
 (cc-def copy-vector ([fixnum-natural0? n] -> (vector-of-length n))
         "copy n elements from the stack (leaving them there) and
 returns them as a vector"
-        (cc:Rvector $s $word n #t #f))
+        (cc:Rvector $word $cci $s n #t #f))
 (cc-def copy-rvector ([fixnum-natural0? n] -> (vector-of-length n))
         "copy n elements from the stack (leaving them there) and
 returns them as a reversed vector"
-        (cc:Rvector $s $word n #f #f))
+        (cc:Rvector $word $cci $s n #f #f))
 
 (cc-def vector-ref ([vector? v] [fixnum-natural0? i] -> any?)
         "retrieve from v the element at index i"
@@ -407,7 +428,7 @@ returns them as a reversed vector"
         "this is not strictly a boolean operator, but a 'maybe' type
 style one (monadic >>)"
         (if a
-            (cc-eval $s b)
+            (cc-interpreter.eval $cci b)
             (cc-return a)))
 
 (cc-def or ([any? a] [ilist? b] -> any?)
@@ -415,7 +436,18 @@ style one (monadic >>)"
 style one"
         (if a
             (cc-return a)
-            (cc-eval $s b)))
+            (cc-interpreter.eval $cci b)))
+
+(TEST
+ > (t '() '(#f (1 2 +) and))
+ (Ok (list #f))
+ > (t '() '(9 (1 2 +) and))
+ (Ok (list 3))
+ > (t '() '(#f (1 2 +) or))
+ (Ok (list 3))
+ > (t '() '(9 (1 2 +) or))
+ (Ok (list 9)))
+
 
 
 ;; (cc-defhost error/1 (a))
@@ -431,14 +463,24 @@ style one"
 (cc-def try ([ilist? prog])
         "eval prog, catching exceptions, returning a Result -- either
 an Ok-wrapped stack, or an Error-wrapped copycat error object"
-        (cc-return (cc-eval $s prog)))
+        (if-Ok (cc-interpreter.eval $cci prog)
+               ;; use new $cci, but set stack based on the original $s
+               ;; (cc-return takes both variables from the scope)
+               (let ($cci it)
+                 (cc-return (Ok (cc-interpreter.stack $cci))))
+               ;; XXX If it fails, we don't get to know how much fuel
+               ;; it cost!!! Failing calculations are free currently!
+               (cc-return it-Result)))
 (cc-def set-stack ([ilist? stack])
         "replace the stack contents with `stack`"
-        (Ok stack))
+        (>>= (cc-interpreter.fuel-dec* $cci $word)
+             (lambda (cci)
+               (Ok (cc-interpreter.stack-set cci stack)))))
 (cc-def if-Ok ([Result? v] [ilist? then] [ilist? else])
-        (if-Ok v
-               (cc-eval (cons it $s) then)
-               (cc-eval (cons it $s) else)))
+        (let (cont (lambda (it branch)
+                    (==> (cc-interpreter.push* $cci it $word) ;; or use free push ?
+                         (cc-interpreter.eval branch))))
+          (if-Ok v (cont it then) (cont it else))))
 
 (TEST ;; Result
  > (t '() '(39 Ok ("yes") ("no") if-Ok))
@@ -460,7 +502,7 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 ;; -- Control flow
 
 (cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
-        (cc-eval $s (if val truebranch falsebranch)))
+        (cc-interpreter.eval $cci (if val truebranch falsebranch)))
 
 ;; XX can't implement that properly in copycat, right? Really need
 ;; lexicals? Also, this drops all of the stack when failing at any
@@ -468,10 +510,10 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 (cc-def repeat ([ilist? prog] [fixnum-natural0? n])
         "repeat prog n times"
         (let lp ((n n)
-                 (stack $s))
+                 (cci $cci))
           (if (zero? n)
-              (Ok stack)
-              (>>= (cc-eval stack prog)
+              (Ok cci)
+              (>>= (cc-interpreter.eval cci prog)
                    (C lp (dec n) _)))))
 
 (TEST
@@ -483,7 +525,7 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 
 (cc-def eval (prog)
         "evaluate prog (a list of instructions)"
-        (copycat:try (cc-eval $s prog)))
+        (copycat:try (cc-interpreter.eval $cci prog)))
 
 (cc-def nop (->)
         "no operation"
@@ -600,10 +642,14 @@ stack, via .show and with location info not stripped"
 (cc-def time ([ilist? prog])
         "Runs prog then prints how long it took"
         (time-thunk (lambda ()
-                      (cc-eval $s prog))
+                      (cc-interpreter.eval $cci prog))
                     ;; Still showed in a Scheme-y way of course,
                     ;; though, `(time ,prog). Todo: improve?
                     (cj-desourcify prog)))
+
+(TEST
+ > (t '() '((10 30 +) time))
+ (Ok (list 40)))
 
 
 ;; XX lib
@@ -880,7 +926,7 @@ stack, via .show and with location info not stripped"
 
  ;; test tail call optimization: this must run indefinitely and not
  ;; run out of memory:
- ;; > (cc-eval '() '(: lp (lp) lp))
+ ;; > (cc-interpreter.eval (fresh-cc-interpreter) '(: lp (lp) lp))
  ;; (comment out (generate-proper-tail-calls #f) in .gambcini for this to work)
 
 

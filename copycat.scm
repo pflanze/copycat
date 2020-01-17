@@ -13,16 +13,15 @@
 (export cc-repl)
 
 
-(def (_cc-repl stack past future) -> !
+(def (_cc-repl cci past future) -> !
      (in-monad
       Result
-      (pretty-print (cj-desourcify stack)) ;; XX display modes?
-      (display "$ ")
+      (pretty-print (cj-desourcify (.stack cci))) ;; XX display modes?
+      (display ($ (.fuel cci) " \\$ "))
       (let (err (lambda (e)
                   (warn "Error:" (try-show e))
-                  (_cc-repl stack past future)))
-        (if-Ok (>>= (let (($s stack)
-                          ($word 'cc-repl))
+                  (_cc-repl cci past future)))
+        (if-Ok (>>= (let (($word 'cc-repl))
                       (copycat:try-Ok
                        (with-input-from-string (read-line)
                          read-all-source)))
@@ -39,13 +38,15 @@
                               XXX)
                              (else
                               ;; XHACK
-                              (cc-eval stack (append prog '(zeig)))))))
+                              (cc-interpreter.eval cci
+                                                   (append prog '(zeig)))))))
                (_cc-repl it
-                         (cons it (rappend future (cons stack past)))
+                         (cons it (rappend future (cons cci past)))
+                         ;; ^ XX undo/redo retain fuel, too, now.
                          '())
                (err it)))))
 
-(def (cc-repl #!optional (stack '())) -> !
+(def (cc-repl #!optional (cci (fresh-cc-interpreter))) -> !
      (read-line)
-     (_cc-repl stack '() '()))
+     (_cc-repl cci '() '()))
 
