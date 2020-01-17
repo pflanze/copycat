@@ -13,14 +13,15 @@
 (export cc-repl)
 
 
-(def (_cc-repl cci past future) -> !
+(def (_cc-repl cci past future last-commands) -> !
      (in-monad
       Result
       (pretty-print (cj-desourcify (.stack cci))) ;; XX display modes?
       (display ($ (.fuel cci) " \\$ "))
-      (let (err (lambda (e)
+      (let (err (lambda (e) ;; takes old cci -- we don't have a new one
+                       ;; anyway, currently
                   (warn "Error:" (try-show e))
-                  (_cc-repl cci past future)))
+                  (_cc-repl cci past future (turtle-commands))))
         (if-Ok (>>= (let (($word 'cc-repl))
                       (copycat:try-Ok
                        (with-input-from-string (read-line)
@@ -38,19 +39,19 @@
                               XXX)
                              (else
                               (>>= (cc-interpreter.eval cci prog)
-                                   ;; Hack: proper hook? (Also, only
-                                   ;; show if commands *changed*?)
+                                   ;; Hack: proper hook?
                                    (lambda (cci)
-                                     (if (null? (turtle-commands))
+                                     (if (eq? (turtle-commands) last-commands)
                                          (Ok cci)
                                          (cc-interpreter.eval cci '(zeig)))))))))
                (_cc-repl it
                          (cons it (rappend future (cons cci past)))
                          ;; ^ XX undo/redo retain fuel, too, now.
-                         '())
+                         '()
+                         (turtle-commands))
                (err it)))))
 
 (def (cc-repl #!optional (cci (fresh-cc-interpreter))) -> !
      (read-line)
-     (_cc-repl cci '() '()))
+     (_cc-repl cci '() '() (turtle-commands)))
 
