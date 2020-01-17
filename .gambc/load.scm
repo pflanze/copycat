@@ -384,8 +384,10 @@
 (/load "copycat-interpreter")
 ;; (generate-proper-tail-calls #f)
 (/load "copycat-std")
-(/load "copycat")
 
 (/load "svg-logo-lib")
 (/load "svg-logo")
 (/load "copycat-turtle")
+
+(/load "copycat")
+
