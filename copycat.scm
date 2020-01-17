@@ -37,9 +37,13 @@
                              (`(redo)
                               XXX)
                              (else
-                              ;; XHACK
-                              (cc-interpreter.eval cci
-                                                   (append prog '(zeig)))))))
+                              (>>= (cc-interpreter.eval cci prog)
+                                   ;; Hack: proper hook? (Also, only
+                                   ;; show if commands *changed*?)
+                                   (lambda (cci)
+                                     (if (null? (turtle-commands))
+                                         (Ok cci)
+                                         (cc-interpreter.eval cci '(zeig)))))))))
                (_cc-repl it
                          (cons it (rappend future (cons cci past)))
                          ;; ^ XX undo/redo retain fuel, too, now.
