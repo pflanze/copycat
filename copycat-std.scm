@@ -323,8 +323,7 @@ stack and running prog"
                 (s $s))
          (if (negative? i)
              (if drop-args?
-                 (=> (cc-interpreter.stack-set $cci
-                                               (drop $s numargs)) ;; XXX == s ?
+                 (=> (cc-interpreter.stack-set $cci s)
                      (cc-interpreter.push v)
                      Ok)
                  (cc-return v))
