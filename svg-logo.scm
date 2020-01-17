@@ -46,6 +46,10 @@
         path-coordinates)
 
 
+(include "lib/cj-standarddeclares.scm")
+
+
+
 ;; (def p 2d-point)
 
 

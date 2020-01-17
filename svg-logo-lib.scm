@@ -2,6 +2,9 @@
 
 ;XXX move elsewhere
 
+(include "lib/cj-standarddeclares.scm")
+
+
 ;; XX move to lib  svg or so  where ° is   inverse of °
 (def (radian->° angle)
      (* 360 (/ angle 2 pi)))

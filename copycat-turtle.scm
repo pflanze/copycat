@@ -17,6 +17,9 @@
 "Turtle graphics (Logo-inspired)"
 
 
+(include "lib/cj-standarddeclares.scm")
+
+
 (definterface angle
   (defclass (° [real? degrees])
     (defmethod (rad s)

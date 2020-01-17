@@ -18,6 +18,9 @@
 "The standard library for Copycat"
 
 
+(include "lib/cj-standarddeclares.scm")
+
+
 ;; Add test function when running test suite
 (TEST
  > (def (t stack prog)

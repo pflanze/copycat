@@ -13,6 +13,10 @@
 (export cc-repl)
 
 
+(include "lib/cj-standarddeclares.scm")
+
+
+
 (def (_cc-repl cci past future last-commands) -> !
      (in-monad
       Result

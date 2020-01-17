@@ -26,6 +26,8 @@
                 cc-defguest)
         possibly-source?)
 
+(include "lib/cj-standarddeclares.scm")
+
 
 (def (Maybe-find-deeply pred v) -> (Maybe any?)
      (cond ((pred v)

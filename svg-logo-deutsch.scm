@@ -9,6 +9,8 @@
 (require easy
          svg-logo)
 
+(include "lib/cj-standarddeclares.scm")
+
 
 ;; Deutsch
 
