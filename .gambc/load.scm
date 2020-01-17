@@ -375,12 +375,14 @@
   '(c/load "lib/write-csv")
   '(c/load "lib/xhtml"))
 
-(generate-proper-tail-calls #t)
-(i/load "copycat-interpreter")
-;; (generate-proper-tail-calls #f)
-(i/load "copycat-std")
-(i/load "copycat")
+(define /load c/load)
 
-(i/load "svg-logo-lib")
-(i/load "svg-logo")
-(i/load "copycat-turtle")
+(generate-proper-tail-calls #t)
+(/load "copycat-interpreter")
+;; (generate-proper-tail-calls #f)
+(/load "copycat-std")
+(/load "copycat")
+
+(/load "svg-logo-lib")
+(/load "svg-logo")
+(/load "copycat-turtle")
