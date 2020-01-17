@@ -378,6 +378,9 @@
 (define /load c/load)
 
 (generate-proper-tail-calls #t)
+(/load "copycat-interpreter-util")
+(/load "copycat-runtime-error")
+(/load "cc-type")
 (/load "copycat-interpreter")
 ;; (generate-proper-tail-calls #f)
 (/load "copycat-std")
