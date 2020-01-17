@@ -232,7 +232,9 @@
 (defclass (ccguestproc [(possibly-source-of ilist?) code])
   extends: ccproc
   
-  (defmethod (cc-apply s cci word/loc) -> copycat-runtime-result?
+  (defmethod (cc-apply s cci word/loc)
+    ;; -> copycat-runtime-result?  don't break TCO!
+    
     ;; XX loc from word/loc ?
     (cc-interpreter.eval cci code)))
 
@@ -494,7 +496,7 @@ result is an Error or if there are any values left"
 
 
   (defmethod (apply s [symbol? word] word/loc)
-    -> copycat-runtime-result?
+    ;; -> copycat-runtime-result?  don't break TCO!
     (if-Just ((w (table.Maybe-ref cc-words word)))
              (.cc-apply w s word/loc)
              (Error (copycat-unbound-symbol word/loc
@@ -573,8 +575,15 @@ result is an Error or if there are any values left"
                           (cc-interpreter.stack-set (cons (car prog*) stack))
                           (cc-interpreter.eval cont))))
                    (else
-                    (==> (cc-interpreter.apply s item item/loc)
-                         (cc-interpreter.eval prog*)))))
+                    ;; Need to check prog* to get TCO!
+                    ;; (cc-interpreter.eval '()) is a NOP but that's
+                    ;; too late for TCO in *Scheme*.
+                    (let (app (lambda ()
+                                (cc-interpreter.apply s item item/loc)))
+                      (if (null? prog*)
+                          (app)
+                          (==> (app)
+                               (cc-interpreter.eval prog*)))))))
 
                 (else
                  (let (cont-literal
