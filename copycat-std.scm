@@ -499,6 +499,20 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
  (Ok (list "yes" "before")))
 
 
+;; -- 'Internals'
+
+(cc-def set-fuel ([fixnum-natural0? fuel])
+        "set amount of interpreter fuel to the given new value"
+        (Ok (cc-interpreter.fuel-set $cci fuel)))
+
+(cc-def add-fuel ([fixnum? fuel])
+        "add amount of interpreter fuel"
+        (let (fuel* (+ (cc-interpreter.fuel $cci) fuel))
+          (if (fixnum-natural0? fuel*)
+              (Ok (cc-interpreter.fuel-set $cci fuel*))
+              (Error (copycat-out-of-range $word "fixnum-natural0?" fuel*)))))
+
+
 ;; -- Control flow
 
 (cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])

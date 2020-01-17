@@ -126,7 +126,9 @@
                                           [fixnum-natural0? length])
     (defmethod (explanation s)
       "attempt to access an index outside the range of valid indices"))
-  
+  (defclass (copycat-out-of-range [string? predicate] value)
+    (defmethod (explanation s)
+      "value is not in range for given predicate"))
   (defclass (copycat-type-error [string? predicate] value)
     (defmethod (explanation s)
       "value encountered does not match given type declaration"))
