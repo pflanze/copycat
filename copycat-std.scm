@@ -859,11 +859,11 @@ stack, via .show and with location info not stripped"
  > (t '(20) '(fact2))
  (Ok (list 2432902008176640000))
 
- ;; <lis> <code> map
+ ;; <lis> <code> mymap
  ;; iterative version:
  > (t '()
       '(:
-        rmap-iter ;; <code> <lis> <result>
+        rmymap-iter ;; <code> <lis> <result>
         (over
          pair?
          ( ;; change result
@@ -871,7 +871,7 @@ stack, via .show and with location info not stripped"
           car pick3 eval cons
           ;; and lis
           swap cdr swap
-          rmap-iter)
+          rmymap-iter)
          (over
           null?
           (swap drop swap drop) ;; optimize?
@@ -879,11 +879,11 @@ stack, via .show and with location info not stripped"
           if)
          if)
         :
-        rmap
+        rmymap
         (swap
          ()
-         rmap-iter)))
- > (t '((1 2)) '((inc) rmap))
+         rmymap-iter)))
+ > (t '((1 2)) '((inc) rmymap))
  (Ok (list (list 3 2)))
  > (t '()
       '(:
@@ -903,16 +903,16 @@ stack, via .show and with location info not stripped"
         reverse
         (() reverse-iter)
         :
-        imap
-        (rmap reverse)))
- > (t '(()) '((inc) imap))
+        imymap
+        (rmymap reverse)))
+ > (t '(()) '((inc) imymap))
  (Ok (list (list)))
- > (t '((5 6 7)) '((inc) imap))
+ > (t '((5 6 7)) '((inc) imymap))
  (Ok (list (list 6 7 8)))
  ;; recursive definition:
  > (t '()
       '(:
-        map-recur ;; <fn> <lis> -> <fn> <res>
+        mymap-recur ;; <fn> <lis> -> <fn> <res>
         (dup
          pair?
          ( ;; P
@@ -925,16 +925,16 @@ stack, via .show and with location info not stripped"
           swap rot swap cdr
           ;; "after rot" P*
           ;; D
-          map-recur
+          mymap-recur
           ;; "after recur" P*
           rot
           cons)
          ()
          if)
         :
-        map
-        (swap map-recur swap drop)))
- > (t '((5 6 7)) '((inc) map))
+        mymap
+        (swap mymap-recur swap drop)))
+ > (t '((5 6 7)) '((inc) mymap))
  (Ok (list (list 6 7 8)))
 
  ;; test tail call optimization: this must run indefinitely and not
