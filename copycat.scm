@@ -8,7 +8,9 @@
 
 (require easy
          copycat-interpreter
-         copycat-std)
+         copycat-std
+         copycat-turtle;; XX
+         )
 
 (export cc-repl)
 
