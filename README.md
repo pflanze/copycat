@@ -20,6 +20,9 @@ available [here](https://github.com/pflanze/gambc.git); on a Debian
 [chjize](https://github.com/pflanze/chjize) by following the
 instructions there then running `make gambit`.
 
+For good line editing and history, `rlwrap` is recommended (as used
+below).
+
 ### Build
 
     git clone https://github.com/pflanze/copycat
@@ -30,13 +33,13 @@ instructions there then running `make gambit`.
 ### Build
 
     cd copycat
-    gsc -:tE,dpr,t8,f8,-8
+    rlwrap gsc -:tE,dpr,t8,f8,-8
     > (run-tests ".")
     > ,q
 
 ### Run read-eval-print loop
 
     cd copycat
-    gsc -:tE,dpr,t8,f8,-8
+    rlwrap gsc -:tE,dpr,t8,f8,-8
     > (cc-repl)
 
