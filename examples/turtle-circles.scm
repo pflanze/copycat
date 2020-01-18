@@ -1,3 +1,3 @@
 
-: circles (new ((2 f 3 r) 120 repeat 2 r) 180 repeat)
+: circles (100000 add-fuel new ((0.5 f 1 r) 360 repeat 20 r) 18 repeat)
 
