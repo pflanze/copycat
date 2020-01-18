@@ -43,3 +43,17 @@ below).
     rlwrap gsc -:tE,dpr,t8,f8,-8
     > (cc-repl)
 
+
+## Future
+
+These are my plans for what I intend to implement still:
+
+- lexical variables
+- check the type declarations dynamically
+- first-class continuations
+- debugging: instead of ending calculation on uncaught exceptions, go
+  into a debugger
+- perhaps a module system / namespaces?
+- compile Scheme to Copycat?
+- check types statically (as far as possible)?
+
