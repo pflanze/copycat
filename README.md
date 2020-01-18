@@ -16,7 +16,7 @@ also [Cat](http://www.cat-language.com/).
 
 This requires the Gambit-C Scheme system with some patches as
 available [here](https://github.com/pflanze/gambc.git); on a Debian
-(perhaps Ubuntu) system it can easily be installed via
+(perhaps Ubuntu or Raspbian) system it can easily be installed via
 [chjize](https://github.com/pflanze/chjize) by following the
 instructions there then running `make gambit`.
 
