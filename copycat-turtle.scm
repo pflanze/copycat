@@ -132,7 +132,5 @@
              'zurück 'back alias
              'neu 'new alias
              'zeig 'view alias
-             'z 'zeig alias
-             'kommandos 'commands alias
-             'k 'kommandos alias)
+             'kommandos 'commands alias)
 
