@@ -576,6 +576,15 @@ an error if not bound)"
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
 
+(cc-defguest (: alias [symbol? new] [symbol? old] ->
+                "make `new` the same as `old`"
+                (ref swap set!)))
+
+(TEST
+ > (t '() (quote-source ('blabla 'help alias 'blabla ref .docstring source-code)))
+ (Ok (list "print help on the given word")))
+
+
 (cc-defhost/try .docstring (s))
 (cc-defhost/try .string (s))
 (cc-defhost/try .type (s))
