@@ -297,6 +297,9 @@ after putting v on the stack and running prog"
 (cc-defhost/try list-ref ([list? l] [fixnum-natural0? i] -> ilist?)
                 "get item i out of l")
 
+(cc-defhost list-length ([list? l] -> fixnum-natural0?)
+            "the number of items in l")
+
 (cc-defguest (: list-map [ilist? l] [ilist? prog] -> ilist?
                 "create the list that, for each element value v in l,
 contains the value left at the top of the stack after putting v on the
@@ -320,6 +323,13 @@ stack and running prog"
 
 
 ;; --- Vectors
+
+(cc-defhost vector? (v -> boolean?)
+            "whether v is a vector")
+
+(cc-defhost vector-length ([vector? vec] -> fixnum-natural0?)
+            "the number of items in vec")
+
 
 (def (cc:Rvector $word $cci $s numargs reverse? drop-args?)
      -> copycat-runtime-result?
@@ -407,6 +417,8 @@ returns them as a reversed vector"
 
 
 (cc-defhost string? (v -> boolean?))
+(cc-defhost string-length ([string? str] -> fixnum-natural0?)
+            "the number of characters in str")
 (cc-defhost string-append ([string? a] [string? b] -> string?))
 (cc-defhost/try strings-append (l -> string?))
 (cc-defhost/try strings-join ([(ilist-of string?) l] [string? inbetween]
