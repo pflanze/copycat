@@ -424,13 +424,6 @@ result is an Error or if there are any values left"
                                 (car prog*)
                                 (cadr prog*)))
                            (cc-interpreter.eval cont))))
-                   ((QUOTE)
-                    ;; takes 1 argument from program, puts it on
-                    ;; the stack
-                    (let ((cont (cdr prog*)))
-                      (=> s
-                          (cc-interpreter.stack-set (cons (car prog*) stack))
-                          (cc-interpreter.eval cont))))
                    (else
                     ;; Need to check prog* to get TCO!
                     ;; (cc-interpreter.eval '()) is a NOP but that's

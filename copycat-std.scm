@@ -786,11 +786,15 @@ stack, via .show and with location info not stripped"
  > (t '() '(4 (5 1 +) eval))
  (Ok (list 6 4))
 
- ;; words can be quoted by way of QUOTE:
- > (t '() '(QUOTE 1))
- (Ok (list 1))
- > (t '() '(QUOTE foo))
+ ;; Things can be explicitly made literals (prevented from
+ ;; interpretation) by wrapping them (`..`) with `(quote ..)`, or the
+ ;; S-expression `'` shortcut:
+ > (t '() '((quote foo)))
  (Ok (list 'foo))
+ > (t '() '('foo))
+ (Ok (list 'foo))
+ > (t '() '('1))
+ (Ok (list 1))
 
  ;; "syntax-based" word definition form: |:| takes a name, and a
  ;; program to its right, syntactically
@@ -802,7 +806,7 @@ stack, via .show and with location info not stripped"
  ;; "syntax-based" features when it could do with program and symbol
  ;; quoting and then just words like this, other than visual
  ;; preference.)
- > (t '() '((dup *) QUOTE sqr set! 4 sqr))
+ > (t '() '((dup *) 'sqr set! 4 sqr))
  (Ok (list 16))
 
  ;; "syntax-based" branching facility: takes a truebranch and a
@@ -829,7 +833,7 @@ stack, via .show and with location info not stripped"
  ;; write a word-based branching facility ourselves, using the
  ;; syntax-based one internally:
  > (t '() '((3 roll THENELSE (drop eval) (swap drop eval))
-            QUOTE if set!))
+            'if set!))
  ;;(Ok (list))
  > (t '(5) '(zero? (1) (0) if))
  (Ok (list 0))
@@ -837,14 +841,14 @@ stack, via .show and with location info not stripped"
  (Ok (list 1))
  ;; write a word-based branching facility ourselves, using the
  ;; stack-based one internally:
- > (t '() '((thenelse) QUOTE if* set!))
+ > (t '() '((thenelse) 'if* set!))
  > (t '(5) '(zero? (1) (0) if*))
  (Ok (list 0))
  > (t '(0) '(zero? (1) (0) if*))
  (Ok (list 1))
  ;; alias the branching facility by simply storing it to a different
  ;; word:
- > (t '() '(QUOTE if* ref QUOTE anotherif set!))
+ > (t '() '('if* ref 'anotherif set!))
  > (t '(5) '(zero? (1) (0) anotherif))
  (Ok (list 0))
  > (t '(0) '(zero? (1) (0) anotherif))
