@@ -30,13 +30,13 @@ instructions there then running `make gambit`.
 ### Build
 
     cd copycat
-    gsc -:tE,dar,t8,f8,-8
+    gsc -:tE,dpr,t8,f8,-8
     > (run-tests ".")
     > ,q
 
 ### Run read-eval-print loop
 
     cd copycat
-    gsc -:tE,dar,t8,f8,-8
+    gsc -:tE,dpr,t8,f8,-8
     > (cc-repl)
 
