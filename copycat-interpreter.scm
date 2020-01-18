@@ -512,7 +512,7 @@ result is an Error or if there are any values left"
             ))))))
 
 
-(defparameter copycat-default-fuel 1000)
+(defparameter copycat-default-fuel 100000)
 
 (def (fresh-cc-interpreter)
      (cc-interpreter '() (copycat-default-fuel)))
