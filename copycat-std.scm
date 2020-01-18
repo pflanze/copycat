@@ -294,6 +294,9 @@ after putting v on the stack and running prog"
 
 (cc-defhost list-reverse ([list? l] -> ilist?))
 
+(cc-defhost/try list-ref ([list? l] [fixnum-natural0? i] -> ilist?)
+                "get item i out of l")
+
 (cc-defguest (: list-map [ilist? l] [ilist? prog] -> ilist?
                 "create the list that, for each element value v in l,
 contains the value left at the top of the stack after putting v on the
@@ -568,6 +571,9 @@ from `ref`"
 
 (cc-defhost symbol->string ([symbol? s] -> string?)
             "return the underlying name string of the given symbol")
+
+(cc-defhost symbol? ([any? v] -> boolean?)
+            "whether v is a symbol")
 
 (cc-def ref ([symbol? name] -> ccproc?)
         "return the ccproc data structure associated with name (giving
