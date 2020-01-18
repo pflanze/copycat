@@ -375,7 +375,7 @@
   '(c/load "lib/write-csv")
   '(c/load "lib/xhtml"))
 
-(define /load c/load)
+(define /load (if (file-exists? ".i") i/load c/load))
 
 (generate-proper-tail-calls #t)
 (/load "copycat-interpreter-util")

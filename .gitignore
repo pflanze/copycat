@@ -5,3 +5,4 @@
 *.c
 .test-*
 /logo.svg
+.i
