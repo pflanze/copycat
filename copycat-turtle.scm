@@ -113,21 +113,26 @@
 (turtle-def-delegate/2 start real? real?)
 
 
-(cc-defguest (: drehen [angle? x] -> (rotate))
-             (: rechts (drehen))
-             (: r (° rechts))
-             (: links [angle? x] -> (.neg rechts))
-             (: l (° links))
-             (: forward [real? x] -> (draw))
+(cc-defguest 'right 'rotate alias
+             (: left [angle? x] -> (.neg right))
+             (: r (° right))
+             (: l (° left))
+             'forward 'draw alias
              (: back [real? x] -> (neg draw))
-             (: vorwärts (forward))
-             (: zurück (back))
-             (: f (forward))
-             (: v (vorwärts))
-             (: b (back))
-             (: z (zeig))
-             (: kommandos (commands))
-             (: k (kommandos))
-             (: zeig (view))
-             (: neu (new)))
+             'f 'forward alias
+             'b 'back alias
+             'j 'jump alias)
+
+
+(cc-defguest 'drehen 'rotate alias
+             'links 'left alias
+             'rechts 'drehen alias
+             'vorwärts 'forward alias
+             'v 'vorwärts alias
+             'zurück 'back alias
+             'neu 'new alias
+             'zeig 'view alias
+             'z 'zeig alias
+             'kommandos 'commands alias
+             'k 'kommandos alias)
 
