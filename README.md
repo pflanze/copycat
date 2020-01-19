@@ -61,4 +61,5 @@ These are my plans for what I intend to implement still:
 - perhaps a module system / namespaces?
 - compile Scheme to Copycat?
 - check types statically (as far as possible)?
+- (translate Copycat to PostScript?)
 
