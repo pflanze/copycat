@@ -4,11 +4,13 @@ This implements a concatenative ("Forth-like") language. It uses
 S-expressions for basic syntax, and deviates from
 [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) by
 using lists to quote subprograms, and maybe a few other changes. It
-might be [closest](https://hypercubed.github.io/joy/html/forth-joy.html)
+might be
+[closest](https://hypercubed.github.io/joy/html/forth-joy.html)
 [to](http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language)
-[Joy](https://en.wikipedia.org/wiki/Joy_(programming_language)), or
-[tcK (tiny concatenative K)](http://archive.vector.org.uk/art10000360). See
-also [Cat](http://www.cat-language.com/).
+[Joy](https://en.wikipedia.org/wiki/Joy_(programming_language)),
+[or](http://www.cat-language.com/)
+[Cat](https://github.com/cdiggins/cat-language).  See also
+[tcK (tiny concatenative K)](http://archive.vector.org.uk/art10000360).
 
 ## Installation and usage
 
