@@ -45,6 +45,9 @@ command input in the Copycat language:
     $PATH_TO/copycat/bin/copycat-repl
 
 
+## Documentation
+
+Read [doc/intro](doc/intro.md) for a description of the language.
 
 ## Future
 
