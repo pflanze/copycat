@@ -508,8 +508,8 @@ result is an Error or if there are any values left"
                     ;; literal ("presumably")
                     (cont-literal)))))))
 
-            XXX ;; the usual improper list failure
-            ))))))
+            ;; improper list (stupid)
+            (Error (copycat-type-error prog/loc "list?"))))))))
 
 
 (defparameter copycat-default-fuel 100000)
