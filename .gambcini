@@ -1,3 +1,11 @@
+(define (port-set-unescaped! port)
+  (output-port-readtable-set!
+   port                                                 
+   (readtable-max-unescaped-char-set (output-port-readtable port)
+                                     #\U0010ffff)))
+
+(port-set-unescaped! (repl-output-port))
+
 (define (lo)
   (generate-proper-tail-calls #f)
   (current-read-square-as-vector? #t)
