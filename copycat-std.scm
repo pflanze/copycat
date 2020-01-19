@@ -531,28 +531,6 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
               (Error (copycat-out-of-range $word "fixnum-natural0?" fuel*)))))
 
 
-;; -- Control flow
-
-(cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
-        (cc-interpreter.eval $cci (if val truebranch falsebranch)))
-
-;; XX can't implement that properly in copycat, right? Really need
-;; lexicals? Also, this drops all of the stack when failing at any
-;; point; maybe this is correct though.
-(cc-def repeat ([ilist? prog] [fixnum-natural0? n])
-        "repeat prog n times"
-        (let lp ((n n)
-                 (cci $cci))
-          (if (zero? n)
-              (Ok cci)
-              (>>= (cc-interpreter.eval cci prog)
-                   (C lp (dec n) _)))))
-
-(TEST
- > (t '() '(10 (1 +) 5 repeat))
- (Ok (list 15)))
-
-
 ;; -- procedures (for side-effects)
 
 (cc-def eval (prog)
@@ -748,6 +726,35 @@ stack, via .show and with location info not stripped"
         (cc-return (table.sorted-keys cc-words)))
 
 
+;; -- Control flow
+
+(cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
+        (cc-interpreter.eval $cci (if val truebranch falsebranch)))
+
+(cc-defguest 'if 'thenelse alias)
+;; (3 roll THENELSE (drop eval) (swap drop eval)) would be an
+;; alternative definition, as long as the interpreter supports the
+;; special THENELSE syntax.
+
+
+;; XX can't implement that properly in copycat, right? Really need
+;; lexicals? Also, this drops all of the stack when failing at any
+;; point; maybe this is correct though.
+(cc-def repeat ([ilist? prog] [fixnum-natural0? n])
+        "repeat prog n times"
+        (let lp ((n n)
+                 (cci $cci))
+          (if (zero? n)
+              (Ok cci)
+              (>>= (cc-interpreter.eval cci prog)
+                   (C lp (dec n) _)))))
+
+(TEST
+ > (t '() '(10 (1 +) 5 repeat))
+ (Ok (list 15)))
+
+
+
 ;; -- Remaining tests for functionality above -------------------
 
 (TEST
@@ -868,11 +875,8 @@ stack, via .show and with location info not stripped"
  ;; becomes the first:
  > (t '((no) (yes) #t 7) '(3 roll))
  (Ok (list #t (list 'no) (list 'yes) 7))
- ;; write a word-based branching facility ourselves, using the
- ;; syntax-based one internally:
- > (t '() '((3 roll THENELSE (drop eval) (swap drop eval))
-            'if set!))
- ;;(Ok (list))
+
+ ;; Test user-space |if| facility:
  > (t '(5) '(zero? (1) (0) if))
  (Ok (list 0))
  > (t '(0) '(zero? (1) (0) if))
