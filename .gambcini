@@ -5,6 +5,8 @@
                                      #\U0010ffff)))
 
 (port-set-unescaped! (repl-output-port))
+(port-set-unescaped! (current-output-port))
+
 
 (define (lo)
   (generate-proper-tail-calls #f)
