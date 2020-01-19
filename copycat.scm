@@ -23,7 +23,7 @@
      (in-monad
       Result
       (pretty-print (cj-desourcify (.stack cci))) ;; XX display modes?
-      (display ($ (.fuel cci) " \\$ "))
+      (display ($ (.fuel cci) " \\@ "))
       (let* ((next (lambda (cci past future)
                      ;; Hack: proper hook?
                      (let (tcmds (turtle-commands))

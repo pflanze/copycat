@@ -8,18 +8,18 @@ examples we're using the Copycat read-eval-print loop ("REPL"), which
 can be started via `$PATH_TO/copycat/bin/copycat-repl`. It will show:
     
     ()
-    100000 $ 
+    100000 @ 
 
 The `()` is representing the stack (as a list), because we have just
 started the REPL it is the empty list.  The `100000` is the current
 amount of "fuel" left for the "Copycat machine" to run--if it reaches
 zero, the machine will throw an exception which (currently) aborts
-evaluation of the program. The `$` is the command prompt, asking you
+evaluation of the program. The `@` is the command prompt, asking you
 to enter a single line of input in the Copycat language. There is line
 editing and history support (cursor up and down, ctl-r etc.) provided
 by `rlwrap` (see `man rlwrap`). After hitting the return key, the
 input is evaluated; any values resulting from the evaluation are left
-on the stack and shown before showing another `$` input prompt. To
+on the stack and shown before showing another `@` input prompt. To
 exit the repl, write `quit` (or `0 exit`).
 
 Copycat aims to provide good facilities for functional
@@ -41,26 +41,26 @@ more detail.
 
 Example: type `5` then hit return:
 
-    100000 $ 5
+    100000 @ 5
     (5)
 
 The number 5 is now on the stack, as shown with `(5)`. Enter another
 number (the fuel number was decremented by one, as there was one
 action that was run):
 
-    99999 $ 7
+    99999 @ 7
     (7 5)
 
 The stack now holds both `5` and `7`. The values on the top of the
 stack (entered last) are shown to the left. Enter `+` and return:
 
-    99998 $ +
+    99998 @ +
     (12)
 
 The program (action) associated with `+` has taken 2 values from the
 stack, added them up, and placed the result back onto the stack.
 
-    99997 $ number?
+    99997 @ number?
     (#t)
 
 The `number?` action has taken 1 value from the stack, checked whether
@@ -69,7 +69,7 @@ representing true, `#t`, onto the stack.
 
 More than one expression can be entered at the same time:
 
-    99996 $ 10 14 /
+    99996 @ 10 14 /
     (5/7 #t)
 
 This pushed another `5` and `7` onto the stack then ran a division
@@ -104,35 +104,35 @@ both `exact` and `inexact`).
 
 Examples (`c` clears the stack):
 
-    $ c -2 exact?
+    @ c -2 exact?
     (#t)
-    $ c -2 sqrt
+    @ c -2 sqrt
     (+1.4142135623730951i)
-    $ 3 +
+    @ 3 +
     (3+1.4142135623730951i)
-    $ dup exact? swap complex?
+    @ dup exact? swap complex?
     (#t #f)
 
 #### Characters
 
-    $ c #\A char?
+    @ c #\A char?
     (#t)
-    $ c #\A println
+    @ c #\A println
     A
     ()
-    $ #\A char->integer
+    @ #\A char->integer
     (65)
 
 #### Strings
 
 Series of characters. They are as defined by the Scheme standard.
 
-    $ c "Allô" "Motörhead!"
+    @ c "Allô" "Motörhead!"
     ("Motörhead!" "Allô")
-    $ println
+    @ println
     Motörhead!
     ("Allô")
-    $ string?
+    @ string?
     (#t)
 
 #### Lists
@@ -179,9 +179,9 @@ item in the current program.
 Symbols can also contain whitespace characters and other special
 characters if they are enclosed in the vertical bar:
 
-        $ c '|foo \|bar's| symbol->string
+        @ c '|foo \|bar's| symbol->string
         ("foo |bar's")
-        $ string-length
+        @ string-length
         (10)
 
 ### Additional syntax
@@ -198,7 +198,7 @@ characters if they are enclosed in the vertical bar:
     effect, but it's necessary for symbols (words) if what you want is
     not their evaluation, but them being put onto the stack:
   
-        $ c 'help ref
+        @ c 'help ref
         ([(ccguestproc)
                    "print help on the given word"
                    [(cc-type/results) #f ([symbol? word]) ()]
@@ -208,17 +208,17 @@ characters if they are enclosed in the vertical bar:
     is expanded into the latter form by the parser before it reaches the
     interpreter.
 
-        $ c 'foo symbol?
+        @ c 'foo symbol?
         (#t)
-        $ c ''foo symbol?
+        @ c ''foo symbol?
         (#f)
-        $ c ''foo list?
+        @ c ''foo list?
         (#t)
-        $ c ''foo 0 list-ref
+        @ c ''foo 0 list-ref
         (quote)
-        $ symbol?
+        @ symbol?
         (#t)
-        $ c ''foo 1 list-ref
+        @ c ''foo 1 list-ref
         (foo)
 
     Quoting via `'` is also necessary to prevent lists from being
@@ -310,11 +310,11 @@ message stating the error, and issues a new prompt.
 Copycat programs can evaluate a sub-program without being interrupted,
 though, via `try`:
 
-    1000 $ c (12 2 /) try
+    1000 @ c (12 2 /) try
     ([(Ok) (6)])
-    994 $ c (12 0 /) try
+    994 @ c (12 0 /) try
     ([(Error) [(copycat-division-by-zero) / 12 0]])
-    991 $ 
+    991 @ 
 
 Failing programs currently do not cost fuel. That's why the second
 case above took less fuel, only the outer part of the program cost
@@ -324,15 +324,15 @@ To use the result of `try`, use `if-Ok`, which will run the
 corresponding branch with the value wrapped in Ok or Error on the
 stack:
 
-    $ c (12 2 /) try ("succeeded") ("failed") if-Ok
+    @ c (12 2 /) try ("succeeded") ("failed") if-Ok
     ("succeeded" (6))
-    $ c (12 0 /) try ("succeeded") ("failed") if-Ok
+    @ c (12 0 /) try ("succeeded") ("failed") if-Ok
     ("failed" [(copycat-division-by-zero) / 12 0])
 
 To use the stack that was wrapped in `Ok` in the success branch, use
 `set-stack`:
 
-    $ c (12 2 /) try (set-stack "succeeded") ("failed") if-Ok
+    @ c (12 2 /) try (set-stack "succeeded") ("failed") if-Ok
     ("succeeded" 6)
 
 
