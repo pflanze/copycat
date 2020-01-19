@@ -661,6 +661,12 @@ given exit code")
         (>> (copycat:try-Ok (current-directory path))
             (cc-return)))
 
+(cc-defguest 'cd 'set-current-directory alias
+             'pwd 'current-directory alias
+             (: quit ->
+                "quit Copycat (currently also directly exits the process
+running the interpreter, not just the interpreter)"
+                (0 exit)))
 
 
 ;; -- debugging
