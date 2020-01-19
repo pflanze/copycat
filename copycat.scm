@@ -58,6 +58,11 @@
                (err it)))))
 
 (def (cc-repl #!optional (cci (fresh-cc-interpreter))) -> !
+     "for running from Emacs inferior scheme mode"
      (read-line)
+     (_cc-repl cci '() '() (turtle-commands)))
+
+(def (cc-repl* #!optional (cci (fresh-cc-interpreter))) -> !
+     "for running from console"
      (_cc-repl cci '() '() (turtle-commands)))
 

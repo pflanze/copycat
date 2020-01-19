@@ -32,16 +32,18 @@ below).
 
 ### Build
 
-    cd copycat
-    rlwrap gsc -:tE,dpr,t8,f8,-8
-    > (run-tests ".")
-    > ,q
+This compiles any uncompiled module files (or module files which
+changed since the last build), then runs the test suite:
+
+    $PATH_TO/copycat/bin/copycat-test
 
 ### Run read-eval-print loop
 
-    cd copycat
-    rlwrap gsc -:tE,dpr,t8,f8,-8
-    > (cc-repl)
+This also first builds any unbuilt or modified files, then listens for
+command input in the Copycat language:
+
+    $PATH_TO/copycat/bin/copycat-repl
+
 
 
 ## Future

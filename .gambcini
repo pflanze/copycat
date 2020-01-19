@@ -2,6 +2,7 @@
   (generate-proper-tail-calls #f)
   (current-read-square-as-vector? #t)
   (current-write-vector-as-square? #t)
-  (load ".gambc/load.scm"))
+  (load ".gambc/load.scm")
+  (cond ((getenv "COPYCAT_ORIG_PWD" #f)=> current-directory)))
 
 (lo)

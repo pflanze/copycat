@@ -1,0 +1,8 @@
+#!/bin/sh
+
+COPYCAT_ORIG_PWD="$PWD"
+export COPYCAT_ORIG_PWD
+
+cd "$(dirname "$(dirname "$0")")" || exit 1
+
+exec gsc -:tE,dpr,t8,f8,-8 "$@"
