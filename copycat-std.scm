@@ -477,7 +477,8 @@ style one"
             "Wrap v in an Ok (Result type)")
 (cc-defhost Error (v)
             "Wrap v in an Error (Result type)")
-(cc-def try ([ilist? prog])
+(cc-def try ([ilist? prog] -> (Result-of ilist?
+                                         copycat-error?))
         "eval prog, catching exceptions, returning a Result -- either
 an Ok-wrapped stack, or an Error-wrapped copycat error object"
         (if-Ok (cc-interpreter.eval $cci prog)
