@@ -649,6 +649,19 @@ s-expressions, enriched with location information"
                 "read and evaluate the given file"
                 (read-source eval)))
 
+(cc-defhost exit ([uint8? code])
+            "exit the process running the Copycat interpreter with the
+given exit code")
+
+(cc-defhost current-directory (-> string?)
+            "the path to the current directory")
+
+(cc-def set-current-directory ([string? path] ->)
+        "set the path to the current directory"
+        (>> (copycat:try-Ok (current-directory path))
+            (cc-return)))
+
+
 
 ;; -- debugging
 
