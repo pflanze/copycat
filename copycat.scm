@@ -50,6 +50,9 @@
                              (`(redo)
                               XXX)
                              (else
+                              ;; HACK:
+                              (set! *copycat-interpreter:interrupt* #f)
+                              ;; /HACK
                               (cc-interpreter.eval cci prog)))))
                (next it
                      (cons it (rappend future (cons cci past)))
