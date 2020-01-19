@@ -22,8 +22,8 @@ available [here](https://github.com/pflanze/gambc.git); on a Debian
 [chjize](https://github.com/pflanze/chjize) by following the
 instructions there then running `make gambit`.
 
-For good line editing and history, `rlwrap` is recommended (as used
-below).
+`rlwrap` is required by the `copycat-repl` script to provide better
+line editing and history functionality.
 
 ### Build
 
