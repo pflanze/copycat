@@ -2,4 +2,4 @@
 
 DIR=$(dirname "$0")
 
-exec rlwrap "$DIR/copycat" -e '(cc-repl*)'
+exec rlwrap "$DIR/copycat" -e '(copycat-init-sigint!) (cc-repl*)'
