@@ -215,7 +215,7 @@
   '(c/load "lib/corescheme-moretest")
   '(c/load "lib/eol")
   '(c/load "lib/csv-defaults")
-  '(c/load "lib/posix/interrupts")
+  (c/load "lib/posix/interrupts")
   '(c/load "lib/data-compressor")
   '(c/load "lib/debug")
   '(c/load "lib/debuggable-promise-everywhere")
