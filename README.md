@@ -63,3 +63,10 @@ These are my plans for what I intend to implement still:
 - check types statically (as far as possible)?
 - (translator from Copycat to PostScript?)
 
+Ideas:
+
+- use `( )` for Scheme style syntax, `[ ]` for Copycat programs? Could
+  provide `(if (zero? x) [sqrt] [inc square])` that way and `show`
+  output would become natural (mostly). Should provide efficient
+  functional vec implementation then, though.
+
