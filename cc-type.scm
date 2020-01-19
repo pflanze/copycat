@@ -42,7 +42,7 @@
 
 (def (cc-parse-type l)
      -> (Result-of cc-type?
-                   copycat-runtime-error?)
+                   copycat-error?)
      (let ((l* (cj-desourcify l))
            (loc (maybe-source-location l)))
        (if (list? l*)

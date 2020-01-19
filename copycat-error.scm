@@ -18,7 +18,7 @@ Result)"
 (include "lib/cj-standarddeclares.scm")
 
 
-(defclass ((copycat-runtime-error #f) [possibly-source? offending-code])
+(defclass ((copycat-error #f) [possibly-source? offending-code])
 
   (defclass (copycat-out-of-fuel))
 

@@ -19,7 +19,7 @@
          cc-type
          (copycat-interpreter-util possibly-source?
                                    copycat:predicate-accepts-source?)
-         copycat-runtime-error)
+         copycat-error)
 
 (export (class cc-interpreter)
         (macros copycat:try-Ok
@@ -55,7 +55,7 @@
 
 ;; --- Errors --------------------------------------------
 
-;; See copycat-runtime-error.scm
+;; See copycat-error.scm
 
 (def (cc-unwrap [copycat-runtime-result? v])
      (if-Ok v it (raise it)))
@@ -141,7 +141,7 @@
                     (err))))))))
 
 
-;; like Result:try but converts non-|copycat-runtime-error|s
+;; like Result:try but converts non-|copycat-error|s
 (defmacro (copycat:try-Ok . body)
   "Captures Scheme exceptions from body and returns them as (comp
 Error copycat-host-error); the result from body is wrapped with |Ok|.
@@ -160,7 +160,7 @@ Needs `$word` in its context."
 
 (def (copycat:Error $word e)
      (Error
-      (cond ((copycat-runtime-error? e) e)
+      (cond ((copycat-error? e) e)
             ;;((type-exception? e) ...)
             ;; ^ XX but have to change copycat-type-error to take
             ;;   multiple values.
@@ -530,7 +530,7 @@ result is an Error or if there are any values left"
 
 (def copycat-runtime-result?
      (Result-of cc-interpreter?
-                copycat-runtime-error?))
+                copycat-error?))
 
 
 
