@@ -14,13 +14,14 @@ The `()` is representing the stack (as a list), because we have just
 started the REPL it is the empty list.  The `100000` is the current
 amount of "fuel" left for the "Copycat machine" to run--if it reaches
 zero, the machine will throw an exception which (currently) aborts
-evaluation of the program. The `@` is the command prompt, asking you
-to enter a single line of input in the Copycat language. There is line
-editing and history support (cursor up and down, ctl-r etc.) provided
-by `rlwrap` (see `man rlwrap`). After hitting the return key, the
-input is evaluated; any values resulting from the evaluation are left
-on the stack and shown before showing another `@` input prompt. To
-exit the repl, write `quit` (or `0 exit`).
+evaluation of the program (see the "Fuel" section for more
+details). The `@` is the command prompt, asking you to enter a single
+line of input in the Copycat language. There is line editing and
+history support (cursor up and down, ctl-r etc.) provided by `rlwrap`
+(see `man rlwrap`). After hitting the return key, the input is
+evaluated; any values resulting from the evaluation are left on the
+stack and shown before showing another `@` input prompt. To exit the
+repl, write `quit` (or `0 exit`).
 
 Copycat aims to provide good facilities for functional
 programming--mutation should rarely be needed.
@@ -385,6 +386,24 @@ Have a look at [examples/](../examples/).
 
 Other file based commands are `current-directory` or `pwd`,
 `set-current-directory` or `cd`, `directory-items`, and `ls`.
+
+
+## Fuel
+
+The interpreter runs on a limited (but possibly very high) amount of
+fuel. Each program step costs one fuel item for its evaluation. When
+fuel reaches zero, evaluation stops (aborts) with an exception. This
+exception can be trapped with `try`. As mentioned in the section on
+exceptions, currently failing programs (regardless of whether they
+failed because of running out of fuel or for another reason) do "give
+back" their fuel, i.e. they cost nothing. This means that there will
+be fuel left after `try` to handle the error.
+
+Fuel can be added via `add-fuel` (relative) or `set-fuel` (absolute).
+
+(Possibly the copycat-repl should automatically reset the fuel to a
+given amount on each interactive entry? Not done currently as it might
+be educative to deal with it manually.)
 
 
 ## Turtle graphics
