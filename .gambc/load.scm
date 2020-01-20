@@ -1,5 +1,3 @@
-(include "set-compiler.scm")
-(include "set-config.scm")
 
 ;; (regen-lib-load-form)
 (begin

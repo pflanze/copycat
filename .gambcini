@@ -7,6 +7,8 @@
 (port-set-unescaped! (repl-output-port))
 (port-set-unescaped! (current-output-port))
 
+(include ".gambc/set-compiler.scm")
+(include ".gambc/set-config.scm")
 
 (define (lo)
   (generate-proper-tail-calls #f)

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=
+
+un=$(uname)
+
+if [ "$un" = Linux ]; then
+    if [ -r /etc/debian_version ]; then
+        if grep -q 'Hardware.*:.*BCM2835' /proc/cpuinfo; then
+            echo "RPI"
+        else
+            echo "DEBIAN"
+        fi
+    else
+        echo "Linux-but-unsupported-distro"
+    fi
+else
+    echo "not-Linux--currently-not-supported"
+fi
+
