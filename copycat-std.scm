@@ -494,6 +494,11 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
         (>>= (cc-interpreter.fuel-dec* $cci $word)
              (lambda (cci)
                (Ok (cc-interpreter.stack-set cci stack)))))
+
+(cc-def get-stack (-> ilist?)
+        "put the current stack on top of the current stack"
+        (cc-return $s))
+
 (cc-def if-Ok ([Result? v] [ilist? then] [ilist? else])
         (let (cont (lambda (it branch)
                     (==> (cc-interpreter.push* $cci it $word) ;; or use free push ?
