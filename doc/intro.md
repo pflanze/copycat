@@ -383,6 +383,9 @@ in particular Paredit (or Parinfer) on Emacs and some other editors.)
 
 Have a look at [examples/](../examples/).
 
+Other file based commands are `current-directory` or `pwd`,
+`set-current-directory` or `cd`, `directory-items`, and `ls`.
+
 
 ## Turtle graphics
 
