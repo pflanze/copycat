@@ -23,7 +23,11 @@ available [here](https://github.com/pflanze/gambc.git); on a Debian
 instructions there then running `make gambit`.
 
 `rlwrap` is required by the `copycat-repl` script to provide better
-line editing and history functionality.
+line editing and history functionality. The copycat-turtle library
+needs xmllint, and, when the DISPLAY env var is set (X windows), eog
+(Eye of Gnome). Install those on Debian systems via:
+
+    apt-get install rlwrap libxml2-utils eog
 
 ### Build
 
