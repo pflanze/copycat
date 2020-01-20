@@ -62,7 +62,8 @@
 
 (cc-def view (->)
         (copycat:try
-         (show-svn-logo (get-turtle-commands))
+         (save&possibly-show-svn-logo (and (getenv "DISPLAY" #f) #t)
+                                      (get-turtle-commands))
          (cc-return)))
 
 (cc-def sleep ([nonnegative-real? seconds] ->)

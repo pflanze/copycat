@@ -33,8 +33,9 @@
             (class svgfragment)))
         list-repeat
         svn-logo-process
+        save&possibly-show-svn-logo
         show-svn-logo
-        save-svn-logo
+        save-svn-logo ;; without cursor!
         ;; aliases
         ;;p
         #!optional
@@ -365,7 +366,7 @@
 
 (defparameter svg-logo:canvas-length 800)
 
-(def (show-svn-logo . cmds)
+(def (save&possibly-show-svn-logo show? cmds)
      (let (path (svg-logo:current-path))
        (.sxml-file (svg (2d-point (svg-logo:canvas-length)
                                   (svg-logo:canvas-length))
@@ -377,7 +378,12 @@
                                           default-drawing-state)
                         background-color: (colorstring "white"))
                    path)
-       (svg-logo:possibly-start-viewer-for path)))
+       (when show?
+         (svg-logo:possibly-start-viewer-for path))))
+
+(def (show-svn-logo . cmds)
+     (save&possibly-show-svn-logo #t cmds))
+
 
 (def (save-svn-logo . options)
      (lambda cmds
