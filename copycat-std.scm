@@ -52,7 +52,7 @@
 that the oldest one becomes the newest"
         ;; (letv ((args stack*) (split-at $s n))
         ;;       (append (cons (last args) (butlast args)) stack*))
-        ;;or, saving on intermediates:
+        ;;or, saving on intermediaries:
         (let lp ((n n)
                  (tmp '())
                  (stack $s))
@@ -153,7 +153,7 @@ that the oldest one becomes the newest"
         "1/x"
         (cc-return (/ x)))
 (cc-defhost inc ([incrementable-fixnum? n] -> fixnum?)
-            "the successor number to n")
+            "the successor number of n")
 (cc-defhost dec ([decrementable-fixnum? n] -> fixnum?)
             "the predecessor number to n")
 (cc-defhost square ([number? x] -> number?)
