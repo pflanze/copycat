@@ -685,6 +685,10 @@ s (i.e. never fails)")
             "exit the process running the Copycat interpreter with the
 given exit code")
 
+(cc-def sleep ([nonnegative-real? seconds] ->)
+        (thread-sleep! seconds)
+        (cc-return))
+
 
 (====cc-category (I/O s-expressions)
                  "reading and writing s-expressions")

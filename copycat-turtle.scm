@@ -69,10 +69,6 @@
                                       (get-turtle-commands))
          (cc-return)))
 
-(cc-def sleep ([nonnegative-real? seconds] ->)
-        (thread-sleep! seconds)
-        (cc-return))
-
 ;; 'delegates'
 
 (defmacro (turtle-def-delegate/0 name)
