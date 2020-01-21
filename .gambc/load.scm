@@ -376,15 +376,15 @@
 (define /load (if (file-exists? ".i") i/load c/load))
 
 (generate-proper-tail-calls #t)
-(/load "copycat-interpreter-util")
-(/load "copycat-error")
-(/load "cc-type")
+(c/load "copycat-interpreter-util")
+(c/load "copycat-error")
+(c/load "cc-type")
 (/load "copycat-interpreter")
 ;; (generate-proper-tail-calls #f)
 (/load "copycat-std")
 
-(/load "svg-logo-lib")
-(/load "svg-logo")
+(c/load "svg-logo-lib")
+(c/load "svg-logo")
 (/load "copycat-turtle")
 
 (/load "copycat")
