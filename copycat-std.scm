@@ -622,6 +622,33 @@ s (i.e. never fails)")
         (mdo (copycat:try-Ok (println v))
              (cc-return)))
 
+
+(cc-defhost current-input-port (-> input-port?)
+            "returns the current input filehandle (most often stdin)")
+
+(cc-defhost maybe-read-line ([input-port? port] -> string?)
+            "read a line from the given file handle, #f on EOF (ctl-d)")
+
+(cc-defhost string.maybe-number ([string? s] -> (maybe number?))
+            "convert given string to a number if possible, #f if not")
+
+(cc-def string.port ([string? s] -> input-port?)
+        "open the given string as a filehandle"
+        (cc-return (call-with-input-string s identity)))
+
+(cc-defhost read ([input-port? port] -> a)
+            "read one s-expression from the given filehandle")
+
+(cc-defhost read-all ([input-port? port] -> ilist?)
+            "read all s-expressions from the given filehandle")
+
+(TEST
+ > (t '() '("hello 3 \"there\"" string.port read))
+ (Ok (list 'hello))
+ > (t '() '("hello 3 \"there\"" string.port read-all))
+ (Ok (list (list 'hello 3 "there"))))
+
+
 (cc-def read-source ([string? path] -> ilist?)
         "read the contents of the file at path as a list of
 s-expressions, enriched with location information"
