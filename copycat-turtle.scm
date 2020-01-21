@@ -39,6 +39,9 @@
  180.)
 
 
+(====cc-category (turtle)
+                 "turtle graphics; see doc/intro")
+
 (cc-defhost ° ([real? x] -> °?))
 (cc-defhost rad ([real? x] -> rad?))
 (cc-defhost/try .rad (s))
@@ -125,6 +128,9 @@
              'j 'jump alias)
 
 
+(====cc-category (turtle DE)
+                 "german translations")
+
 (cc-defguest 'drehen 'rotate alias
              'links 'left alias
              'rechts 'drehen alias
@@ -135,3 +141,6 @@
              'zeig 'view alias
              'kommandos 'commands alias)
 
+
+(====cc-category) ;; prevent the previous setting from being carried
+                  ;; over to other modules (meh)
