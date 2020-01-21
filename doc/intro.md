@@ -20,8 +20,14 @@ line of input in the Copycat language. There is line editing and
 history support (cursor up and down, ctl-r etc.) provided by `rlwrap`
 (see `man rlwrap`). After hitting the return key, the input is
 evaluated; any values resulting from the evaluation are left on the
-stack and shown before showing another `@` input prompt. To exit the
-repl, write `quit` (or `0 exit`).
+stack and shown before showing another `@` input prompt. To interrupt
+long-running calculations, press Ctrl-C (TODO: this needs improvement,
+as it currently doesn't interrupt long-running system calls, and it
+doesn't abort a partially entered line in the line editor.)  To exit
+the repl, write `quit` (or `0 exit`)--Ctrl-D currently does not exit
+it, partially because of an implementation accident, partially because
+this prevents accidental loss of in-memory state; tell if you'd like
+that to change.
 
 Copycat aims to provide good facilities for functional
 programming--mutation should rarely be needed.
