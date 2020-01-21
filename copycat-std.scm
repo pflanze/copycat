@@ -432,12 +432,12 @@ returns them as a reversed vector"
 
 (cc-defhost char? (v)
             "whether v is a character")
-(cc-defhost char->integer ([char? c] -> fixnum?))
-(cc-defhost/try integer->char (n -> char?))
+(cc-defhost char.integer ([char? c] -> fixnum?))
+(cc-defhost/try integer.char (n -> char?))
 
-(cc-defhost string->list ([string? s] -> (ilist-of char?))
+(cc-defhost string.list ([string? s] -> (ilist-of char?))
             "convert string s into a list of all of its characters")
-(cc-defhost list->string ([(list-of char?) l] -> string?)
+(cc-defhost char-list.string ([(list-of char?) l] -> string?)
             "convert string s into a list of all of its characters")
 
 
@@ -559,13 +559,13 @@ from `ref`"
           (cc-word-set! name prog))
         (cc-return))
 
-(cc-defhost string->symbol ([string? s] -> symbol?)
+(cc-defhost string.symbol ([string? s] -> symbol?)
             "turn s into a symbol with the same name")
 
 (cc-defhost/try .symbol (s -> symbol?)
                 "generic to try to turn s into a symbol")
 
-(cc-defhost symbol->string ([symbol? s] -> string?)
+(cc-defhost symbol.string ([symbol? s] -> string?)
             "return the underlying name string of the given symbol")
 
 (cc-defhost symbol? ([any? v] -> boolean?)
@@ -860,7 +860,7 @@ stack, via .show and with location info not stripped"
  
  > (t '() '('f 42 +))
  (Error (copycat-type-error '+ "(number? a)" 'f))
- > (t '() '("foo" string->symbol 'bar))
+ > (t '() '("foo" string.symbol 'bar))
  (Ok (list 'bar 'foo))
  > (t '() '(1 2 "+" .symbol 1 list eval))
  (Ok (list 3))

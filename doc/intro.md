@@ -127,7 +127,7 @@ Examples (`c` clears the stack):
     @ c #\A println
     A
     ()
-    @ #\A char->integer
+    @ #\A char.integer
     (65)
 
 #### Strings
@@ -186,7 +186,7 @@ item in the current program.
 Symbols can also contain whitespace characters and other special
 characters if they are enclosed in the vertical bar:
 
-        @ c '|foo \|bar's| symbol->string
+        @ c '|foo \|bar's| symbol.string
         ("foo |bar's")
         @ string-length
         (10)
