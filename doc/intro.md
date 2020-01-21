@@ -417,7 +417,11 @@ programs to generate
 The `copycat-repl` automatically opens the viewer if any of the turtle
 commands are being used (and updates the view whenever more commands
 are being used, once after returning from the program--regardless of
-whether the programm succeeded or not).
+whether the programm succeeded or not). (TODO: exception: `new` if the
+drawing command queue is already empty, since it doesn't lead to a
+change in it, does not lead the repl to issue the viewing command,
+hence will not clear any existing SVG output or open the viewer. This
+should probably be fixed.)
 
 When using `copycat` without the repl, `view` has to be called to open
 the viewer or update the view.
