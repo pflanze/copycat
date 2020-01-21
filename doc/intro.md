@@ -427,7 +427,10 @@ When using `copycat` without the repl, `view` has to be called to open
 the viewer or update the view.
 
 The viewer is currently hard coded to be `eog` (Eye of Gnome, needing
-X Windows on Linux).
+X Windows on Linux), although if the `DISPLAY` environment is not set,
+no viewer will be started (the `logo.svg` output file is being
+generated in the current working directory, and could be picked up by
+another program).
 
 Have a look at the "turtle" examples in [examples/](../examples/).
 
