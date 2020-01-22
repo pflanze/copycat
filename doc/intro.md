@@ -24,10 +24,7 @@ stack and shown before showing another `@` input prompt. To interrupt
 long-running calculations, press Ctrl-C (TODO: this needs improvement,
 as it currently doesn't interrupt long-running system calls, and it
 doesn't abort a partially entered line in the line editor.)  To exit
-the repl, write `quit` (or `0 exit`)--Ctrl-D currently does not exit
-it, partially because of an implementation accident, partially because
-this prevents accidental loss of in-memory state; tell if you'd like
-that to change.
+the repl, write `quit` (or `0 exit`), or hit Ctrl-D currently.
 
 Copycat aims to provide good facilities for functional
 programming--mutation should rarely be needed.
@@ -300,6 +297,9 @@ The list of defined symbols can be retrieved via `dir`.
 
 * `"msg" PM`: same as `P` but instead of prefixing with the location,
     prints "msg"
+
+* `D`: enter a sub-repl in which you can interact with the stack; hit
+  ctl-d to continue evaluation of the surrounding program.
 
 
 ## Errors / exceptions
