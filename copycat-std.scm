@@ -25,7 +25,8 @@
 (TEST
  > (def (t stack prog)
         (=> (in-monad Result
-                      (==> (cc-interpreter.eval (cc-interpreter stack 1000) prog)
+                      (==> (cc-interpreter.eval (cc-interpreter stack 1000 0)
+                                                prog)
                            ((comp return cc-interpreter.stack))))
             
             .show)))
@@ -809,7 +810,16 @@ running the interpreter, not just the interpreter)"
                  "debugging aids")
 
 (cc-def D ()
-        "print stack, enter a repl; enter ,(c (Ok $s)) to continue!"
+        "Enter a (nested) Copycat repl with the current stack /
+machine state."
+        ;; XX HACK: defined in copycat.scm which currently
+        ;; depends on us
+        (Ok (=> (.repl-level-inc $cci)
+                cc-repl*
+                .repl-level-dec)))
+
+(cc-def DScheme ()
+        "print stack, enter a Scheme repl; enter ,(c (Ok $s)) to continue!"
         (mdo (copycat:try-Ok (pretty-print $s))
              (##repl)))
 

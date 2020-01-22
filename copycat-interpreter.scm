@@ -113,8 +113,7 @@
   (defmethod (cc-apply s [cc-interpreter? cci] word/loc)
     -> copycat-runtime-result?
     (let* ((cci/stack (lambda (stack)
-                        (cc-interpreter stack
-                                        (cc-interpreter.fuel cci))))
+                        (cc-interpreter.stack-set cci stack)))
            (stack (lambda ()
                     (cc-interpreter.stack cci)))
            (err
@@ -333,24 +332,34 @@ result is an Error or if there are any values left"
 
 
 (defclass (cc-interpreter [copycat-stack? stack]
-                          [fixnum-natural0? fuel])
+                          [fixnum-natural0? fuel]
+                          [fixnum-natural0? repl-level])
+
+  (defmethod (repl-level-inc s)
+    (.repl-level-update s inc-function))
+
+  (defmethod (repl-level-dec s)
+    (.repl-level-update s dec-function))
 
   (defmethod (fuel-dec* s offending-code) -> copycat-runtime-result?
     (if (zero? fuel)
         (Error (copycat-out-of-fuel offending-code))
-        (Ok (cc-interpreter stack (dec fuel)))))
+        (Ok (cc-interpreter stack (dec fuel) repl-level))))
 
   ;; For the other ...* methods, could just `==>`-chain fuel-dec* but
   ;; already wrote those and "are more optimized".
 
 
   (defmethod (push s val)
-    (cc-interpreter (cons val stack) fuel))
+    (cc-interpreter (cons val stack) fuel repl-level))
+
+  ;; (defmethod (push-vals s vals)
+  ;;   (cc-interpreter (append vals stack) fuel repl-level))
 
   (defmethod (push* s val offending-code)
     (if (zero? fuel)
         (Error (copycat-out-of-fuel offending-code))
-        (Ok (cc-interpreter (cons val stack) (dec fuel)))))
+        (Ok (cc-interpreter (cons val stack) (dec fuel) repl-level))))
 
   
   (defmethod (drop s offending-code) -> copycat-runtime-result?
@@ -358,7 +367,7 @@ result is an Error or if there are any values left"
     (in-monad Result
               (>>= (copycat:rest stack offending-code 1)
                    (lambda (stack*)
-                     (Ok (cc-interpreter stack* fuel))))))
+                     (Ok (cc-interpreter stack* fuel repl-level))))))
 
   ;; (defmethod (drop* s offending-code) -> copycat-runtime-result?
   ;;   "drop operation that takes fuel"
@@ -367,7 +376,7 @@ result is an Error or if there are any values left"
   ;;                 (Error (copycat-out-of-fuel offending-code))
   ;;                 (>>= (copycat:rest stack offending-code 1)
   ;;                      (lambda (stack*)
-  ;;                        (Ok (cc-interpreter stack* (dec fuel))))))))
+  ;;                        (Ok (cc-interpreter stack* (dec fuel) repl-level)))))))
 
 
   (defmethod (apply s [symbol? word] word/loc)
@@ -540,7 +549,7 @@ result is an Error or if there are any values left"
 (defparameter copycat-default-fuel 100000)
 
 (def (fresh-cc-interpreter)
-     (cc-interpreter '() (copycat-default-fuel)))
+     (cc-interpreter '() (copycat-default-fuel) 0))
 
 (def copycat-runtime-result?
      (Result-of cc-interpreter?

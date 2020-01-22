@@ -20,6 +20,12 @@ Result)"
 
 (defclass ((copycat-error #f) [possibly-source? offending-code])
 
+  (defclass (copycat-exit-repl)
+    (defmethod (explanation s)
+      "not an error, but a signal for the current evaluator to stop
+evaluation (and presumably continue evaluation of the program in the
+outer context, if any)."))
+
   (defclass (copycat-out-of-fuel))
 
   (defclass (copycat-interrupted))
