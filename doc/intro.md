@@ -300,7 +300,8 @@ The list of defined symbols can be retrieved via `dir`.
 
 * `D`: enter a sub-repl in which you can interact with the stack; hit
     ctl-d on an empty input line to continue evaluation of the
-    surrounding program. Example:
+    surrounding program. The sub-repl shows the level of nesting
+    between the fuel number and the prompt. Example:
 
         100000 @ 1 2 3 D 4 5 *
         (3 2 1)
