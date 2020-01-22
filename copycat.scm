@@ -39,6 +39,7 @@
                     ;; anyway, currently
                     (if (copycat-exit-repl? e)
                         (begin
+                          (display "<Ctl-D>")
                           (newline)
                           ;; the only return case in _cc-repl: (the
                           ;; new command line here was eof, hence no
