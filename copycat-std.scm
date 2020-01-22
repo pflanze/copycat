@@ -928,7 +928,7 @@ from there)"
 
 (TEST
  > (t '() '('help help-string))
- (Ok (list "help: ([symbol? word] ->)\n\nprint help on the given word")))
+ (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nprint help on the given word\n\nCategories:\n  (development help)\n----------------------------------------------------------\n")))
 
 
 (cc-def dir (-> ilist?)
