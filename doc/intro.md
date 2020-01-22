@@ -183,10 +183,10 @@ item in the current program.
 Symbols can also contain whitespace characters and other special
 characters if they are enclosed in the vertical bar:
 
-        @ c '|foo \|bar's| symbol.string
-        ("foo |bar's")
-        @ string-length
-        (10)
+    @ c '|foo \|bar's| symbol.string
+    ("foo |bar's")
+    @ string-length
+    (10)
 
 ### Additional syntax
 
