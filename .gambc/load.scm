@@ -379,6 +379,7 @@
 (c/load "copycat-interpreter-util")
 (c/load "copycat-error")
 (c/load "cc-type")
+(/load "cc-category")
 (/load "copycat-interpreter")
 ;; (generate-proper-tail-calls #f)
 (/load "copycat-std")
