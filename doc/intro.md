@@ -144,17 +144,24 @@ Series of characters. They are as defined by the Scheme standard.
 Series of other items. List literals start with `(` and end with
 `)`. There are no commas between elements in a list.
 
-Lists are implemented as chained pairs (singly-linked lists),
-each pair holds a value, and the remainder of the list. The empty list
-is represented by the null value (meaning, a list is either a pair or
+Lists are implemented as chained pairs (singly-linked lists), each
+pair holds a value, and the remainder of the list. The empty list is
+represented by the null value (meaning, a list is either a pair or
 null object). Lists are immutable, they can only be changed by adding
-new pairs at the front, or dropping pairs--or combinations
-thereof. Due to this, extending a list at the front is fast (using
-`cons` or `consn`), as is removing items from the front (using `rest`
-or `drop`), but accessing or modifying items far into the list is
-slow. You may want to use vectors instead if fast access to random
-elements is important.
+new pairs at the front, or dropping pairs--or combinations thereof
+(lists are stacks, just like the data stack; a list can be set as the
+data stack via `set-stack`, and the current stack can be retrieved as
+a whole (put on top of itself) via `get-stack`). Due to this,
+extending a list at the front is fast (using `cons` or `consn`), as is
+removing items from the front (using `rest` or `drop`), but accessing
+or modifying items far into the list is slow. You may want to use
+vectors instead if fast access to random elements is important.
 
+Here's an example on how to construct a list item by item, starting
+from the empty list:
+
+    @ c () 123 cons "foo" cons
+    (("foo" 123))
 
 #### Vectors
 
