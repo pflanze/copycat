@@ -386,7 +386,7 @@ lead to increasing call stack memory usage on each iteration.
     mutation by just adding the exclamation mark (where that is safe to
     do without changing the meaning of the program).
 
-* Procedures which work for various types via type dispatch (generics)
+* Procedures which work for various types via type dispatch (methods)
     are named with a leading dot.
 
 
