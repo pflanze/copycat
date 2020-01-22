@@ -857,12 +857,42 @@ stack, via .show and with location info not stripped"
 (====cc-category (development help)
                  "debugging aids")
 
+;; on ccproc
 (cc-defhost/try .docstring (s))
 (cc-defhost/try .type (s))
+(cc-defhost/try .categories (s))
+;; on cc-type
 (cc-defhost/try .maybe-original (s))
+;; on cc-category
+(cc-defhost/try .maybe-docstring (s))
+(cc-defhost/try .path (s))
+
+(cc-defhost cc-category-lookup ([(list-of symbol?) path] -> (maybe cc-category?))
+            "get the cc-category info globally registered for the
+given category path")
+
+(cc-defhost cc-category-list (-> (list-of cc-category?))
+            "get all globally registered cc-categories (sorted by
+their path)")
+
+(cc-defhost cc-category-paths (-> (list-of (list-of symbol?)))
+            "get all globally registered cc-category paths (sorted)")
 
 
-(cc-defguest (: help-string [symbol? word] -> string?
+(cc-defguest 'categories 'cc-category-list alias
+
+             (: category-path.maybe-docstring [(list-of symbol?) path] -> (maybe string?)
+                "look up docstring for given category path"
+                (cc-category-lookup (.maybe-docstring) maybe->>=))
+
+             (: maybe-category-docstring [cc-category? cat] -> (maybe string?)
+                "look up docstring for given cc-category (unlike
+.maybe-docstring run directly on cat, this looks up the *registered*
+cc-category associated with the contained path and gets the docstring
+from there)"
+                (.path category-path.maybe-docstring))
+
+             (: help-string [symbol? word] -> string?
                 "give help string on the given word"
                 (
                  dup .string ": " string-append ;; intro
