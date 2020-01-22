@@ -10,6 +10,7 @@
          test)
 
 (export possibly-source?
+        ilist-of-possibly-source?
         copycat:predicate-accepts-source?
         copycat-interpreter-util:desourcify)
 
@@ -54,6 +55,12 @@
      "same as `any?`, but expresses intent to accept source code"
      #t)
 
+(def (ilist-of-possibly-source? v)
+     "same as (possibly-source-of (ilist-of possibly-source?)) or
+simply (possibly-source-of ilist?)"
+     (let (v (source-code v))
+       (ilist? v)))
+
 (def (copycat:predicate-accepts-source? expr)
      ;; allocates, stupid, but only used at compile time
      (contains-deeply? (cj-desourcify expr)
@@ -62,7 +69,8 @@
                            ((possibly-source-of
                              possibly-source?
                              source-of
-                             source?)
+                             source?
+                             ilist-of-possibly-source?)
                             #t)
                            (else
                             #f)))))
@@ -87,7 +95,9 @@ be used as it breaks objects."
                 (if-let-pair
                  ((a r) v)
                  (cons (rec a) (rec r))
-                 (cond ((vector? v)
+                 (cond ((and #f (vector? v))
+                        ;; XX disable, as vector arguments would be
+                        ;; costly and vector-set!  fails.
                         (vector-map rec v))
                        (else v)))))))
 

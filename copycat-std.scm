@@ -254,22 +254,25 @@ does not check to the end of the list, for performance)")
                 ;; XX argument order?
                 "append the lists a and b")
 
-(cc-defhost/try list-drop ([ilist? l] [fixnum-natural0? n] -> ilist?)
+(cc-defhost/try list-drop ([ilist-of-possibly-source? l]
+                           [fixnum-natural0? n] -> ilist?)
                 "drop n elements from the start of l")
 ;; ^ Todo: better error messages would be good. Really want
 ;; Maybe-list-drop or even Result-list-drop. Or proper exceptions.
 
-(cc-defhost/try list-take ([ilist? l] [fixnum-natural0? n] -> ilist?)
+(cc-defhost/try list-take ([ilist-of-possibly-source? l]
+                           [fixnum-natural0? n] -> ilist?)
                 "take n elements from the start of l")
 
-(cc-def list-rmap ([ilist? l] [ilist? prog] -> ilist?)
+(cc-def list-rmap ([ilist-of-possibly-source? l]
+                   [ilist-of-possibly-source? prog] -> ilist?)
         "create the list that, for each element value v in reverse
 order of those in l, contains the value left at the top of the stack
 after putting v on the stack and running prog"
         ;; also see alternative map definition created in the test
         ;; suite below!
         (let lp ((res '())
-                 (l l)
+                 (l (source-code l))
                  ($cci $cci))
           (if (null? l)
               (let ($s (cc-interpreter.stack $cci))
@@ -295,7 +298,7 @@ after putting v on the stack and running prog"
                                 1
                                 0))))))
                (Error (copycat-type-error $word
-                                          "invalid stack: list?"
+                                          "list?"
                                           l))))))
 
 (cc-defhost list-reverse ([list? l] -> ilist?))
@@ -306,7 +309,9 @@ after putting v on the stack and running prog"
 (cc-defhost list-length ([list? l] -> fixnum-natural0?)
             "the number of items in l")
 
-(cc-defguest (: list-map [ilist? l] [ilist? prog] -> ilist?
+(cc-defguest (: list-map
+                [ilist-of-possibly-source? l]
+                [ilist-of-possibly-source? prog] -> ilist?
                 "create the list that, for each element value v in l,
 contains the value left at the top of the stack after putting v on the
 stack and running prog"
@@ -325,7 +330,7 @@ stack and running prog"
        Error.value
        ((dup copycat-type-error.predicate
              (comp source-code copycat-type-error.value))))
- ("invalid stack: list?" 5))
+ ("list?" 5))
 
 
 
@@ -465,7 +470,9 @@ representing the case of a present value; this prohibits the use of
 the #f value as part of present values (and can lead to mistakes), but
 can also be convenient (TODO: offer nesting 'Maybe' type).")
 
-(cc-def if-maybe ([any? a] [ilist? then] [ilist? else])
+(cc-def if-maybe ([any? a]
+                  [ilist-of-possibly-source? then]
+                  [ilist-of-possibly-source? else])
         "unlike `if`, this accepts non-boolean values for `a`, in
 which case the `then` branch is evaluated (i.e. a 'maybe' type if)"
         (cc-interpreter.eval $cci (if a then else)))
@@ -482,14 +489,14 @@ which case the `then` branch is evaluated (i.e. a 'maybe' type if)"
  (Error (copycat-type-error 'if "(boolean? val)" "other")))
 
 
-(cc-def and ([any? a] [ilist? b] -> any?)
+(cc-def and ([any? a] [ilist-of-possibly-source? b] -> any?)
         "this is not strictly a boolean operator, but a 'maybe' type
 style one (monadic >>)"
         (if a
             (cc-interpreter.eval $cci b)
             (cc-return a)))
 
-(cc-defguest (: maybe->>= [any? a] [ilist? b] -> any?
+(cc-defguest (: maybe->>= [any? a] [ilist-of-possibly-source? b] -> any?
                 "this is the monadic >>= ('bind') operator for the
 'maybe' type: if `a` is #f, it will return #f; otherwise, it will put
 `a` back on the stack (unlike `and` which does not do this) and
@@ -503,7 +510,7 @@ evaluate `b`"
  (Ok (list 21)))
 
 
-(cc-def or ([any? a] [ilist? b] -> any?)
+(cc-def or ([any? a] [ilist-of-possibly-source? b] -> any?)
         "this is not strictly a boolean operator, but a 'maybe' type
 style one"
         (if a
@@ -536,7 +543,9 @@ style one"
 (cc-defhost Error (v)
             "Wrap v in an Error (Result type)")
 
-(cc-def if-Ok ([Result? v] [ilist? then] [ilist? else])
+(cc-def if-Ok ([Result? v]
+               [ilist-of-possibly-source? then]
+               [ilist-of-possibly-source? else])
         (let (cont (lambda (it branch)
                     (==> (cc-interpreter.push* $cci it $word) ;; or use free push ?
                          (cc-interpreter.eval branch))))
@@ -548,8 +557,9 @@ style one"
                  "switch between implicit (propagation) and explicit
 error handling")
 
-(cc-def try ([ilist? prog] -> (Result-of ilist?
-                                         copycat-error?))
+(cc-def try ([ilist-of-possibly-source? prog]
+             -> (Result-of ilist?
+                           copycat-error?))
         "eval prog, catching exceptions, returning a Result -- either
 an Ok-wrapped stack, or an Error-wrapped copycat error object"
         (if-Ok (cc-interpreter.eval $cci prog)
@@ -565,11 +575,11 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 (====cc-category (control-flow Result exceptions)
                  (stack christian))
 
-(cc-def set-stack ([ilist? stack])
+(cc-def set-stack ([ilist-of-possibly-source? stack])
         "replace the stack contents with `stack`"
         (>>= (cc-interpreter.fuel-dec* $cci $word)
              (lambda (cci)
-               (Ok (cc-interpreter.stack-set cci stack)))))
+               (Ok (cc-interpreter.stack-set cci (source-code stack))))))
 
 (cc-def get-stack (-> ilist?)
         "put the current stack on top of the current stack"
@@ -609,7 +619,7 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 
 
 
-(cc-def eval (prog)
+(cc-def eval ([ilist-of-possibly-source? prog])
         "evaluate prog (a list of instructions)"
         (copycat:try (cc-interpreter.eval $cci prog)))
 
@@ -620,13 +630,14 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
 
 (====cc-category (environment))
 
-(cc-def set! ([(either ilist? ccproc?) prog] [symbol? name] ->)
+(cc-def set! ([(either ilist-of-possibly-source? ccproc?) prog]
+              [symbol? name] ->)
         "set the word with the given name to prog, which must be
 either a list of instructions, or a ccproc data structure as retrieved
 from `ref`"
         (let (prog (xcond ((ccproc? prog)
                            prog)
-                          ((ilist? prog)
+                          ((ilist-of-possibly-source? prog)
                            (ccguestproc #f ;; docstring
                                         (cc-type-unknown #f)
                                         (copycat-interpreter:current-categories)
@@ -830,7 +841,7 @@ stack, via .show and with location info not stripped"
 (====cc-category (development benchmarking)
                  "debugging aids")
 
-(cc-def time ([ilist? prog])
+(cc-def time ([ilist-of-possibly-source? prog])
         "Runs prog then prints how long it took"
         (time-thunk (lambda ()
                       (cc-interpreter.eval $cci prog))
@@ -880,7 +891,9 @@ stack, via .show and with location info not stripped"
 (====cc-category (control-flow)
                  "Control flow")
 
-(cc-def thenelse ([boolean? val] [ilist? truebranch] [ilist? falsebranch])
+(cc-def thenelse ([boolean? val]
+                  [ilist-of-possibly-source? truebranch]
+                  [ilist-of-possibly-source? falsebranch])
         (cc-interpreter.eval $cci (if val truebranch falsebranch)))
 
 (cc-defguest 'if 'thenelse alias)
@@ -892,7 +905,8 @@ stack, via .show and with location info not stripped"
 ;; XX can't implement that properly in copycat, right? Really need
 ;; lexicals? Also, this drops all of the stack when failing at any
 ;; point; maybe this is correct though.
-(cc-def repeat ([ilist? prog] [fixnum-natural0? n])
+(cc-def repeat ([ilist-of-possibly-source? prog]
+                [fixnum-natural0? n])
         "repeat prog n times"
         (let lp ((n n)
                  (cci $cci))
