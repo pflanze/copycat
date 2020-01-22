@@ -26,9 +26,13 @@ Result)"
 evaluation (and presumably continue evaluation of the program in the
 outer context, if any)."))
 
-  (defclass (copycat-out-of-fuel))
+  (defclass (copycat-out-of-fuel)
+    (defmethod (explanation s)
+      "no fuel left"))
 
-  (defclass (copycat-interrupted))
+  (defclass (copycat-interrupted)
+    (defmethod (explanation s)
+      "received interrupt signal (SIGINT, ctl-c)"))
 
   (defclass (copycat-unbound-symbol [symbol? name])
     (defmethod (explanation s)
