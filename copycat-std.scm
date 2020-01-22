@@ -572,6 +572,21 @@ an Ok-wrapped stack, or an Error-wrapped copycat error object"
                ;; it cost!!! Failing calculations are free currently!
                (cc-return it-Result)))
 
+(cc-def raise ([copycat-error? e] -> !)
+        "Raise an exception with `e` as the error value. Does not
+return (continue evaluation of the current program)."
+        ;; XX: re "does not return" type and docs: what about error
+        ;; handlers in the future? "!" is tied to the implicit error
+        ;; handler here.
+        (Error e))
+
+(cc-def unwrap ([(Result-of any? copycat-error?) result] -> (either any? !))
+        "If result is an `Ok`, return its contained value. If result
+is an `Error`, raise its value as an exception."
+        (if-Ok result
+               (cc-return it)
+               result))
+
 
 (====cc-category (control-flow Result exceptions)
                  (stack christian))
