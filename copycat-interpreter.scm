@@ -19,6 +19,7 @@
          cc-type
          (copycat-interpreter-util possibly-source?
                                    copycat:predicate-accepts-source?)
+         cc-category
          copycat-error)
 
 (export (class cc-interpreter)
@@ -82,12 +83,12 @@
 
 ;; --- Procedures -----------------------------------------
 
-
 ;; Procedure values
 
 (defclass ((ccproc #f)
            [(maybe (possibly-source-of string?)) docstring]
-           [cc-type? type]))
+           [cc-type? type]
+           [(list-of cc-category?) categories]))
 
 ;; Defined in guest language:
 
@@ -245,6 +246,7 @@ $s     the stack (out of $cci)
                                 (ccforeigncall
                                  ,maybe-docstring
                                  ,(.show it)      ;; type
+                                 ,(cc-category:current-categories-symbol)
                                  ,(length inputs) ;; numargs
                                  (copycat-lambda
                                   ,(cons* '[possibly-source? $word]
@@ -299,8 +301,12 @@ $s     the stack (out of $cci)
                        it)))
 
 
-(def (cc-defguest-run expr)
-     (=> (cc-interpreter.eval (fresh-cc-interpreter) expr)
+(defparameter copycat-interpreter:current-categories
+  (list (cc-category '(@runtime) #f)))
+
+(def (cc-defguest-run expr categories)
+     (=> (parameterize ((copycat-interpreter:current-categories categories))
+           (cc-interpreter.eval (fresh-cc-interpreter) expr))
          cc-unwrap
          cc-interpreter.stack
          ((lambda (stack)
@@ -311,7 +317,8 @@ $s     the stack (out of $cci)
 (defmacro (cc-defguest . prog)
   "Evaluates prog with an empty stack, throwing an exception if the
 result is an Error or if there are any values left"
-  `(cc-defguest-run (quote-source ,prog)))
+  `(cc-defguest-run (quote-source ,prog)
+                    ,(cc-category:current-categories-symbol)))
 
 
 ;; --- Interpreter -------------------------------------------
@@ -417,6 +424,7 @@ result is an Error or if there are any values left"
                                   (cc-word-set! (source-code name/loc)
                                                 (ccguestproc #f ;;
                                                              (cc-type-unknown #f)
+                                                             (copycat-interpreter:current-categories)
                                                              subprog))
                                   (cc-interpreter.eval s cont))
                                 (Error
@@ -487,6 +495,7 @@ result is an Error or if there are any values left"
                                               (source-code name) ;; XX loc ?
                                               (ccguestproc maybe-docstring
                                                            type
+                                                           (copycat-interpreter:current-categories)
                                                            prog))
                                              ;; Actually don't return with
                                              ;; Ok, but continue *here*
