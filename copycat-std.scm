@@ -892,6 +892,9 @@ cc-category associated with the contained path and gets the docstring
 from there)"
                 (.path category-path.maybe-docstring))
 
+             (: .categories-string
+                (.categories (.path pretty-string) list-map
+                             "  \n" strings-join))
              (: help-string [symbol? word] -> string?
                 "give help string on the given word"
                 (
@@ -900,9 +903,15 @@ from there)"
                  dup
                  .type .maybe-original pretty-string ;; type
                  swap
+                 dup 
                  .docstring source-code ("(no help text)") or ;; help
-                 2 list "\n" strings-join
-                 2 list strings-append))
+                 swap
+                 .categories-string "\nCategories:\n  " swap string-append
+                 3 list "\n" strings-join
+                 string-append
+                 ;; add horizontal rulers
+                 "----------------------------------------------------------\n"
+                 swap over 3 list strings-append))
 
              (: help [symbol? word] ->
                 "print help on the given word"
