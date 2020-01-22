@@ -201,7 +201,10 @@ Needs `$word` in its context."
                                 copycat:predicate-accepts-source?))
                           expr
                           (let (var (perhaps-typed.var arg))
-                            `(let (,var (source-code ,var))
+                            `(let (,var (cj-desourcify ,var))
+                               ;; ^ source-code is not enough in the
+                               ;; case of list (or vector, etc.)
+                               ;; literals.
                                ,expr))))
                     `(,(typed-lambda-expand stx args body
                                             '##begin
