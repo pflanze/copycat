@@ -46,7 +46,7 @@ outer context, if any)."))
          "available (either on the stack, or (in the case of "
          "special syntax) in the program)")))
 
-  (defclass (copycat-division-by-zero a b) ;; why capture b ?
+  (defclass (copycat-division-by-zero numerator)
     (defmethod (explanation s)
       "attempt to divide by exactly 0"))
 

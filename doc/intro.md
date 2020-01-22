@@ -337,7 +337,7 @@ though, via `try`:
     1000 @ c (12 2 /) try
     ([(Ok) (6)])
     994 @ c (12 0 /) try
-    ([(Error) [(copycat-division-by-zero) / 12 0]])
+    ([(Error) [(copycat-division-by-zero) / 12]])
     991 @ 
 
 Failing programs currently do not cost fuel. That's why the second
@@ -351,7 +351,7 @@ stack:
     @ c (12 2 /) try ("succeeded") ("failed") if-Ok
     ("succeeded" (6))
     @ c (12 0 /) try ("succeeded") ("failed") if-Ok
-    ("failed" [(copycat-division-by-zero) / 12 0])
+    ("failed" [(copycat-division-by-zero) / 12])
 
 To use the stack that was wrapped in `Ok` in the success branch, use
 `set-stack`:

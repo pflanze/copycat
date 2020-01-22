@@ -153,7 +153,7 @@ that the oldest one becomes the newest"
 (cc-def / ([number? a] [number? b] -> number?)
         (if (and (exact? b)
                  (zero? b))
-            (Error (copycat-division-by-zero $word a b))
+            (Error (copycat-division-by-zero $word a))
             (cc-return (/ a b))))
 (cc-def inv ([number? x] -> number?)
         "1/x"
