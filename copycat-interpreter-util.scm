@@ -10,7 +10,8 @@
          test)
 
 (export possibly-source?
-        copycat:predicate-accepts-source?)
+        copycat:predicate-accepts-source?
+        copycat-interpreter-util:desourcify)
 
 
 (include "lib/cj-standarddeclares.scm")
@@ -74,4 +75,26 @@
           (list-of possibly-source?)
           (list-of string?)))
  (#t #f #t #t #f))
+
+
+
+(def copycat-interpreter-util:desourcify
+     (named rec
+            (lambda (v)
+              "Deeply remove location information. cj-desourcify can't
+be used as it breaks objects."
+              (let (v (source-code v))
+                (if-let-pair
+                 ((a r) v)
+                 (cons (rec a) (rec r))
+                 (cond ((vector? v)
+                        (vector-map rec v))
+                       (else v)))))))
+
+(TEST
+ > (def v (source-code (quote-source (a b . c))))
+ > (improper-map source? v)
+ (#t #t . #t)
+ > (improper-map source? (copycat-interpreter-util:desourcify v))
+ (#f #f . #f))
 
