@@ -299,7 +299,16 @@ The list of defined symbols can be retrieved via `dir`.
     prints "msg"
 
 * `D`: enter a sub-repl in which you can interact with the stack; hit
-  ctl-d to continue evaluation of the surrounding program.
+    ctl-d on an empty input line to continue evaluation of the
+    surrounding program. Example:
+
+        100000 @ 1 2 3 D 4 5 *
+        (3 2 1)
+        99996 1 @ 1 +
+        (4 2 1)
+        99994 1 @ <Ctl-D>
+        (20 4 2 1)
+        99991 @ 
 
 
 ## Errors / exceptions
