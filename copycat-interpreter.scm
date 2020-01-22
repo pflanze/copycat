@@ -534,7 +534,7 @@ result is an Error or if there are any values left"
                         (cont-literal)))))))
 
                 ;; improper list (stupid)
-                (Error (copycat-type-error prog/loc "list?")))))))))
+                (Error (copycat-type-error prog/loc "list?" prog)))))))))
 
 
 (defparameter copycat-default-fuel 100000)
