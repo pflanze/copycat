@@ -253,7 +253,7 @@ characters if they are enclosed in the vertical bar:
     least) 2 items from the stack, the first (put on the stack first,
     but is now second from the top of the stack) being `somearg` with no
     type constraint, and the second `otherarg` which has the constraint
-    that it must return true when passed to the procedure `boolean?`
+    that the procedure `boolean?` must return true if passed the value
     (type items which are vectors define both the predicate restricting
     the type, and the variable name).
 
