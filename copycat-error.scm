@@ -20,6 +20,8 @@ Result)"
 
 (defclass ((copycat-error #f) [possibly-source? offending-code])
 
+  (defmethod- (maybe-help s) #f)
+
   (defclass (copycat-exit-repl)
     (defmethod (explanation s)
       "not an error, but a signal for the current evaluator to stop
@@ -28,7 +30,11 @@ outer context, if any)."))
 
   (defclass (copycat-out-of-fuel)
     (defmethod (explanation s)
-      "no fuel left"))
+      "no fuel left")
+    (defmethod (maybe-help s)
+      "Perhaps the program ran in an infinite loop. If
+you think it isn't, try giving it more fuel via `add-fuel` or
+`set-fuel`."))
 
   (defclass (copycat-interrupted)
     (defmethod (explanation s)
