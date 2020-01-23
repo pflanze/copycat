@@ -257,7 +257,9 @@ characters if they are enclosed in the vertical bar:
     (type items which are vectors define both the predicate restricting
     the type, and the variable name).
 
-    Note that currently the variable names are purely cosmetic (for
+    Note that currently the variable names and type constraints (when
+    used via `:` from Copycat--things are different when using the
+    `cc-def` etc. forms from Scheme) are purely cosmetic (for
     documentation, and shown by `help`). They are neither assigned to
     those symbols, nor are the type checks being done. This may both
     change in the future.
