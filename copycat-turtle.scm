@@ -42,10 +42,16 @@
 (====cc-category (turtle)
                  "turtle graphics; see doc/intro")
 
-(cc-defhost ° ([real? x] -> °?))
-(cc-defhost rad ([real? x] -> rad?))
-(cc-defhost/try .rad (s))
-(cc-defhost/try .degrees (s))
+(cc-defhost ° ([real? x] -> °?)
+            "wrap `x` in an object denoting an angle in degrees")
+(cc-defhost rad ([real? x] -> rad?)
+            "wrap `x` in an object denoting an angle in radians")
+(cc-defhost/try .rad (s)
+                "convert s (e.g. a rad or ° object) to a bare number
+in radians")
+(cc-defhost/try .degrees (s)
+                "convert s (e.g. a rad or ° object) to a bare number
+in degrees")
 
 (defparameter turtle-commands '())
 
@@ -55,15 +61,18 @@
 ;; all side effects on I/O ~
 
 (cc-def new (->)
-        "starte frische Grafik"
+        "delete turtle canvas, set position to the center, and point
+up (north)"
         (turtle-commands '())
         (cc-return))
 
 (cc-def commands (-> (list-of logo-command?))
-        "zeig die aktuellen Grafik kommandos"
+        "get the currently accumulated turtle commands"
         (cc-return (get-turtle-commands)))
 
 (cc-def view (->)
+        "show the currently accumulated turtle commands (generate SVG
+graph, open viewer if running under X-windows)"
         (copycat:try
          (save&possibly-show-svn-logo (and (getenv "DISPLAY" #f) #t)
                                       (get-turtle-commands))
@@ -71,24 +80,29 @@
 
 ;; 'delegates'
 
-(defmacro (turtle-def-delegate/0 name)
+(defmacro (def-turtle-delegate/0 name docstring)
   `(cc-def ,name (->)
+           ,docstring
            (parameter-push! turtle-commands (,name))
            (cc-return)))
 
-(defmacro (turtle-def-delegate/1 name type)
+(defmacro (def-turtle-delegate/1 name type docstring)
   `(cc-def ,name ([,type x] ->)
+           ,docstring
            (parameter-push! turtle-commands (,name x))
            (cc-return)))
 
-(defmacro (turtle-def-delegate/2 name type1 type2)
+(defmacro (def-turtle-delegate/2 name type1 type2 docstring)
   `(cc-def ,name ([,type1 x] [,type2 y] ->)
+           ,docstring
            (parameter-push! turtle-commands (,name x y))
            (cc-return)))
 
 
-(turtle-def-delegate/1 draw real?)
-(turtle-def-delegate/1 jump real?)
+(def-turtle-delegate/1 draw real?
+  "draw a stroke of the given length")
+(def-turtle-delegate/1 jump real?
+  "move the given length without drawing")
 (cc-def rotate ([angle? x])
         (parameter-push! turtle-commands (rotate (.rad x)))
         (cc-return))
@@ -96,21 +110,24 @@
 ;; oops, and we are in first-class approach (monad)
 ;; XX try it out...
 (cc-def closed ([(list-of path-command?) l] -> path-command?)
-        ""
+        ;;"XX "
         (cc-return (_closed l)))
 
 (cc-def paintopts ([(list-of path-command?) l] [paintoptions? opts]
                    -> path-command?)
         (cc-return (_paintopts opts l)))
 
-;;(turtle-def-delegate/1 svgfragment)
+;;(def-turtle-delegate/1 svgfragment "...")
 
 ;; XX and/but these *currently* (even, already) don't allow to inspect
 ;; the pushed state.
-(turtle-def-delegate/0 push-pos)
-(turtle-def-delegate/0 pop-pos)
+(def-turtle-delegate/0 push-pos
+  "push the current position onto a separate position stack")
+(def-turtle-delegate/0 pop-pos
+  "pop the position that was last pushed to the position stack")
 
-(turtle-def-delegate/2 start real? real?)
+(def-turtle-delegate/2 start real? real?
+  "set (x,y) position to the given numbers")
 
 
 (cc-defguest 'right 'rotate alias
