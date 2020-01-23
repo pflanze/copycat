@@ -1,10 +1,10 @@
 # Copycat: a concatenative language (using S-expressions)
 
-This implements a concatenative ("Forth-like") language. It uses
-S-expressions for basic syntax, and deviates from
-[Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) by
-using lists to quote subprograms, and maybe a few other changes. It
-might be
+This implements a concatenative
+("[Forth](https://en.wikipedia.org/wiki/Forth_(programming_language))-like")
+language. It uses S-expressions for basic syntax, and deviates from
+Forth by using lists to quote subprograms, and maybe a few other
+changes. It might be
 [closest](https://hypercubed.github.io/joy/html/forth-joy.html)
 [to](http://www.latrobe.edu.au/humanities/research/research-projects/past-projects/joy-programming-language)
 [Joy](https://en.wikipedia.org/wiki/Joy_(programming_language)),
@@ -18,9 +18,11 @@ might be
 
 This requires the Gambit-C Scheme system with some patches as
 available [here](https://github.com/pflanze/gambc.git); on a Debian
-(perhaps Ubuntu or Raspbian) system it can easily be installed via
+(or Raspbian or perhaps Ubuntu) system it can easily be installed via
 [chjize](https://github.com/pflanze/chjize) by following the
-instructions there then running `make gambit`.
+instructions there then running `make gambit`. If you compile it
+manually instead, make sure to add the `--enable-cplusplus` configure
+option.
 
 `rlwrap` is required by the `copycat-repl` script to provide better
 line editing and history functionality. The copycat-turtle library
@@ -74,5 +76,5 @@ Ideas:
 - use `( )` for Scheme style syntax, `[ ]` for Copycat programs? Could
   provide `(if (zero? x) [sqrt] [inc square])` that way and `show`
   output would become natural (mostly). Should provide efficient
-  functional vec implementation then, though.
+  functional vec implementation then?
 
