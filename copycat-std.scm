@@ -23,12 +23,13 @@
 
 ;; Add test function when running test suite
 (TEST
+ > (def (t* stack prog)
+        (in-monad Result
+                  (==> (cc-interpreter.eval (cc-interpreter stack 1000 0)
+                                            prog)
+                       ((comp return cc-interpreter.stack)))))
  > (def (t stack prog)
-        (=> (in-monad Result
-                      (==> (cc-interpreter.eval (cc-interpreter stack 1000 0)
-                                                prog)
-                           ((comp return cc-interpreter.stack))))
-            
+        (=> (t* stack prog)
             .show)))
 
 
@@ -595,6 +596,22 @@ which can be raised as an exception."
 (cc-defguest (: error [string? msg] [ilist? args] -> !
                 "Raise a generic exception with the given message and arguments"
                 (generic-error raise)))
+
+(cc-defhost/try .explanation (o -> string?)
+                "expected to return a string for copycat-error objects")
+
+
+(TEST
+ > (t '() '("before"
+            (je765etzc) try
+            ("dead") (.explanation) if-Ok))
+ (Ok (list "the given word is not defined" "before"))
+ > (if-Ok (t* '() (quote-source ("hi" (1) error "there")))
+          'huh
+          ((dup copycat-generic-error? .msg .args) it))
+ (#t "hi" (1))
+ > (t '() '("before" "some" ("thing") generic-error Error unwrap "hi"))
+ (Error (copycat-generic-error 'generic-error "some" (list "thing"))))
 
 
 (====cc-category (control-flow Result exceptions)
