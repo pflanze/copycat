@@ -587,6 +587,15 @@ is an `Error`, raise its value as an exception."
                (cc-return it)
                result))
 
+(cc-def generic-error ([string? msg] [ilist? args] -> copycat-generic-error?)
+        "Wrap the given arguments in a copycat-generic-error object
+which can be raised as an exception."
+        (cc-return (copycat-generic-error $word msg args)))
+
+(cc-defguest (: error [string? msg] [ilist? args] -> !
+                "Raise a generic exception with the given message and arguments"
+                (generic-error raise)))
+
 
 (====cc-category (control-flow Result exceptions)
                  (stack christian))

@@ -40,6 +40,11 @@ you think it isn't, try giving it more fuel via `add-fuel` or
     (defmethod (explanation s)
       "received interrupt signal (SIGINT, ctl-c)"))
 
+  (defclass (copycat-generic-error [string? msg]
+                                   [ilist? args])
+    (defmethod (explanation s)
+      "generic error"))
+
   (defclass (copycat-unbound-symbol [symbol? name])
     (defmethod (explanation s)
       "the given word is not defined"))
