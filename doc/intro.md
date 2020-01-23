@@ -251,11 +251,14 @@ characters if they are enclosed in the vertical bar:
   
     This declares that the procedure being defined always takes (at
     least) 2 items from the stack, the first (put on the stack first,
-    but is now second from the top of the stack) being `somearg` with no
-    type constraint, and the second `otherarg` which has the constraint
-    that the procedure `boolean?` must return true if passed the value
-    (type items which are vectors define both the predicate restricting
-    the type, and the variable name).
+    but is now second from the top of the stack) being `somearg` with
+    no type constraint, and the second `otherarg` which has the
+    constraint that the procedure `boolean?` must return true if
+    passed the value (type items which are vectors define both the
+    predicate restricting the type, and the variable name). If no
+    arrow is given, that means that the return types are
+    unspecified. If the arrow is given but nothing to the rigth that
+    means no return value.
 
     Note that currently the variable names and type constraints (when
     used via `:` from Copycat--things are different when using the
