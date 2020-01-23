@@ -958,6 +958,10 @@ and with location info not stripped"
 (====cc-category (development help)
                  "debugging aids")
 
+(cc-def dir (-> (ilist-of symbol?))
+        "returns the list of defined words"
+        (cc-return (table.sorted-keys cc-words)))
+
 ;; on ccproc
 (cc-defhost/try .docstring (s))
 (cc-defhost/try .type (s))
@@ -1021,11 +1025,6 @@ from there)"
 (TEST
  > (t '('help help-string))
  (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nprint help on the given word\n\nCategories:\n  (development help)\n----------------------------------------------------------\n")))
-
-
-(cc-def dir (-> ilist?)
-        "returns the list of defined words"
-        (cc-return (table.sorted-keys cc-words)))
 
 
 (====cc-category (control-flow)
