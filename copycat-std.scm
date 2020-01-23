@@ -944,7 +944,7 @@ from there)"
 
              (: .categories-string
                 (.categories (.path pretty-string) list-map
-                             "  \n" strings-join))
+                             "  " strings-join))
              (: help-string [symbol? word] -> string?
                 "give help string on the given word"
                 (
