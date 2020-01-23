@@ -23,13 +23,13 @@
 
 ;; Add test function when running test suite
 (TEST
- > (def (t* stack prog)
+ > (def (t* prog)
         (in-monad Result
-                  (==> (cc-interpreter.eval (cc-interpreter stack 1000 0)
+                  (==> (cc-interpreter.eval (cc-interpreter '() 1000 0)
                                             prog)
                        ((comp return cc-interpreter.stack)))))
- > (def (t stack prog)
-        (=> (t* stack prog)
+ > (def (t prog)
+        (=> (t* prog)
             .show)))
 
 
@@ -226,7 +226,7 @@ does not check to the end of the list, for performance)")
         (cc-return (rest l) (first l)))
 
 (TEST
- > (t '() '((3 4 5) first+rest))
+ > (t '((3 4 5) first+rest))
  (Ok (list 3 (list 4 5))))
 
 (cc-defhost pair? (a -> boolean?)
@@ -320,9 +320,9 @@ stack and running prog"
                 (list-rmap list-reverse)))
 
 (TEST
- > (t '() '((1 4 5) (inc square) list-map))
+ > (t '((1 4 5) (inc square) list-map))
  (Ok (list (list 4 25 36)))
- > (t '() (quote-source ((1 4 5) (inc square) list-rmap)))
+ > (t (quote-source ((1 4 5) (inc square) list-rmap)))
  (Ok (list (list 36 25 4)))
 
  > (=> (.eval (fresh-cc-interpreter)
@@ -413,21 +413,21 @@ returns them as a reversed vector"
 
 
 (TEST
- > (t '() '('a 'b 'c 2 rvector)) 
+ > (t '('a 'b 'c 2 rvector)) 
  (Ok (list (vector 'c 'b) 'a))
- > (t '() '('a 'b 'c 2 vector)) 
+ > (t '('a 'b 'c 2 vector)) 
  (Ok (list (vector 'b 'c) 'a))
- > (t '() '('a 'b 'c 2 copy-rvector)) 
+ > (t '('a 'b 'c 2 copy-rvector)) 
  (Ok (list (vector 'c 'b) 'c 'b 'a))
- > (t '() '('a 'b 'c 2 copy-vector)) 
+ > (t '('a 'b 'c 2 copy-vector)) 
  (Ok (list (vector 'b 'c) 'c 'b 'a))
- > (t '() '([a b c] 2 vector-ref))
+ > (t '([a b c] 2 vector-ref))
  (Ok (list 'c))
- > (t '() '([a b c] 3 vector-ref))
+ > (t '([a b c] 3 vector-ref))
  (Error (copycat-out-of-bounds-access 'vector-ref 3 3))
- > (t '() '([a b c] dup 0 "hi" vector-set!))
+ > (t '([a b c] dup 0 "hi" vector-set!))
  (Ok (list (vector "hi" 'b 'c) (vector "hi" 'b 'c)))
- > (t '() '([a b c] dup 0 "hi" vector-set))
+ > (t '([a b c] dup 0 "hi" vector-set))
  (Ok (list (vector "hi" 'b 'c) (vector 'a 'b 'c))))
 
 
@@ -480,14 +480,14 @@ which case the `then` branch is evaluated (i.e. a 'maybe' type if)"
         (cc-interpreter.eval $cci (if a then else)))
 
 (TEST
- > (t '() '(#f ('yes) ('no) if-maybe))
+ > (t '(#f ('yes) ('no) if-maybe))
  (Ok (list 'no))
- > (t '() '(#t ('yes) ('no) if-maybe))
+ > (t '(#t ('yes) ('no) if-maybe))
  (Ok (list 'yes))
- > (t '() '("other" ('yes) ('no) if-maybe))
+ > (t '("other" ('yes) ('no) if-maybe))
  (Ok (list 'yes))
  ;; unlike:
- > (t '() '("other" ('yes) ('no) if))
+ > (t '("other" ('yes) ('no) if))
  (Error (copycat-type-error 'if "(boolean? val)" "other")))
 
 
@@ -506,9 +506,9 @@ evaluate `b`"
                 (over -rot () if-maybe)))
 
 (TEST
- > (t '() '(#f (10 +) maybe->>=))
+ > (t '(#f (10 +) maybe->>=))
  (Ok (list #f))
- > (t '() '(11 (10 +) maybe->>=))
+ > (t '(11 (10 +) maybe->>=))
  (Ok (list 21)))
 
 
@@ -520,13 +520,13 @@ style one"
             (cc-interpreter.eval $cci b)))
 
 (TEST
- > (t '() '(#f (1 2 +) and))
+ > (t '(#f (1 2 +) and))
  (Ok (list #f))
- > (t '() '(9 (1 2 +) and))
+ > (t '(9 (1 2 +) and))
  (Ok (list 3))
- > (t '() '(#f (1 2 +) or))
+ > (t '(#f (1 2 +) or))
  (Ok (list 3))
- > (t '() '(9 (1 2 +) or))
+ > (t '(9 (1 2 +) or))
  (Ok (list 9)))
 
 
@@ -602,15 +602,15 @@ which can be raised as an exception."
 
 
 (TEST
- > (t '() '("before"
+ > (t '("before"
             (je765etzc) try
             ("dead") (.explanation) if-Ok))
  (Ok (list "the given word is not defined" "before"))
- > (if-Ok (t* '() (quote-source ("hi" (1) error "there")))
+ > (if-Ok (t* (quote-source ("hi" (1) error "there")))
           'huh
           ((dup copycat-generic-error? .msg .args) it))
  (#t "hi" (1))
- > (t '() '("before" "some" ("thing") generic-error Error unwrap "hi"))
+ > (t '("before" "some" ("thing") generic-error Error unwrap "hi"))
  (Error (copycat-generic-error 'generic-error "some" (list "thing"))))
 
 
@@ -629,19 +629,19 @@ which can be raised as an exception."
 
 
 (TEST ;; Result
- > (t '() '(39 Ok ("yes") ("no") if-Ok))
+ > (t '(39 Ok ("yes") ("no") if-Ok))
  (Ok (list "yes" 39))
- >  (t '() '(40 Error ("yes") ("no") if-Ok))
+ >  (t '(40 Error ("yes") ("no") if-Ok))
  (Ok (list "no" 40))
- > (t '() '("before" ("yes") try))
+ > (t '("before" ("yes") try))
  (Ok (list (Ok (list "yes" "before")) "before"))
- > (t '() '("before" ("hi" "yes" inc) try))
+ > (t '("before" ("hi" "yes" inc) try))
  ;; Errors drop the intermediate results (and don't retain them in the
  ;; exception value anymore, unlike in some earlier version of
  ;; copycat).
  (Ok (list (Error (copycat-type-error 'inc "(incrementable-fixnum? n)" "yes"))
            "before"))
- > (t '() '("before" ("yes") try (set-stack) ("bug") if-Ok))
+ > (t '("before" ("yes") try (set-stack) ("bug") if-Ok))
  (Ok (list "yes" "before")))
 
 
@@ -720,7 +720,7 @@ an error if not bound)"
 
 
 (TEST
- > (t '() (quote-source ('blabla 'help alias 'blabla ref .docstring source-code)))
+ > (t (quote-source ('blabla 'help alias 'blabla ref .docstring source-code)))
  (Ok (list "print help on the given word")))
 
 
@@ -784,9 +784,9 @@ given exit code")
             "read all s-expressions from the given filehandle")
 
 (TEST
- > (t '() '("hello 3 \"there\"" string.port read))
+ > (t '("hello 3 \"there\"" string.port read))
  (Ok (list 'hello))
- > (t '() '("hello 3 \"there\"" string.port read-all))
+ > (t '("hello 3 \"there\"" string.port read-all))
  (Ok (list (list 'hello 3 "there"))))
 
 
@@ -900,7 +900,7 @@ and with location info not stripped"
                     (cj-desourcify prog)))
 
 (TEST
- > (t '() '((10 30 +) time))
+ > (t '((10 30 +) time))
  (Ok (list 40)))
 
 
@@ -968,7 +968,7 @@ from there)"
                 (help-string println)))
 
 (TEST
- > (t '() '('help help-string))
+ > (t '('help help-string))
  (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nprint help on the given word\n\nCategories:\n  (development help)\n----------------------------------------------------------\n")))
 
 
@@ -1003,13 +1003,13 @@ from there)"
             (cc-interpreter.eval $cci action)))
 
 (TEST
- > (t '() '(#t ('yes) when))
+ > (t '(#t ('yes) when))
  (Ok (list 'yes))
- > (t '() '(#f ('yes) when))
+ > (t '(#f ('yes) when))
  (Ok (list))
- > (t '() '(#t ('yes) unless))
+ > (t '(#t ('yes) unless))
  (Ok (list))
- > (t '() '(#f ('yes) unless))
+ > (t '(#f ('yes) unless))
  (Ok (list 'yes)))
 
 
@@ -1027,7 +1027,7 @@ from there)"
                    (C lp (dec n) _)))))
 
 (TEST
- > (t '() '(10 (1 +) 5 repeat))
+ > (t '(10 (1 +) 5 repeat))
  (Ok (list 15)))
 
 
@@ -1035,92 +1035,91 @@ from there)"
 ;; -- Remaining tests for functionality above -------------------
 
 (TEST
- > (t '() '(4 5 5 *))
+ > (t '(4 5 5 *))
  (Ok (list 25 4))
- > (t '() (quote-source (4 5 5 * -)))
+ > (t (quote-source (4 5 5 * -)))
  (Ok (list -21))
- > (t '() (quote-source (4 5 dup * -)))
+ > (t (quote-source (4 5 dup * -)))
  (Ok (list -21))
- > (t '() '(4 5 swap dup * -))
+ > (t '(4 5 swap dup * -))
  (Ok (list -11))
- > (t '(1 2) '(over))
+ > (t '(2 1 over))
  (Ok (list 2 1 2))
- > (t '(1) '(over))
+ > (t '(1 over))
  (Error (copycat-missing-arguments 'over 'copycat:pick 2 1))
- > (t '(1 2 3) '(pick2))
+ > (t '(3 2 1 pick2))
  (Ok (list 3 1 2 3))
- > (t '(1 2)
-      (source* (list (source* 'pick2 '(console) 10 16))
+ > (t (source* (list 2 1 (source* 'pick2 '(console) 10 16))
                '(console) 10 15))
  (Error (copycat-missing-arguments
          (source* 'pick2 (list 'console) 10 16)
          'copycat:pick
          3
          2))
- > (t '(a b c) '(2 pick))
+ > (t '('c 'b 'a 2 pick))
  (Ok (list 'c 'a 'b 'c))
- > (t '(a b c) '(3 pick))
+ > (t '('a 'b 'c 3 pick))
  (Error (copycat-missing-arguments 'pick 'copycat:pick 4 3))
- > (t '(c b a) '(rot))
+ > (t '('a 'b 'c rot))
  (Ok (list 'a 'c 'b))
- > (t '(c b a) '(3 roll))
+ > (t '('a 'b 'c 3 roll))
  (Ok (list 'a 'c 'b))
- > (t '(c b a) '(-rot))
+ > (t '('a 'b 'c -rot))
  (Ok (list 'b 'a 'c))
- > (t '(c b a) '(rot rot))
+ > (t '('a 'b 'c rot rot))
  (Ok (list 'b 'a 'c))
- > (t '(c b a x) '(rot -rot))
+ > (t '('x 'a 'b 'c rot -rot))
  (Ok (list 'c 'b 'a 'x))
- > (t '(c b a x) '(nip))
+ > (t '('x 'a 'b 'c nip))
  (Ok (list 'c 'a 'x))
- > (t '(1 2 3) '(clear))
+ > (t '(1 2 3 clear))
  (Ok (list))
- > (t '(6 7 8) '(3 dropn))
+ > (t '(6 7 8 3 dropn))
  (Ok (list))
- > (t '(6 7 8) '(4 dropn))
+ > (t '(6 7 8 4 dropn))
  (Error (copycat-missing-arguments 'dropn (list 'dropn 4) 4 3))
- > (t '(6 7 8) '(-4 dropn))
+ > (t '(6 7 8 -4 dropn))
  (Error (copycat-type-error 'dropn "(fixnum-natural0? n)" -4))
- > (t '() '("f" inv))
+ > (t '("f" inv))
  (Error (copycat-type-error 'inv "(number? x)" "f"))
- > (t '() '("f" 5 +))
+ > (t '("f" 5 +))
  (Error (copycat-type-error '+ "(number? a)" "f"))
- > (t '() '(5 "f" +))
+ > (t '(5 "f" +))
  (Error (copycat-type-error '+ "(number? b)" "f"))
 
- > (t '() '(() 1 cons))
+ > (t '(() 1 cons))
  (Ok (list (list 1)))
 
- > (t '() '("foo bar" #\space string-split strings-append))
+ > (t '("foo bar" #\space string-split strings-append))
  (Ok (list "foobar"))
  
- > (t '() '('f 42 +))
+ > (t '('f 42 +))
  (Error (copycat-type-error '+ "(number? a)" 'f))
- > (t '() '("foo" string.symbol 'bar))
+ > (t '("foo" string.symbol 'bar))
  (Ok (list 'bar 'foo))
- > (t '() '(1 2 "+" .symbol 1 list eval))
+ > (t '(1 2 "+" .symbol 1 list eval))
  (Ok (list 3))
 
  ;; sublists are representing sub-programs, which are only evaluated
  ;; on demand:
- > (t '() '(4 (5) eval))
+ > (t '(4 (5) eval))
  (Ok (list 5 4))
- > (t '() '(4 (5 1 +) eval))
+ > (t '(4 (5 1 +) eval))
  (Ok (list 6 4))
 
  ;; Things can be explicitly made literals (prevented from
  ;; interpretation) by wrapping them (`..`) with `(quote ..)`, or the
  ;; S-expression `'` shortcut:
- > (t '() '((quote foo)))
+ > (t '((quote foo)))
  (Ok (list 'foo))
- > (t '() '('foo))
+ > (t '('foo))
  (Ok (list 'foo))
- > (t '() '('1))
+ > (t '('1))
  (Ok (list 1))
 
  ;; "syntax-based" word definition form: |:| takes a name, and a
  ;; program to its right, syntactically
- > (t '() '(: square (dup *) 4 square))
+ > (t '(: square (dup *) 4 square))
  (Ok (list 16))
  ;; stack-based word definition form (works like a normal word):
  ;; |set!| takes a program and a name from the stack at runtime. (I
@@ -1128,76 +1127,75 @@ from there)"
  ;; "syntax-based" features when it could do with program and symbol
  ;; quoting and then just words like this, other than visual
  ;; preference.)
- > (t '() '((dup *) 'sqr set! 4 sqr))
+ > (t '((dup *) 'sqr set! 4 sqr))
  (Ok (list 16))
 
  ;; "syntax-based" branching facility: takes a truebranch and a
  ;; falsebranch to its right, syntactically, as well as a boolean
  ;; value from the stack at runtime.
- > (t '(5) '(zero?))
+ > (t '(5 zero?))
  (Ok (list #f))
- > (t '(5) '(zero? THENELSE (1) (0)))
+ > (t '(5 zero? THENELSE (1) (0)))
  (Ok (list 0))
- > (t '(0) '(zero? THENELSE (1) (0)))
+ > (t '(0 zero? THENELSE (1) (0)))
  (Ok (list 1))
  ;; stack-based branching facility (works like a normal word): takes
  ;; boolean value, truebranch and falsebranch from the stack at
  ;; runtime
- > (t '(5) '(zero? (1) (0) thenelse))
+ > (t '(5 zero? (1) (0) thenelse))
  (Ok (list 0))
- > (t '(0) '(zero? (1) (0) thenelse))
+ > (t '(0 zero? (1) (0) thenelse))
  (Ok (list 1))
  ;; roll takes a number denoting the number of elements to rotate, and
  ;; rotates their position on the stack so that the last of those
  ;; becomes the first:
- > (t '((no) (yes) #t 7) '(3 roll))
+ > (t '(7 #t (yes) (no) 3 roll))
  (Ok (list #t (list 'no) (list 'yes) 7))
 
  ;; Test user-space |if| facility:
- > (t '(5) '(zero? (1) (0) if))
+ > (t '(5 zero? (1) (0) if))
  (Ok (list 0))
- > (t '(0) '(zero? (1) (0) if))
+ > (t '(0 zero? (1) (0) if))
  (Ok (list 1))
  ;; write a word-based branching facility ourselves, using the
  ;; stack-based one internally:
- > (t '() '((thenelse) 'if* set!))
- > (t '(5) '(zero? (1) (0) if*))
+ > (t '((thenelse) 'if* set!))
+ > (t '(5 zero? (1) (0) if*))
  (Ok (list 0))
- > (t '(0) '(zero? (1) (0) if*))
+ > (t '(0 zero? (1) (0) if*))
  (Ok (list 1))
  ;; alias the branching facility by simply storing it to a different
  ;; word:
- > (t '() '('if* ref 'anotherif set!))
- > (t '(5) '(zero? (1) (0) anotherif))
+ > (t '('if* ref 'anotherif set!))
+ > (t '(5 zero? (1) (0) anotherif))
  (Ok (list 0))
- > (t '(0) '(zero? (1) (0) anotherif))
+ > (t '(0 zero? (1) (0) anotherif))
  (Ok (list 1))
 
  ;; factorial
  ;; The variant in examples/fact.scm
- > (t '() '("examples/fact.scm" load))
+ > (t '("examples/fact.scm" load))
  (Ok (list))
  ;; > (t '(0) '(fact))
  ;; (Ok (list (source* 1 "examples/fact.scm" 2 25)))
- > (t '(0) '(fact source?))
+ > (t '(0 fact source?))
  (Ok (list #t))
- > (t '(1) '(fact))
+ > (t '(1 fact))
  (Ok (list 1))
- > (t '(2) '(fact))
+ > (t '(2 fact))
  (Ok (list 2))
- > (t '(3) '(fact))
+ > (t '(3 fact))
  (Ok (list 6))
- > (t '(20) '(fact))
+ > (t '(20 fact))
  (Ok (list 2432902008176640000))
  ;; Or, with THENELSE syntax:
- > (t '(0) '(: fact2 (dup zero? THENELSE (drop 1) (dup 1 - fact *))))
- > (t '(20) '(fact2))
+ > (t '(0 : fact2 (dup zero? THENELSE (drop 1) (dup 1 - fact *))))
+ > (t '(20 fact2))
  (Ok (list 2432902008176640000))
 
  ;; <lis> <code> mymap
  ;; iterative version:
- > (t '()
-      '(:
+ > (t '(:
         rmymap-iter ;; <code> <lis> <result>
         (over
          pair?
@@ -1218,10 +1216,9 @@ from there)"
         (swap
          ()
          rmymap-iter)))
- > (t '((1 2)) '((inc) rmymap))
+ > (t '((1 2) (inc) rmymap))
  (Ok (list (list 3 2)))
- > (t '()
-      '(:
+ > (t '(:
         reverse-iter ;; <lis> <result>
         (over
          pair?
@@ -1240,13 +1237,12 @@ from there)"
         :
         imymap
         (rmymap reverse)))
- > (t '(()) '((inc) imymap))
+ > (t '(() (inc) imymap))
  (Ok (list (list)))
- > (t '((5 6 7)) '((inc) imymap))
+ > (t '((5 6 7) (inc) imymap))
  (Ok (list (list 6 7 8)))
  ;; recursive definition:
- > (t '()
-      '(:
+ > (t '(:
         mymap-recur ;; <fn> <lis> -> <fn> <res>
         (dup
          pair?
@@ -1269,7 +1265,7 @@ from there)"
         :
         mymap
         (swap mymap-recur swap drop)))
- > (t '((5 6 7)) '((inc) mymap))
+ > (t '((5 6 7) (inc) mymap))
  (Ok (list (list 6 7 8)))
 
  ;; test tail call optimization: this must run indefinitely and not
@@ -1279,20 +1275,20 @@ from there)"
 
 
  ;; More error testing:
- > (t '() '(: foo))
+ > (t '(: foo))
  (Error (copycat-missing-arguments ': (list) 2 1))
- > (t '() '(: foo 4))
+ > (t '(: foo 4))
  ;; yes, could be more expressive. "not a program". ?
  (Error (copycat-type-error ': "list?" 4))
- > (t '() '(: foo () 4))
+ > (t '(: foo () 4))
  (Ok (list 4)))
 
 
 ;; source handling
 (TEST
- > (t '() (quote-source (9 .string)))
+ > (t (quote-source (9 .string)))
  (Ok (list "9"))
- > (t '() (quote-source ((10) first .string)))
+ > (t (quote-source ((10) first .string)))
  (Ok (list "10")))
 
 
