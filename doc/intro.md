@@ -237,7 +237,7 @@ characters if they are enclosed in the vertical bar:
     list literals.
 
 * colon, `: name (prog...)`: associates `name` with
-    `(prog...)`. Equivalent to `(prog...) 'name set!)`, but follows
+    `(prog...)`. Equivalent to `(prog...) 'name set!`, but follows
     Forth's syntax and is probably nicer to read.
 
 * colon as the first item in a sub-list, `(: name type...docstring
