@@ -990,6 +990,28 @@ from there)"
 ;; alternative definition, as long as the interpreter supports the
 ;; special THENELSE syntax.
 
+(cc-def when ([boolean? val]
+              [ilist-of-possibly-source? action])
+        (if val
+            (cc-interpreter.eval $cci action)
+            (Ok $cci)))
+
+(cc-def unless ([boolean? val]
+                [ilist-of-possibly-source? action])
+        (if val
+            (Ok $cci)
+            (cc-interpreter.eval $cci action)))
+
+(TEST
+ > (t '() '(#t ('yes) when))
+ (Ok (list 'yes))
+ > (t '() '(#f ('yes) when))
+ (Ok (list))
+ > (t '() '(#t ('yes) unless))
+ (Ok (list))
+ > (t '() '(#f ('yes) unless))
+ (Ok (list 'yes)))
+
 
 ;; XX can't implement that properly in copycat, right? Really need
 ;; lexicals? Also, this drops all of the stack when failing at any
