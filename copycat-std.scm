@@ -119,6 +119,13 @@ elements."
 ;; `alias` is not defined yet, thus move that to later
 
 
+(====cc-category (booleans)
+                 "Operations on booleans.")
+
+(cc-defhost not ([boolean? v] -> boolean?)
+            "Returns #t if `v` is #f, and #f if `v` is #t.")
+
+
 (====cc-category (numbers)
                  "Operations on numbers.")
 
@@ -482,7 +489,8 @@ convert s to a string or extract a string from s.")
 #f value representing a missing value, and any other value which is
 representing the case of a present value; this prohibits the use of
 the #f value as part of present values (and can lead to mistakes), but
-can also be convenient (TODO: offer nesting 'Maybe' type).")
+can also be convenient (TODO: offer nesting 'Maybe' type)."
+                 (booleans maybe))
 
 (cc-def if-just ([any? a]
                   [ilist-of-possibly-source? then]
