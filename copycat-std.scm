@@ -25,7 +25,7 @@
 (TEST
  > (def (t* prog)
         (in-monad Result
-                  (==> (cc-interpreter.eval (cc-interpreter '() 1000 0)
+                  (==> (cc-interpreter.eval (cc-interpreter '() 10000 0)
                                             prog)
                        ((comp return cc-interpreter.stack)))))
  > (def (t prog)
@@ -998,8 +998,23 @@ from there)"
                 (.path category-path.maybe-docstring))
 
              (: .categories-string
-                (.categories (.path pretty-string) list-map
-                             "  " strings-join))
+                (.categories (.path (.string) list-map "/" strings-join)
+                             list-map
+                             "\n  " strings-join))
+
+             (: aliases [ccproc? v] -> (ilist-of symbol?)
+                "give the list of all names that map to `v`"
+                (
+                 ;; make program
+                 (over ref eq? (Just) (drop Nothing) if) swap cons
+                 dir
+                 swap list-map
+                 cat-Maybes))
+
+             (: aliases-string ;; similar to .categories-string
+                (aliases (pretty-string) list-map
+                         "  " strings-join))
+
              (: help-string [symbol? word] -> string?
                 "give help string on the given word"
                 (
@@ -1011,8 +1026,11 @@ from there)"
                  dup 
                  .docstring source-code ("(no help text)") or ;; help
                  swap
+                 dup
                  .categories-string "\nCategories:\n  " swap string-append
-                 3 list "\n" strings-join
+                 swap
+                 aliases-string "Aliases:\n  " swap string-append
+                 4 list "\n" strings-join
                  string-append
                  ;; add horizontal rulers
                  "----------------------------------------------------------\n"
@@ -1024,7 +1042,7 @@ from there)"
 
 (TEST
  > (t '('help help-string))
- (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nprint help on the given word\n\nCategories:\n  (development help)\n----------------------------------------------------------\n")))
+ (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nprint help on the given word\n\nCategories:\n  development/help\nAliases:\n  blabla\n  help\n----------------------------------------------------------\n")))
 
 
 (====cc-category (control-flow)
