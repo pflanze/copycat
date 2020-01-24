@@ -786,7 +786,7 @@ an error if not bound)."
 
 (TEST
  > (t (quote-source ('blabla 'help alias 'blabla ref .docstring source-code)))
- (Ok (list "print help on the given word")))
+ (Ok (list "Print help on the given word.")))
 
 
 (====cc-category (source)
@@ -1059,7 +1059,7 @@ from there)."
 
 (TEST
  > (t '('help help-string))
- (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nprint help on the given word\n\nCategories:\n  development/help\nAliases:\n  blabla\n  help\n----------------------------------------------------------\n")))
+ (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nPrint help on the given word.\n\nCategories:\n  development/help\nAliases:\n  blabla\n  help\n----------------------------------------------------------\n")))
 
 
 (====cc-category (control-flow)
