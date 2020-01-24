@@ -485,8 +485,8 @@ convert s to a string or extract a string from s.")
 
 
 (====cc-category (control-flow maybe)
-                 "The 'maybe' type is inhabited of either the boolean
-#f value representing a missing value, and any other value which is
+                 "The 'maybe' type is inhabited by either the boolean
+#f value representing a missing value, or any other value which is
 representing the case of a present value; this prohibits the use of
 the #f value as part of present values (and can lead to mistakes), but
 can also be convenient (TODO: offer nesting 'Maybe' type)."
