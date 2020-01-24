@@ -40,7 +40,7 @@
 
 
 (====cc-category (turtle)
-                 "Turtle graphics; see doc/intro .")
+                 "Turtle graphics; see [doc/intro](doc/intro.md).")
 
 (cc-defhost ° ([real? x] -> °?)
             "Wrap `x` in an object denoting an angle in degrees.")
