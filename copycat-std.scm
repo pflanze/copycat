@@ -1042,16 +1042,16 @@ from there)."
                  dup .string ": " string-append ;; intro
                  swap ref
                  dup
-                 .type .maybe-original pretty-string ;; type
+                 .type .maybe-original (pretty-string) maybe->>= ;; maybe type
                  swap
                  dup 
-                 .docstring source-code ("(no help text)") or ;; help
+                 .docstring source-code ;; maybe docstring
                  swap
                  dup
                  .categories-string "\nCategories:\n  " swap string-append
                  swap
                  aliases-string "Aliases:\n  " swap string-append
-                 4 list "\n" strings-join
+                 4 list cat-maybes "\n" strings-join
                  string-append
                  ;; add horizontal rulers
                  "----------------------------------------------------------\n"
