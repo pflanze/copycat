@@ -542,6 +542,10 @@ style one."
  (Ok (list 9)))
 
 
+(cc-defhost/try cat-maybes ([ilist? l] -> ilist?)
+                "Remove the items in l which are #f.")
+
+
 
 ;; (cc-defhost error/1 (a))
 ;; (cc-defhost error/2 (a))
@@ -585,8 +589,8 @@ branch."
                  (lists Maybe))
 
 (cc-defhost/try cat-Maybes ([(ilist-of Maybe?) l] -> ilist?)
-                "Filter out the items in l which are not Nothing, and
-return them unwrapped.")
+                "Remove the items in l which are Nothing, and
+return the others unwrapped.")
 
 
 (TEST
