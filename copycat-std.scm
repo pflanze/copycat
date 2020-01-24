@@ -1130,6 +1130,22 @@ from there)."
  (Ok (list 15)))
 
 
+(cc-defguest (: unergonomic-while
+                [ilist-of-possibly-source? condition]
+                [ilist-of-possibly-source? prog]
+                "Evaluate `condition`, which must return a boolean;
+when the returned value is #t, evaluate `prog` then repeat.
+
+NOTE: `condition` and `prog` are still on the stack when `condition`
+and `prog` are evaluated, and `condition` must put exactly 1 value
+onto the stack and `prog` exactly 0. That's why it's called
+\"unergonomic\"."
+                (over eval (dup eval unergonomic-while) (drop2) if)))
+
+(TEST
+ > (t '(7 (pick2 zero? not) (rot 1 - -rot) while))
+ (Ok (list 0)))
+
 
 ;; -- Remaining tests for functionality above -------------------
 
