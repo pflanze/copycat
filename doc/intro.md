@@ -61,13 +61,13 @@ stack (entered last) are shown to the left. Enter `+` and return:
     99998 @ +
     (12)
 
-The program (action) associated with `+` has taken 2 values from the
+The program (action) associated with `+` has taken 2 values off the
 stack, added them up, and placed the result back onto the stack.
 
     99997 @ number?
     (#t)
 
-The `number?` action has taken 1 value from the stack, checked whether
+The `number?` action has taken 1 value off the stack, checked whether
 it is a number, and because that is the case, put the boolean value
 representing true, `#t`, onto the stack.
 
