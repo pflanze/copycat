@@ -666,9 +666,7 @@ which can be raised as an exception."
 
 (cc-def set-stack ([ilist-of-possibly-source? stack])
         "replace the stack contents with `stack`"
-        (>>= (cc-interpreter.fuel-dec* $cci $word)
-             (lambda (cci)
-               (Ok (cc-interpreter.stack-set cci (source-code stack))))))
+        (Ok (cc-interpreter.stack-set $cci (source-code stack))))
 
 (cc-def get-stack (-> ilist?)
         "put the current stack (as a list) on top of the current
