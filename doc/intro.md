@@ -88,8 +88,8 @@ this document.
 ### Literals
 
 Literals are syntactical items which represent values directly
-(i.e. they do not lead to a computation). They are simply pushed onto
-the data stack.
+(i.e. they do not lead to a computation). The values they represent
+are simply pushed onto the data stack.
 
 #### Booleans
 
