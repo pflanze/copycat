@@ -535,6 +535,53 @@ style one"
 ;; (cc-defhost error/2 (a))
 
 
+(====cc-category (control-flow Maybe)
+                 "Similar to `maybe`, a type that represents two
+cases, one with a value and one without, but unlike `maybe`, `Maybe`
+is a wrapper, which means it can enclose any value, including the
+missing value (it can nest).")
+
+(cc-defhost Maybe? (v -> boolean?)
+            "whether `v` is wrapped in a `Maybe` type (an `Ok` or
+`Just` object)")
+
+(cc-defhost Just? (v -> boolean?)
+            "whether `v` is wrapped in a `Just` object")
+(cc-defhost Nothing? (v -> boolean?)
+            "whether `v` is the `Nothing` value")
+
+(cc-defhost Just (v -> Maybe?)
+            "wrap `v` in a `Just` object")
+(cc-defhost Nothing (-> Maybe?)
+            "the `Nothing` value")
+
+
+(cc-def if-Just ([Result? v]
+                 [ilist-of-possibly-source? then]
+                 [ilist-of-possibly-source? else])
+        "if `v` is a `Just` object, put its enclosed value on the
+stack and evaluate the `then` branch; otherwise, evaluate the `else`
+branch"
+        (if-Just ((it v))
+                 (==> (cc-interpreter.push* $cci it $word)
+                      ;; ^ or use free push ?
+                      (cc-interpreter.eval then))
+                 (cc-interpreter.eval $cci else)))
+
+
+(====cc-category (control-flow Maybe)
+                 (lists Maybe))
+
+(cc-defhost/try cat-Maybes ([(ilist-of Maybe?) l] -> ilist?)
+                "filter out the items in l which are not Nothing, and
+return them unwrapped")
+
+
+(TEST
+ > (t (quote-source (c 'a Just 'b Just Nothing 'c Just slurp-stack cat-Maybes)))
+ (Ok (list (list 'c 'b 'a))))
+
+
 (====cc-category (control-flow Result)
                  "The 'Result' type is of the two cases 'Ok' and
 'Error'. ")
