@@ -40,18 +40,18 @@
 
 
 (====cc-category (turtle)
-                 "turtle graphics; see doc/intro")
+                 "Turtle graphics; see doc/intro .")
 
 (cc-defhost ° ([real? x] -> °?)
-            "wrap `x` in an object denoting an angle in degrees")
+            "Wrap `x` in an object denoting an angle in degrees.")
 (cc-defhost rad ([real? x] -> rad?)
-            "wrap `x` in an object denoting an angle in radians")
+            "Wrap `x` in an object denoting an angle in radians.")
 (cc-defhost/try .rad (s)
-                "convert s (e.g. a rad or ° object) to a bare number
-in radians")
+                "Convert s (e.g. a rad or ° object) to a bare number
+in radians.")
 (cc-defhost/try .degrees (s)
-                "convert s (e.g. a rad or ° object) to a bare number
-in degrees")
+                "Convert s (e.g. a rad or ° object) to a bare number
+in degrees.")
 
 (defparameter turtle-commands '())
 
@@ -61,18 +61,18 @@ in degrees")
 ;; all side effects on I/O ~
 
 (cc-def new (->)
-        "delete turtle canvas, set position to the center, and point
-up (north)"
+        "Delete turtle canvas, set position to the center, and point
+up (north)."
         (turtle-commands '())
         (cc-return))
 
 (cc-def commands (-> (list-of logo-command?))
-        "get the currently accumulated turtle commands"
+        "Get the currently accumulated turtle commands."
         (cc-return (get-turtle-commands)))
 
 (cc-def view (->)
-        "show the currently accumulated turtle commands (generate SVG
-graph, open viewer if running under X-windows)"
+        "Show the currently accumulated turtle commands (generate SVG
+graph, open viewer if running under X-windows)."
         (copycat:try
          (save&possibly-show-svn-logo (and (getenv "DISPLAY" #f) #t)
                                       (get-turtle-commands))
@@ -100,9 +100,9 @@ graph, open viewer if running under X-windows)"
 
 
 (def-turtle-delegate/1 draw real?
-  "draw a stroke of the given length")
+  "Draw a stroke of the given length.")
 (def-turtle-delegate/1 jump real?
-  "move the given length without drawing")
+  "Move the given length without drawing.")
 (cc-def rotate ([angle? x])
         (parameter-push! turtle-commands (rotate (.rad x)))
         (cc-return))
@@ -122,12 +122,12 @@ graph, open viewer if running under X-windows)"
 ;; XX and/but these *currently* (even, already) don't allow to inspect
 ;; the pushed state.
 (def-turtle-delegate/0 push-pos
-  "push the current position onto a separate position stack")
+  "Push the current position onto a separate position stack.")
 (def-turtle-delegate/0 pop-pos
-  "pop the position that was last pushed to the position stack")
+  "Pop the position that was last pushed to the position stack.")
 
 (def-turtle-delegate/2 start real? real?
-  "set (x,y) position to the given numbers")
+  "Set (x,y) position to the given numbers.")
 
 
 (cc-defguest 'right 'rotate alias
@@ -142,7 +142,7 @@ graph, open viewer if running under X-windows)"
 
 
 (====cc-category (turtle DE)
-                 "german translations")
+                 "German translations.")
 
 (cc-defguest 'drehen 'rotate alias
              'links 'left alias

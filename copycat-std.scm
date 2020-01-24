@@ -35,7 +35,7 @@
 
 
 (====cc-category (stack forth)
-                 "as shown on http://wiki.laptop.org/go/Forth_stack_operators")
+                 "As shown on http://wiki.laptop.org/go/Forth_stack_operators")
 
 (cc-def dup (a -> a a)
         (cc-return a a))
@@ -51,8 +51,8 @@
         (cc-return b))
 
 (cc-def roll ([fixnum-natural0? n] ->)
-        "take the last n elements on the stack, roll them around so
-that the oldest one becomes the newest"
+        "Take the last n elements on the stack, roll them around so
+that the oldest one becomes the newest."
         ;; (letv ((args stack*) (split-at $s n))
         ;;       (append (cons (last args) (butlast args)) stack*))
         ;;or, saving on intermediaries:
@@ -78,21 +78,22 @@ that the oldest one becomes the newest"
                       (inc n)
                       (length $s)))))
 (cc-def over (-> any?)
-        "copy the second-last element from the stack"
+        "Copy the second-last element from the stack."
         (copycat:pick $word $cci $s 1))
 (cc-def pick2 (-> any?)
-        "copy the third-last element from the stack"
+        "Copy the third-last element from the stack."
         (copycat:pick $word $cci $s 2))
 (cc-def pick3 (-> any?)
-        "copy the fourth-last element from the stack"
+        "Copy the fourth-last element from the stack."
         (copycat:pick $word $cci $s 3))
 (cc-def pick (n -> any?)
-        "copy the element from the stack found after skipping n elements"
+        "Copy the element from the stack found after skipping n
+elements."
         (copycat:pick $word $cci $s n))
 
 
 (====cc-category (stack christian)
-                 "my own ideas for stack ops")
+                 "My own ideas for stack ops.")
 
 (cc-def drop2 (a b ->)
         (cc-return))
@@ -101,7 +102,7 @@ that the oldest one becomes the newest"
 (cc-def drop4 (a b c d->)
         (cc-return))
 (cc-def dropn ([fixnum-natural0? n] ->)
-        "drop the n last elements from the stack"
+        "Drop the n last elements from the stack."
         (if-Just ((it (Maybe-drop $s n)))
                  (Ok (cc-interpreter.stack-set $cci it))
                  (Error
@@ -111,7 +112,7 @@ that the oldest one becomes the newest"
                                              (length $s)))))
 
 (cc-def clear ()
-        "drop all elements from the stack"
+        "Drop all elements from the stack."
         (Ok (cc-interpreter.stack-set $cci '())))
 
 ;; (cc-defguest 'c 'clear alias)
@@ -119,10 +120,10 @@ that the oldest one becomes the newest"
 
 
 (====cc-category (numbers)
-                 "operations on numbers")
+                 "Operations on numbers.")
 
 (cc-defhost string.maybe-number ([string? s] -> (maybe number?))
-            "convert given string to a number if possible, #f if not")
+            "Convert given string to a number if possible, #f if not.")
 
 (cc-defhost number? (v -> boolean?))
 (cc-defhost exact? ([number? v] -> boolean?))
@@ -131,7 +132,7 @@ that the oldest one becomes the newest"
 (cc-defhost odd? ([integer? v] -> boolean?))
 (cc-defhost real? (v -> boolean?))
 (cc-defhost rational? (v -> boolean?)
-            "same as `real?` (and thus useless)?")
+            "Same as `real?` (and thus useless)?")
 (cc-defhost complex? (v -> boolean?))
 (cc-defhost integer? (v -> boolean?))
 (cc-defhost fixnum? (v -> boolean?))
@@ -145,7 +146,7 @@ that the oldest one becomes the newest"
 
 ;; for non-numbers as well:
 (cc-defhost/try .neg (x -> -x)
-                "negate x (generic)")
+                "Negate x (generic).")
 ;; make .neg also work on normal numbers:
 (def. (number.neg x) (- x))
 
@@ -160,68 +161,68 @@ that the oldest one becomes the newest"
         "1/x"
         (cc-return (/ x)))
 (cc-defhost inc ([incrementable-fixnum? n] -> fixnum?)
-            "the successor number of n")
+            "The successor number of `n`.")
 (cc-defhost dec ([decrementable-fixnum? n] -> fixnum?)
-            "the predecessor number to n")
+            "The predecessor number to `n`.")
 (cc-defhost square ([number? x] -> number?)
             "x * x")
 (cc-defhost sqrt ([number? x] -> number?)
-            "the square root of x")
+            "The square root of `x`.")
 (cc-defhost expt ([number? base] [number? exponent] -> number?)
-            "the base `base` raised to the power of `exponent`")
+            "The base `base` raised to the power of `exponent`.")
 (cc-defhost log ([number? x] -> number?)
-            "the logarithm of x with base e")
+            "The logarithm of `x` with base `e`.")
 (cc-def log2 ([number? x] -> number?)
-        "the logarithm of x with base 2"
+        "The logarithm of `x` with base `2`."
         (cc-return (/ (log x) (log 2))))
 (cc-def log10 ([number? x] -> number?)
-        "the logarithm of x with base 10"
+        "The logarithm of `x` with base `10`."
         (cc-return (/ (log x) (log 10))))
 
 
 (cc-defhost zero? ([number? a] -> boolean?)
-            "whether a is zero")
+            "Whether `a` is `0`.")
 (cc-defhost = ([number? a] [number? b] -> boolean?)
-            "whether a is numerically equal to b")
+            "Whether `a` is numerically equal to `b`.")
 (cc-defhost < ([number? a] [number? b] -> boolean?)
-            "whether a is smaller than b")
+            "Whether `a` is smaller than `b`.")
 (cc-defhost <= ([number? a] [number? b] -> boolean?)
-            "whether a is smaller than or equal to b")
+            "Whether `a` is smaller than or equal to `b`.")
 (cc-defhost > ([number? a] [number? b] -> boolean?)
-            "whether a is larger than b")
+            "Whether `a` is larger than `b`.")
 (cc-defhost >= ([number? a] [number? b] -> boolean?)
-            "whether a is larger than or equal to b")
+            "Whether `a` is larger than or equal to `b`.")
 (cc-def != ([number? a] [number? b] -> boolean?)
-        "whether a and b are unequal"
+        "Whether `a` and `b` are numerically unequal."
         (cc-return (not (= a b))))
 (cc-defhost eq? (a b -> boolean?)
-            "whether a and b are the same objects")
+            "Whether `a` and `b` are the same object.")
 (cc-def !eq? (a b -> boolean?)
-        "whether a and b are *not* the same objects"
+        "Whether `a` and `b` are *not* the same object."
         (cc-return (not (eq? a b))))
 
 
 (====cc-category (lists)
-                 "operations on linked lists")
+                 "Operations on linked lists.")
 
 (cc-defhost list? (v -> boolean?)
-            "return true if v is a proper list")
+            "Return true if `v` is a proper list.")
 (cc-defhost ilist? (v -> boolean?)
-            "return true if v starts off as a proper list (careful,
-does not check to the end of the list, for performance)")
+            "Return true if `v` starts off as a proper list (careful,
+does not check to the end of the list, for performance).")
 
-(cc-def cons (l e -> pair?) "prepend e to the given list l"
+(cc-def cons (l e -> pair?) "Prepend `e` to the given list `l`."
         (cc-return (cons e l)))
 (cc-defhost car ([pair? a] -> any?)
-            "return the element slot from the given pair")
+            "Return the element slot from the given pair.")
 (cc-defhost cdr ([pair? a] -> any?)
-            "return the rest slot of the given pair")
+            "Return the rest slot of the given pair.")
 (cc-defhost first ([pair? l] -> any?)
-            "return the first element of the given list")
+            "Return the first element of the given list.")
 (cc-defhost rest ([pair? l] -> any?)
-            "drop the first element from the given list")
+            "Drop the first element from the given list.")
 (cc-def first+rest ([pair? l] -> any? any?)
-        "returns the two slots in the pair"
+        "Returns the two slots in the pair."
         ;; XX should cc-return generally work in the other direction?
         (cc-return (rest l) (first l)))
 
@@ -230,9 +231,9 @@ does not check to the end of the list, for performance)")
  (Ok (list 3 (list 4 5))))
 
 (cc-defhost pair? (a -> boolean?)
-            "whether a is a pair (non-empty list)")
+            "Whether `a` is a pair (as used by a non-empty list).")
 (cc-defhost null? (a -> boolean?)
-            "whether a is an empty list")
+            "Whether `a` is an empty list.")
 
 (def (cc:Rlist $cci $s $word numargs reverse?)
      (if-Just ((it (Maybe-split-at-reverse $s numargs)))
@@ -246,31 +247,33 @@ does not check to the end of the list, for performance)")
                                                 numargs
                                                 (length $s)))))
 (cc-def list ([fixnum-natural0? n] -> (list-of-length n))
-        "takes n elements from the stack and returns them as a list"
+        "Takes `n` elements from the stack and returns them as a
+list."
         (cc:Rlist $cci $s $word n #t))
 (cc-def rlist ([fixnum-natural0? n] -> (list-of-length n))
-        "takes n elements from the stack and returns them as a reversed list"
+        "Takes `n` elements from the stack and returns them as a
+reversed list."
         (cc:Rlist $cci $s $word n #f))
 
 (cc-defhost/try append (a b -> ilist?)
                 ;; XX argument order?
-                "append the lists a and b")
+                "Append the lists `a` and `b`.")
 
 (cc-defhost/try list-drop ([ilist-of-possibly-source? l]
                            [fixnum-natural0? n] -> ilist?)
-                "drop n elements from the start of l")
+                "Drop `n` elements from the start of `l`.")
 ;; ^ Todo: better error messages would be good. Really want
 ;; Maybe-list-drop or even Result-list-drop. Or proper exceptions.
 
 (cc-defhost/try list-take ([ilist-of-possibly-source? l]
                            [fixnum-natural0? n] -> ilist?)
-                "take n elements from the start of l")
+                "Take `n` elements from the start of `l`.")
 
 (cc-def list-rmap ([ilist-of-possibly-source? l]
                    [ilist-of-possibly-source? prog] -> ilist?)
-        "create the list that, for each element value v in reverse
-order of those in l, contains the value left at the top of the stack
-after putting v on the stack and running prog"
+        "Create the list that, for each element value `v` in reverse
+order of those in `l`, contains the value left at the top of the stack
+after putting `v` on the stack and running `prog`."
         ;; also see alternative map definition created in the test
         ;; suite below!
         (let lp ((res '())
@@ -303,20 +306,21 @@ after putting v on the stack and running prog"
                                           "list?"
                                           l))))))
 
-(cc-defhost list-reverse ([list? l] -> ilist?))
+(cc-defhost list-reverse ([list? l] -> ilist?)
+            "Reverse the order of the elements in `l`.")
 
 (cc-defhost/try list-ref ([list? l] [fixnum-natural0? i] -> ilist?)
-                "get item i out of l")
+                "Get item at index `i` in `l`.")
 
 (cc-defhost list-length ([list? l] -> fixnum-natural0?)
-            "the number of items in l")
+            "The number of items in `l`.")
 
 (cc-defguest (: list-map
                 [ilist-of-possibly-source? l]
                 [ilist-of-possibly-source? prog] -> ilist?
-                "create the list that, for each element value v in l,
-contains the value left at the top of the stack after putting v on the
-stack and running prog"
+                "Create the list that, for each element value `v` in `l`,
+contains the value left at the top of the stack after putting `v` on
+the stack and running `prog`."
                 (list-rmap list-reverse)))
 
 (TEST
@@ -337,13 +341,13 @@ stack and running prog"
 
 
 (====cc-category (vectors)
-                 "operations on vectors (arrays)")
+                 "Operations on vectors (arrays).")
 
 (cc-defhost vector? (v -> boolean?)
-            "whether v is a vector")
+            "Whether `v` is a vector.")
 
 (cc-defhost vector-length ([vector? vec] -> fixnum-natural0?)
-            "the number of items in vec")
+            "The number of items in `vec`.")
 
 
 (def (cc:Rvector $word $cci $s numargs reverse? drop-args?)
@@ -368,24 +372,25 @@ stack and running prog"
                                                             numargs
                                                             (length $s))))))))
 (cc-def vector ([fixnum-natural0? n] -> (list-of-length n))
-        "takes n elements from the stack and returns them as a vector"
+        "Takes `n` elements from the stack and returns them as a
+vector."
         (cc:Rvector $word $cci $s n #t #t))
 (cc-def rvector ([fixnum-natural0? n] -> (list-of-length n))
-        "takes n elements from the stack and returns them as a
-reversed vector"
+        "Takes `n` elements from the stack and returns them as a
+reversed vector."
         (cc:Rvector $word $cci $s n #f #t))
 
 (cc-def copy-vector ([fixnum-natural0? n] -> (vector-of-length n))
-        "copy n elements from the stack (leaving them there) and
-returns them as a vector"
+        "Copy `n` elements from the stack (leaving them there) and
+returns them as a vector."
         (cc:Rvector $word $cci $s n #t #f))
 (cc-def copy-rvector ([fixnum-natural0? n] -> (vector-of-length n))
-        "copy n elements from the stack (leaving them there) and
-returns them as a reversed vector"
+        "Copy `n` elements from the stack (leaving them there) and
+returns them as a reversed vector."
         (cc:Rvector $word $cci $s n #f #f))
 
 (cc-def vector-ref ([vector? v] [fixnum-natural0? i] -> any?)
-        "retrieve from v the element at index i"
+        "Retrieve from `v` the element at index `i`."
         (if (< i (vector-length v))
             (cc-return (vector-ref v i))
             (Error (copycat-out-of-bounds-access $word
@@ -393,7 +398,8 @@ returns them as a reversed vector"
                                                  (vector-length v)))))
 
 (cc-def vector-set! ([vector? v] [fixnum-natural0? i] val -> vector?)
-        "set the element at index i in v to val, via mutation; returns v"
+        "Set the element at index `i` in `v` to `val`, via mutation;
+returns `v`."
         (if (< i (vector-length v))
             (begin (vector-set! v i val)
                    (cc-return v))
@@ -402,7 +408,8 @@ returns them as a reversed vector"
                                                  (vector-length v)))))
 
 (cc-def vector-set ([vector? v] [fixnum-natural0? i] val -> vector?)
-        "returns a copy of v with the element at index i set to val"
+        "Returns a copy of `v` with the element at index `i` set to
+`val`."
         (if (< i (vector-length v))
             (let (v (vector-copy v))
               (vector-set! v i val)
@@ -433,13 +440,16 @@ returns them as a reversed vector"
 
 
 (====cc-category (strings)
-                 "operations on unicode capable strings")
+                 "Operations on unicode capable strings.")
 
-(cc-defhost string? (v -> boolean?))
+(cc-defhost string? (v -> boolean?)
+            "Whether `v` is a string.")
 (cc-defhost string-length ([string? str] -> fixnum-natural0?)
-            "the number of characters in str")
-(cc-defhost string-append ([string? a] [string? b] -> string?))
-(cc-defhost/try strings-append (l -> string?))
+            "The number of characters in str.")
+(cc-defhost string-append ([string? a] [string? b] -> string?)
+            "Append the two strings `a` and `b`.")
+(cc-defhost/try strings-append ([(ilist-of string?) l] -> string?)
+                "Append all the elements (which must be strings) in l.")
 (cc-defhost/try strings-join ([(ilist-of string?) l] [string? inbetween]
                               -> string?))
 (cc-defhost string-split ([string? str]
@@ -448,21 +458,23 @@ returns them as a reversed vector"
                           [char? char-or-pred]
                           -> (ilist-of string?)))
 
-(cc-defhost/try .string (s))
+(cc-defhost/try .string (s -> string?)
+                "Apply the .string method to s, which is expected to
+convert s to a string or extract a string from s.")
 
 
 (====cc-category (chars)
-                 "operations on unicode capable characters")
+                 "Operations on unicode capable characters.")
 
 (cc-defhost char? (v)
-            "whether v is a character")
+            "Whether v is a character.")
 (cc-defhost char.integer ([char? c] -> fixnum?))
 (cc-defhost/try integer.char (n -> char?))
 
 (cc-defhost string.list ([string? s] -> (ilist-of char?))
-            "convert string s into a list of all of its characters")
+            "Convert string s into a list of all of its characters.")
 (cc-defhost char-list.string ([(list-of char?) l] -> string?)
-            "convert string s into a list of all of its characters")
+            "Convert string s into a list of all of its characters.")
 
 
 (====cc-category (control-flow maybe)
@@ -475,8 +487,8 @@ can also be convenient (TODO: offer nesting 'Maybe' type).")
 (cc-def if-maybe ([any? a]
                   [ilist-of-possibly-source? then]
                   [ilist-of-possibly-source? else])
-        "unlike `if`, this accepts non-boolean values for `a`, in
-which case the `then` branch is evaluated (i.e. a 'maybe' type if)"
+        "Unlike `if`, this accepts non-boolean values for `a`, in
+which case the `then` branch is evaluated (i.e. a 'maybe' type if)."
         (cc-interpreter.eval $cci (if a then else)))
 
 (TEST
@@ -492,17 +504,17 @@ which case the `then` branch is evaluated (i.e. a 'maybe' type if)"
 
 
 (cc-def and ([any? a] [ilist-of-possibly-source? b] -> any?)
-        "this is not strictly a boolean operator, but a 'maybe' type
-style one (monadic >>)"
+        "This is not strictly a boolean operator, but a 'maybe' type
+style one (monadic >>)."
         (if a
             (cc-interpreter.eval $cci b)
             (cc-return a)))
 
 (cc-defguest (: maybe->>= [any? a] [ilist-of-possibly-source? b] -> any?
-                "this is the monadic >>= ('bind') operator for the
+                "This is the monadic >>= ('bind') operator for the
 'maybe' type: if `a` is #f, it will return #f; otherwise, it will put
 `a` back on the stack (unlike `and` which does not do this) and
-evaluate `b`"
+evaluate `b`."
                 (over -rot () if-maybe)))
 
 (TEST
@@ -513,8 +525,8 @@ evaluate `b`"
 
 
 (cc-def or ([any? a] [ilist-of-possibly-source? b] -> any?)
-        "this is not strictly a boolean operator, but a 'maybe' type
-style one"
+        "This is not strictly a boolean operator, but a 'maybe' type
+style one."
         (if a
             (cc-return a)
             (cc-interpreter.eval $cci b)))
@@ -542,26 +554,26 @@ is a wrapper, which means it can enclose any value, including the
 missing value (it can nest).")
 
 (cc-defhost Maybe? (v -> boolean?)
-            "whether `v` is wrapped in a `Maybe` type (an `Ok` or
-`Just` object)")
+            "Whether `v` is wrapped in a `Maybe` type (an `Ok` or
+`Just` object).")
 
 (cc-defhost Just? (v -> boolean?)
-            "whether `v` is wrapped in a `Just` object")
+            "Whether `v` is wrapped in a `Just` object.")
 (cc-defhost Nothing? (v -> boolean?)
-            "whether `v` is the `Nothing` value")
+            "Whether `v` is the `Nothing` value.")
 
 (cc-defhost Just (v -> Maybe?)
-            "wrap `v` in a `Just` object")
+            "Wrap `v` in a `Just` object.")
 (cc-defhost Nothing (-> Maybe?)
-            "the `Nothing` value")
+            "The `Nothing` value.")
 
 
 (cc-def if-Just ([Result? v]
                  [ilist-of-possibly-source? then]
                  [ilist-of-possibly-source? else])
-        "if `v` is a `Just` object, put its enclosed value on the
+        "If `v` is a `Just` object, put its enclosed value on the
 stack and evaluate the `then` branch; otherwise, evaluate the `else`
-branch"
+branch."
         (if-Just ((it v))
                  (==> (cc-interpreter.push* $cci it $word)
                       ;; ^ or use free push ?
@@ -573,8 +585,8 @@ branch"
                  (lists Maybe))
 
 (cc-defhost/try cat-Maybes ([(ilist-of Maybe?) l] -> ilist?)
-                "filter out the items in l which are not Nothing, and
-return them unwrapped")
+                "Filter out the items in l which are not Nothing, and
+return them unwrapped.")
 
 
 (TEST
@@ -584,13 +596,13 @@ return them unwrapped")
 
 (====cc-category (control-flow Result)
                  "The 'Result' type is of the two cases 'Ok' and
-'Error'. ")
+'Error'.")
 
 
 (cc-defhost Ok (v)
-            "Wrap v in an Ok (Result type)")
+            "Wrap v in an Ok (Result type).")
 (cc-defhost Error (v)
-            "Wrap v in an Error (Result type)")
+            "Wrap v in an Error (Result type).")
 
 (cc-def if-Ok ([Result? v]
                [ilist-of-possibly-source? then]
@@ -603,14 +615,15 @@ return them unwrapped")
 
 (====cc-category (control-flow exceptions)
                  (control-flow Result exceptions)
-                 "switch between implicit (propagation) and explicit
-error handling")
+                 "Switch between implicit (propagation) and explicit
+error handling.")
 
 (cc-def try ([ilist-of-possibly-source? prog]
              -> (Result-of ilist?
                            copycat-error?))
-        "eval prog, catching exceptions, returning a Result -- either
-an Ok-wrapped stack, or an Error-wrapped copycat error object"
+        "`eval` `prog`, catching exceptions, returning a `Result` --
+either an `Ok`-wrapped stack, or an `Error`-wrapped copycat error
+object."
         (if-Ok (cc-interpreter.eval $cci prog)
                ;; use new $cci, but set stack based on the original $s
                ;; (cc-return takes both variables from the scope)
@@ -641,11 +654,12 @@ which can be raised as an exception."
         (cc-return (copycat-generic-error $word msg args)))
 
 (cc-defguest (: error [string? msg] [ilist? args] -> !
-                "Raise a generic exception with the given message and arguments"
+                "Raise a generic exception with the given message and
+arguments."
                 (generic-error raise)))
 
 (cc-defhost/try .explanation (o -> string?)
-                "expected to return a string for copycat-error objects")
+                "Expected to return a string for copycat-error objects.")
 
 
 (TEST
@@ -665,17 +679,17 @@ which can be raised as an exception."
                  (stack christian))
 
 (cc-def set-stack ([ilist-of-possibly-source? stack])
-        "replace the stack contents with `stack`"
+        "Replace the stack contents with `stack`."
         (Ok (cc-interpreter.stack-set $cci (source-code stack))))
 
 (cc-def get-stack (-> ilist?)
-        "put the current stack (as a list) on top of the current
-stack"
+        "Put the current stack (as a list) on top of the current
+stack."
         (cc-return $s))
 
 (cc-def slurp-stack (-> ilist?)
-        "get the current stack (as a list) as a single item in a fresh
-stack"
+        "Get the current stack (as a list) as a single item in a fresh
+stack."
         (Ok (cc-interpreter.stack-set $cci (list $s))))
 
 
@@ -700,11 +714,11 @@ stack"
                  (fuel))
 
 (cc-def set-fuel ([fixnum-natural0? fuel])
-        "set amount of interpreter fuel to the given new value"
+        "Set amount of interpreter fuel to the given new value."
         (Ok (cc-interpreter.fuel-set $cci fuel)))
 
 (cc-def add-fuel ([fixnum? fuel])
-        "add amount of interpreter fuel"
+        "Add amount of interpreter fuel."
         (let (fuel* (+ (cc-interpreter.fuel $cci) fuel))
           (if (fixnum-natural0? fuel*)
               (Ok (cc-interpreter.fuel-set $cci fuel*))
@@ -713,11 +727,11 @@ stack"
 
 
 (cc-def eval ([ilist-of-possibly-source? prog])
-        "evaluate prog (a list of instructions)"
+        "Evaluate prog (a list of instructions)."
         (copycat:try (cc-interpreter.eval $cci prog)))
 
 (cc-def nop (->)
-        "no operation"
+        "No operation."
         (cc-return))
 
 
@@ -725,9 +739,9 @@ stack"
 
 (cc-def set! ([(either ilist-of-possibly-source? ccproc?) prog]
               [symbol? name] ->)
-        "set the word with the given name to prog, which must be
+        "Set the word with the given name to prog, which must be
 either a list of instructions, or a ccproc data structure as retrieved
-from `ref`"
+from `ref`."
         (let (prog (xcond ((ccproc? prog)
                            prog)
                           ((ilist-of-possibly-source? prog)
@@ -740,30 +754,30 @@ from `ref`"
 
 
 (====cc-category (environment symbols)
-                 "symbols are identifying items in an environment;
-currently there's just one global environment")
+                 "Symbols are identifying items in an environment;
+currently there's just one global environment.")
 
 (cc-defhost string.symbol ([string? s] -> symbol?)
-            "turn s into a symbol with the same name")
+            "Turn `s` into a symbol with the same name.")
 
 (cc-defhost/try .symbol (s -> symbol?)
-                "generic to try to turn s into a symbol")
+                "Method to try to turn `s` into a symbol.")
 
 (cc-defhost symbol.string ([symbol? s] -> string?)
-            "return the underlying name string of the given symbol")
+            "Return the underlying name string of the given symbol.")
 
 (cc-defhost symbol? ([any? v] -> boolean?)
-            "whether v is a symbol")
+            "Whether `v` is a symbol.")
 
 (cc-def ref ([symbol? name] -> ccproc?)
-        "return the ccproc data structure associated with name (giving
-an error if not bound)"
+        "Return the ccproc data structure associated with name (giving
+an error if not bound)."
         (if-Just ((v (table.Maybe-ref cc-words name)))
                  (cc-return v)
                  (Error (copycat-unbound-symbol $word name))))
 
 (cc-defguest (: alias [symbol? new] [symbol? old] ->
-                "make `new` the same as `old`"
+                "Make `new` the same as `old`."
                 (ref swap set!)))
 
 ;; moved here so alias is defined
@@ -776,21 +790,21 @@ an error if not bound)"
 
 
 (====cc-category (source)
-                 "source code representation (values and associated
-location information)")
+                 "Source code representation (values and associated
+location information).")
 
 (cc-defhost source? ([possibly-source? s])
-            "whether s is a value wrapped with location information")
+            "Whether `s` is a value wrapped with location information.")
 (cc-defhost source-code ([possibly-source? s])
-            "strips location information from source (i.e. return the
+            "Strips location information from source (i.e. return the
 code embedded in a source object); if s is not a source object, return
-s (i.e. never fails)")
+s (i.e. never fails).")
 
 ;; XX source-location etc.?
 
 
 (====cc-category (I/O)
-                 "input and output")
+                 "Input and output.")
 
 
 (cc-def print (v ->)
@@ -807,18 +821,18 @@ s (i.e. never fails)")
 
 
 (cc-defhost current-input-port (-> input-port?)
-            "returns the current input filehandle (most often stdin)")
+            "Returns the current input filehandle (most often stdin).")
 
 (cc-defhost maybe-read-line ([input-port? port] -> string?)
-            "read a line from the given file handle, #f on EOF (ctl-d)")
+            "Read a line from the given file handle, #f on EOF (ctl-d).")
 
 (cc-def string.port ([string? s] -> input-port?)
-        "open the given string as a filehandle"
+        "Open the given string as a filehandle."
         (cc-return (call-with-input-string s identity)))
 
 (cc-defhost exit ([uint8? code])
-            "exit the process running the Copycat interpreter with the
-given exit code")
+            "Exit the process running the Copycat interpreter with the
+given exit code.")
 
 (cc-def sleep ([nonnegative-real? seconds] ->)
         (thread-sleep! seconds)
@@ -826,13 +840,13 @@ given exit code")
 
 
 (====cc-category (I/O s-expressions)
-                 "reading and writing s-expressions")
+                 "Reading and writing s-expressions.")
 
 (cc-defhost read ([input-port? port] -> a)
-            "read one s-expression from the given filehandle")
+            "Read one s-expression from the given filehandle.")
 
 (cc-defhost read-all ([input-port? port] -> ilist?)
-            "read all s-expressions from the given filehandle")
+            "Read all s-expressions from the given filehandle.")
 
 (TEST
  > (t '("hello 3 \"there\"" string.port read))
@@ -842,14 +856,14 @@ given exit code")
 
 
 (cc-def read-source ([string? path] -> ilist?)
-        "read the contents of the file at path as a list of
-s-expressions, enriched with location information"
+        "Read the contents of the file at path as a list of
+s-expressions, enriched with location information."
         (>>= (copycat:try-Ok
               (call-with-input-file path read-all-source))
              (C cc-return _)))
 
 (cc-defguest (: load [string? path]
-                "read and evaluate the given file"
+                "Read and evaluate the given file."
                 (read-source eval)))
 
 (cc-def write (v ->)
@@ -857,8 +871,8 @@ s-expressions, enriched with location information"
              (cc-return)))
 
 (cc-def show (v ->)
-        "print the given value to the current-output-port as a Scheme
-program that reconstructs v when evaluated"
+        "Print the given value to the current-output-port as a Scheme
+program that reconstructs v when evaluated."
         (mdo (copycat:try-Ok (pretty-print (try-show v)))
              (cc-return)))
 
@@ -867,39 +881,44 @@ program that reconstructs v when evaluated"
      (fst (with-output-to-string (& (pretty-print (cj-desourcify v))))))
 
 (cc-defhost pretty-string (s -> string?)
-            "pretty-print s to a string")
+            "`pretty-print` `s` to a string.")
+;; XX don't have pretty-print nor pp yet? `P` is not the same.
 
 
 (====cc-category (I/O directories)
-                 "handling directories")
+                 "Handling directories.")
 
 (cc-defhost current-directory (-> string?)
-            "the path to the current directory")
+            "The path to the current directory.")
 
 (cc-def set-current-directory ([string? path] ->)
-        "set the path to the current directory"
+        "Set the path to the current directory."
         (>> (copycat:try-Ok (current-directory path))
             (cc-return)))
 
 (cc-def directory-items ([string? path] -> (ilist-of string?))
-        "the list of entries in the given directory (only the file
-names without the parent directory path)"
+        "The list of entries in the given directory (only the file
+names without the parent directory path)."
         (>>= (copycat:try-Ok (stream->list (directory-item-stream path)))
             (C cc-return _)))
 
 (cc-defguest 'cd 'set-current-directory alias
              'pwd 'current-directory alias
              (: ls -> (ilist-of string?)
-                "list the files in the current directory"
+                "List the files in the current directory."
                 (current-directory directory-items))
              (: quit ->
-                "quit Copycat (currently also directly exits the process
-running the interpreter, not just the interpreter)"
+                "Quit Copycat (currently also directly exits the process
+running the interpreter, not just the interpreter)."
+                ;; XX use the new repl stop thing instead?
                 (0 exit)))
 
 
+(====cc-category (development)
+                 "Development aids.")
+
 (====cc-category (development debugging)
-                 "debugging aids")
+                 "Debugging aids.")
 
 (cc-def D ()
         "Enter a (nested) Copycat repl with the current stack /
@@ -911,39 +930,38 @@ machine state."
                 .repl-level-dec)))
 
 (cc-def DScheme ()
-        "print stack, enter a Scheme repl; enter ,(c (Ok $s)) to continue!"
+        "Print stack, enter a Scheme repl; enter ,(c (Ok $s)) to continue!"
         (mdo (copycat:try-Ok (pretty-print $s))
              (##repl)))
 
 (cc-def P (->)
-        "print the location of P and then the current stack (with
-location info stripped)"
+        "Print the location of P and then the current stack (with
+location info stripped)."
         (mdo (copycat:try-Ok
               (show-source-location $word)
               (pretty-print (cj-desourcify $s)))
              (cc-return)))
 
 (cc-def PM ([string? msg] ->)
-        "print msg and then the current stack"
+        "Print `msg` and then the current stack."
         (mdo (copycat:try-Ok (display msg)
                              (display ": ")
                              (pretty-print (cj-desourcify $s)))
              (cc-return)))
 
 (cc-def PS (->)
-        "print the location of P and then the current stack, via .show
-and with location info not stripped"
+        "Print the location of P and then the current stack, via
+`.show` and with location info not stripped."
         (mdo (copycat:try-Ok
               (show-source-location $word)
               (pretty-print (.show $s)))
              (cc-return)))
 
 
-(====cc-category (development benchmarking)
-                 "debugging aids")
+(====cc-category (development benchmarking))
 
 (cc-def time ([ilist-of-possibly-source? prog])
-        "Runs prog then prints how long it took"
+        "Runs `prog` then prints how long it took."
         (time-thunk (lambda ()
                       (cc-interpreter.eval $cci prog))
                     ;; Still showed in a Scheme-y way of course,
@@ -955,11 +973,10 @@ and with location info not stripped"
  (Ok (list 40)))
 
 
-(====cc-category (development help)
-                 "debugging aids")
+(====cc-category (development help))
 
 (cc-def dir (-> (ilist-of symbol?))
-        "returns the list of defined words"
+        "Returns the list of defined words."
         (cc-return (table.sorted-keys cc-words)))
 
 ;; on ccproc
@@ -973,28 +990,28 @@ and with location info not stripped"
 (cc-defhost/try .path (s))
 
 (cc-defhost cc-category-lookup ([(list-of symbol?) path] -> (maybe cc-category?))
-            "get the cc-category info globally registered for the
-given category path")
+            "Get the cc-category info globally registered for the
+given category path.")
 
 (cc-defhost cc-category-list (-> (list-of cc-category?))
-            "get all globally registered cc-categories (sorted by
-their path)")
+            "Get all globally registered cc-categories (sorted by
+their path).")
 
 (cc-defhost cc-category-paths (-> (list-of (list-of symbol?)))
-            "get all globally registered cc-category paths (sorted)")
+            "Get all globally registered cc-category paths (sorted).")
 
 
 (cc-defguest 'categories 'cc-category-list alias
 
              (: category-path.maybe-docstring [(list-of symbol?) path] -> (maybe string?)
-                "look up docstring for given category path"
+                "Look up docstring for given category path."
                 (cc-category-lookup (.maybe-docstring) maybe->>=))
 
              (: maybe-category-docstring [cc-category? cat] -> (maybe string?)
-                "look up docstring for given cc-category (unlike
+                "Look up docstring for given cc-category (unlike
 .maybe-docstring run directly on cat, this looks up the *registered*
 cc-category associated with the contained path and gets the docstring
-from there)"
+from there)."
                 (.path category-path.maybe-docstring))
 
              (: .categories-string
@@ -1003,7 +1020,7 @@ from there)"
                              "\n  " strings-join))
 
              (: aliases [ccproc? v] -> (ilist-of symbol?)
-                "give the list of all names that map to `v`"
+                "Give the list of all names that map to `v`."
                 (
                  ;; make program
                  (over ref eq? (Just) (drop Nothing) if) swap cons
@@ -1016,7 +1033,7 @@ from there)"
                          "  " strings-join))
 
              (: help-string [symbol? word] -> string?
-                "give help string on the given word"
+                "Give help string on the given word."
                 (
                  dup .string ": " string-append ;; intro
                  swap ref
@@ -1037,7 +1054,7 @@ from there)"
                  swap over 3 list strings-append))
 
              (: help [symbol? word] ->
-                "print help on the given word"
+                "Print help on the given word."
                 (help-string println)))
 
 (TEST
@@ -1046,7 +1063,7 @@ from there)"
 
 
 (====cc-category (control-flow)
-                 "Control flow")
+                 "Control flow.")
 
 (cc-def thenelse ([boolean? val]
                   [ilist-of-possibly-source? truebranch]
@@ -1086,7 +1103,7 @@ from there)"
 ;; point; maybe this is correct though.
 (cc-def repeat ([ilist-of-possibly-source? prog]
                 [fixnum-natural0? n])
-        "repeat prog n times"
+        "Repeat prog n times."
         (let lp ((n n)
                  (cci $cci))
           (if (zero? n)
