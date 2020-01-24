@@ -188,8 +188,11 @@ program associated with them (an exception is thrown if no program is
 associated with them) and evaluates it before continuing with the next
 item in the current program.
 
+Note that symbols can contain punctuation like `.`, `?`, `!`, `-`. See
+"naming conventions" for how these are usually used.
+
 Symbols can also contain whitespace characters and other special
-characters if they are enclosed in the vertical bar:
+characters if they are enclosed with vertical bar character:
 
     @ c '|foo \|bar's| symbol.string
     ("foo |bar's")
