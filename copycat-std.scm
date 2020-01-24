@@ -671,8 +671,14 @@ which can be raised as an exception."
                (Ok (cc-interpreter.stack-set cci (source-code stack))))))
 
 (cc-def get-stack (-> ilist?)
-        "put the current stack on top of the current stack"
+        "put the current stack (as a list) on top of the current
+stack"
         (cc-return $s))
+
+(cc-def slurp-stack (-> ilist?)
+        "get the current stack (as a list) as a single item in a fresh
+stack"
+        (Ok (cc-interpreter.stack-set $cci (list $s))))
 
 
 (TEST ;; Result
