@@ -81,8 +81,9 @@ This pushed another `10` and `14` onto the stack then ran a division
 a simplified fraction). `#t` is still on the stack from before. A
 program in Copycat consists simply of a list of items to be evaluated.
 
-This document will omit the fuel number from now on as it's irrelevant
-for the further teaching and easily gets out of sync.
+This document will omit the fuel number from now on as it's
+unimportant for the explanations easily gets out of sync while editing
+this document.
 
 ### Literals
 
