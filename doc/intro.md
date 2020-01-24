@@ -76,7 +76,7 @@ More than one expression can be entered at the same time:
     99996 @ 10 14 /
     (5/7 #t)
 
-This pushed another `5` and `7` onto the stack then ran a division
+This pushed another `10` and `14` onto the stack then ran a division
 (which, since the arguments of the division are exact numbers, returns
 a simplified fraction). `#t` is still on the stack from before. A
 program in Copycat consists simply of a list of items to be evaluated.
