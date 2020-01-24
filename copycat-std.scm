@@ -1072,6 +1072,8 @@ from there)."
 (cc-def thenelse ([boolean? val]
                   [ilist-of-possibly-source? truebranch]
                   [ilist-of-possibly-source? falsebranch])
+        "Evaluates `truebranch` if val is #t, `falsebranch` if it is
+#f."
         (cc-interpreter.eval $cci (if val truebranch falsebranch)))
 
 (cc-defguest 'if 'thenelse alias)
