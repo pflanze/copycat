@@ -484,7 +484,7 @@ representing the case of a present value; this prohibits the use of
 the #f value as part of present values (and can lead to mistakes), but
 can also be convenient (TODO: offer nesting 'Maybe' type).")
 
-(cc-def if-maybe ([any? a]
+(cc-def if-just ([any? a]
                   [ilist-of-possibly-source? then]
                   [ilist-of-possibly-source? else])
         "Unlike `if`, this accepts non-boolean values for `a`, in
@@ -492,11 +492,11 @@ which case the `then` branch is evaluated (i.e. a 'maybe' type if)."
         (cc-interpreter.eval $cci (if a then else)))
 
 (TEST
- > (t '(#f ('yes) ('no) if-maybe))
+ > (t '(#f ('yes) ('no) if-just))
  (Ok (list 'no))
- > (t '(#t ('yes) ('no) if-maybe))
+ > (t '(#t ('yes) ('no) if-just))
  (Ok (list 'yes))
- > (t '("other" ('yes) ('no) if-maybe))
+ > (t '("other" ('yes) ('no) if-just))
  (Ok (list 'yes))
  ;; unlike:
  > (t '("other" ('yes) ('no) if))
@@ -515,7 +515,7 @@ style one (monadic >>)."
 'maybe' type: if `a` is #f, it will return #f; otherwise, it will put
 `a` back on the stack (unlike `and` which does not do this) and
 evaluate `b`."
-                (over -rot () if-maybe)))
+                (over -rot () if-just)))
 
 (TEST
  > (t '(#f (10 +) maybe->>=))
