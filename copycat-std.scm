@@ -1053,10 +1053,13 @@ from there)."
                  dup .string ": " string-append ;; intro
                  swap ref
                  dup
-                 .type .maybe-original (pretty-string) maybe->>= ;; maybe type
+                 .type .maybe-original (pretty-string string-chomp)
+                 maybe->>= ;; maybe type
+                 ("") or ;; still get a newline
                  swap
                  dup 
-                 .docstring source-code ;; maybe docstring
+                 .docstring source-code
+                 ("\n" swap string-append) maybe->>= ;; maybe docstring
                  swap
                  dup
                  .categories-string "\nCategories:\n  " swap string-append
