@@ -769,20 +769,20 @@ from `ref`."
           (cc-word-set! name prog))
         (cc-return))
 
-(====cc-category (environment categories)
-                 "Categories are used in procedure definitions. They
-have a path which is a list of symbols (which is shown by `help` as a
-single string with `/` between the elements), and optionally a
-docstring describing their intent. Each procedure holds a list of
-categories. To avoid having to specify the categories on every
-procedure definition individually, they can be set via
-`set-current-categories`--subsequent procedure definitions pick up the
-categories from there.")
+(====cc-category (environment cc-categories)
+                 "Categories (of the cc-category type) are used in
+procedure definitions. They have a path which is a list of
+symbols (which is shown by `help` as a single string with `/` between
+the elements), and optionally a docstring describing their
+intent. Each procedure holds a list of categories. To avoid having to
+specify the categories on every procedure definition individually,
+they can be set via `set-current-cc-categories`--subsequent procedure
+definitions pick up the categories from there.")
 
 (cc-defhost cc-category ([(list-of symbol?) path]
                          [(maybe string?) maybe-docstring] -> cc-category?)
             "Create a `cc-category` object for use with
-`set-current-categories`. The docstring is for the category itself,
+`set-current-cc-categories`. The docstring is for the category itself,
 not for subsequently created procedures.")
 
 (cc-defhost/try .maybe-docstring (s))
@@ -791,17 +791,17 @@ not for subsequently created procedures.")
 (TEST
  > (t '((some where) "somehelp" cc-category dup .path swap .maybe-docstring))
  (Ok (list "somehelp" (list 'some 'where)))
- > (t '((some where) "somehelp" cc-category 1 list set-current-categories
+ > (t '((some where) "somehelp" cc-category 1 list set-current-cc-categories
         (: fun ()) 'fun help-string))
  (Ok (list "----------------------------------------------------------\nfun: \n\nCategories:\n  some/where\nNames:\n  fun\n----------------------------------------------------------\n")))
 
 
-(cc-def current-categories (-> (list-of cc-category?))
+(cc-def current-cc-categories (-> (list-of cc-category?))
         "Get the current list of categories to be used to create
 procedures via `:` or `set!`."
         (cc-return (copycat-interpreter:current-categories)))
 
-(cc-def set-current-categories ([(list-of cc-category?) categories] ->)
+(cc-def set-current-cc-categories ([(list-of cc-category?) categories] ->)
         "Set the current list of categories to be used to create
 procedures via `:` or `set!`."
         (copycat-interpreter:current-categories categories)
