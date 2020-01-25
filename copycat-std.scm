@@ -465,6 +465,11 @@ returns `v`."
                           [char? char-or-pred]
                           -> (ilist-of string?)))
 
+(def string-chomp chomp) ;; consistency
+
+(cc-defhost string-chomp ([string? str] -> string?)
+            "Remove one trailing newline character from str if present.")
+
 (cc-defhost/try .string (s -> string?)
                 "Apply the .string method to s, which is expected to
 convert s to a string or extract a string from s.")
