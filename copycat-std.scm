@@ -1029,7 +1029,7 @@ from there)."
                              list-map
                              "\n  " strings-join))
 
-             (: aliases [ccproc? v] -> (ilist-of symbol?)
+             (: proc-names [ccproc? v] -> (ilist-of symbol?)
                 "Give the list of all names that map to `v`."
                 (
                  ;; make program
@@ -1038,8 +1038,8 @@ from there)."
                  swap list-map
                  cat-Maybes))
 
-             (: aliases-string ;; similar to .categories-string
-                (aliases (pretty-string) list-map
+             (: proc-names-string ;; similar to .categories-string
+                (proc-names (pretty-string) list-map
                          "  " strings-join))
 
              (: help-string [symbol? word] -> string?
@@ -1056,7 +1056,7 @@ from there)."
                  dup
                  .categories-string "\nCategories:\n  " swap string-append
                  swap
-                 aliases-string "Aliases:\n  " swap string-append
+                 proc-names-string "Names:\n  " swap string-append
                  4 list cat-maybes "\n" strings-join
                  string-append
                  ;; add horizontal rulers
@@ -1069,7 +1069,7 @@ from there)."
 
 (TEST
  > (t '('help help-string))
- (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nPrint help on the given word.\n\nCategories:\n  development/help\nAliases:\n  blabla\n  help\n----------------------------------------------------------\n")))
+ (Ok (list "----------------------------------------------------------\nhelp: ([symbol? word] ->)\n\nPrint help on the given word.\n\nCategories:\n  development/help\nNames:\n  blabla\n  help\n----------------------------------------------------------\n")))
 
 
 (====cc-category (control-flow)
