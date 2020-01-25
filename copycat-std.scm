@@ -808,6 +808,34 @@ procedures via `:` or `set!`."
         (cc-return))
 
 
+(cc-defhost cc-category-lookup ([(list-of symbol?) path] -> (maybe cc-category?))
+            "Get the cc-category info globally registered for the
+given category path.")
+
+(cc-defhost cc-category-list (-> (list-of cc-category?))
+            "Get all globally registered cc-categories (sorted by
+their path).")
+
+(cc-defhost cc-category-paths (-> (list-of (list-of symbol?)))
+            "Get all globally registered cc-category paths (sorted).")
+
+(cc-defguest (: category-path.maybe-docstring [(list-of symbol?) path] -> (maybe string?)
+                "Look up docstring for given category path."
+                (cc-category-lookup (.maybe-docstring) maybe->>=))
+
+             (: maybe-category-docstring [cc-category? cat] -> (maybe string?)
+                "Look up docstring for given cc-category (unlike
+.maybe-docstring run directly on cat, this looks up the *registered*
+cc-category associated with the contained path and gets the docstring
+from there)."
+                (.path category-path.maybe-docstring))
+
+             (: .categories-string
+                (.categories (.path (.string) list-map "/" strings-join)
+                             list-map
+                             "\n  " strings-join)))
+
+
 (====cc-category (environment symbols)
                  "Symbols are identifying items in an environment;
 currently there's just one global environment.")
@@ -1026,7 +1054,10 @@ location info stripped)."
  (Ok (list 40)))
 
 
-(====cc-category (development help))
+(====cc-category (development help)
+                 "Getting help about words (procedures).
+
+Also see the category `(environment cc-categories)`.")
 
 (cc-def dir (-> (ilist-of symbol?))
         "Returns the list of defined words."
@@ -1039,36 +1070,8 @@ location info stripped)."
 ;; on cc-type
 (cc-defhost/try .maybe-original (s))
 
-(cc-defhost cc-category-lookup ([(list-of symbol?) path] -> (maybe cc-category?))
-            "Get the cc-category info globally registered for the
-given category path.")
-
-(cc-defhost cc-category-list (-> (list-of cc-category?))
-            "Get all globally registered cc-categories (sorted by
-their path).")
-
-(cc-defhost cc-category-paths (-> (list-of (list-of symbol?)))
-            "Get all globally registered cc-category paths (sorted).")
-
-
 (cc-defguest 'categories 'cc-category-list alias
-
-             (: category-path.maybe-docstring [(list-of symbol?) path] -> (maybe string?)
-                "Look up docstring for given category path."
-                (cc-category-lookup (.maybe-docstring) maybe->>=))
-
-             (: maybe-category-docstring [cc-category? cat] -> (maybe string?)
-                "Look up docstring for given cc-category (unlike
-.maybe-docstring run directly on cat, this looks up the *registered*
-cc-category associated with the contained path and gets the docstring
-from there)."
-                (.path category-path.maybe-docstring))
-
-             (: .categories-string
-                (.categories (.path (.string) list-map "/" strings-join)
-                             list-map
-                             "\n  " strings-join))
-
+             
              (: proc-names [ccproc? v] -> (ilist-of symbol?)
                 "Give the list of all names that map to `v`."
                 (
