@@ -1141,7 +1141,7 @@ onto the stack and `prog` exactly 0. That's why it's called
                 (over eval (dup eval unergonomic-while) (drop2) if)))
 
 (TEST
- > (t '(7 (pick2 zero? not) (rot 1 - -rot) while))
+ > (t '(7 (pick2 zero? not) (rot 1 - -rot) unergonomic-while))
  (Ok (list 0)))
 
 
