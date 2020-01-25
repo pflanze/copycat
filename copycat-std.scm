@@ -888,9 +888,11 @@ program that reconstructs v when evaluated."
         (mdo (copycat:try-Ok (pretty-print (try-show v)))
              (cc-return)))
 
+(cc-defhost pretty-print (s ->)
+            "Pretty-print s as a Scheme s-expression")
+
 (cc-defhost pretty-string (s -> string?)
             "`pretty-print` `s` to a string.")
-;; XX don't have pretty-print nor pp yet? `P` is not the same.
 
 
 (====cc-category (I/O directories)
