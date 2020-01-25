@@ -888,10 +888,6 @@ program that reconstructs v when evaluated."
         (mdo (copycat:try-Ok (pretty-print (try-show v)))
              (cc-return)))
 
-;; XX lib
-(def (pretty-string v)
-     (fst (with-output-to-string (& (pretty-print (cj-desourcify v))))))
-
 (cc-defhost pretty-string (s -> string?)
             "`pretty-print` `s` to a string.")
 ;; XX don't have pretty-print nor pp yet? `P` is not the same.
