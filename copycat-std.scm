@@ -24,6 +24,9 @@ implementation)"
 
 (include "lib/cj-standarddeclares.scm")
 
+(TEST
+ > (include "copycat-std-test--include.scm"))
+
 
 ;; -- Remaining tests for functionality in copycat-std-part* --------------
 
