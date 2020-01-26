@@ -382,6 +382,9 @@
 (/load "cc-category")
 (/load "copycat-interpreter")
 ;; (generate-proper-tail-calls #f)
+(/load "copycat-std-part1")
+(/load "copycat-std-part2")
+(/load "copycat-std-part3")
 (/load "copycat-std")
 
 (c/load "svg-logo-lib")
