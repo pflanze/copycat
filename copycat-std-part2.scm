@@ -31,9 +31,10 @@
             "The number of items in `vec`.")
 
 
-(def (cc:Rvector $word $cci $s numargs reverse? drop-args?)
+(def (cc:Rvector $word $cci $s numargs reverse? drop-args?
+                 make-VECTOR VECTOR-set! item? item?-string)
      -> copycat-runtime-result?
-     (let ((v (make-vector numargs))
+     (let ((v (make-VECTOR numargs))
            (end (dec numargs)))
        (let lp ((i end)
                 (s $s))
@@ -44,10 +45,14 @@
                      Ok)
                  (cc-return v))
              (if-let-pair ((a r) s)
-                          (begin (vector-set! v
-                                              (if reverse? i (- end i))
-                                              a)
-                                 (lp (dec i) r))
+                          (if (item? a)
+                              (begin (VECTOR-set! v
+                                                  (if reverse? i (- end i))
+                                                  a)
+                                     (lp (dec i) r))
+                              (Error (copycat-type-error $word
+                                                         item?-string
+                                                         a)))
                           (Error (copycat-missing-arguments $word
                                                             'Rvector ;; ?
                                                             numargs
@@ -55,20 +60,27 @@
 (cc-def vector ([fixnum-natural0? n] -> (list-of-length n))
         "Takes `n` elements from the stack and returns them as a
 vector."
-        (cc:Rvector $word $cci $s n #t #t))
+        (cc:Rvector $word $cci $s n #t #t
+                    make-vector vector-set! any? "bug"))
+
 (cc-def rvector ([fixnum-natural0? n] -> (list-of-length n))
         "Takes `n` elements from the stack and returns them as a
 reversed vector."
-        (cc:Rvector $word $cci $s n #f #t))
+        (cc:Rvector $word $cci $s n #f #t
+                    make-vector vector-set! any? "bug"))
 
 (cc-def copy-vector ([fixnum-natural0? n] -> (vector-of-length n))
         "Copy `n` elements from the stack (leaving them there) and
 returns them as a vector."
-        (cc:Rvector $word $cci $s n #t #f))
+        (cc:Rvector $word $cci $s n #t #f
+                    make-vector vector-set! any? "bug"))
+
 (cc-def copy-rvector ([fixnum-natural0? n] -> (vector-of-length n))
         "Copy `n` elements from the stack (leaving them there) and
 returns them as a reversed vector."
-        (cc:Rvector $word $cci $s n #f #f))
+        (cc:Rvector $word $cci $s n #f #f
+                    make-vector vector-set! any? "bug"))
+
 
 (cc-def vector-ref ([vector? v] [fixnum-natural0? i] -> any?)
         "Retrieve from `v` the element at index `i`."
@@ -143,6 +155,40 @@ returns `v`."
 
 (cc-defhost string-chomp ([string? str] -> string?)
             "Remove one trailing newline character from str if present.")
+
+(cc-def string ([fixnum-natural0? n] -> string?)
+        "Take `n` elements from the stack (which must be chars) and
+make a string out of them."
+        (cc:Rvector $word $cci $s n #t #t
+                    make-string string-set! char? "char?"))
+
+(cc-def rstring ([fixnum-natural0? n] -> string?)
+        "Take `n` elements from the stack (which must be chars) and
+make a string out of them in reverse order."
+        (cc:Rvector $word $cci $s n #f #t
+                    make-string string-set! char? "char?"))
+
+(cc-def copy-string ([fixnum-natural0? n] -> string?)
+        "Copy `n` elements from the stack (which must be chars) and
+make a string out of them."
+        (cc:Rvector $word $cci $s n #t #f
+                    make-string string-set! char? "char?"))
+
+(cc-def copy-rstring ([fixnum-natural0? n] -> string?)
+        "Copy `n` elements from the stack (which must be chars) and
+make a string out of them in reverse order."
+        (cc:Rvector $word $cci $s n #f #f
+                    make-string string-set! char? "char?"))
+
+(TEST
+ > (t '(#\a #\b #\c 3 string))
+ (Ok (list "abc"))
+ > (t '(#\a #\b #\c 3 rstring))
+ (Ok (list "cba"))
+ > (t '(#\a #\b #\c 3 copy-string))
+ (Ok (list "abc" #\c #\b #\a))
+ > (t '(#\a #\b #\c 3 copy-rstring))
+ (Ok (list "cba" #\c #\b #\a)))
 
 (cc-defhost/try .string (s -> string?)
                 "Apply the .string method to s, which is expected to
