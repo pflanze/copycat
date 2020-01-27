@@ -381,12 +381,12 @@
 (c/load "cc-type")
 (/load "cc-category")
 (/load "copycat-interpreter")
-;; (generate-proper-tail-calls #f)
 (/load "copycat-std-part1")
 (/load "copycat-std-part2")
 (/load "copycat-std-part3")
 (/load "copycat-std")
 
+;; (generate-proper-tail-calls #f)
 (c/load "svg-logo-lib")
 (c/load "svg-logo")
 (/load "copycat-turtle")
