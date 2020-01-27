@@ -27,7 +27,7 @@
 (cc-defhost vector? (v -> boolean?)
             "Whether `v` is a vector.")
 
-(cc-defhost vector-length ([vector? vec] -> fixnum-natural0?)
+(cc-defhost vector.length ([vector? vec] -> fixnum-natural0?)
             "The number of items in `vec`.")
 
 
@@ -82,7 +82,7 @@ returns them as a reversed vector."
                     make-vector vector-set! any? "bug"))
 
 
-(cc-def vector-ref ([vector? v] [fixnum-natural0? i] -> any?)
+(cc-def vector.ref ([vector? v] [fixnum-natural0? i] -> any?)
         "Retrieve from `v` the element at index `i`."
         (if (< i (vector-length v))
             (cc-return (vector-ref v i))
@@ -90,7 +90,7 @@ returns them as a reversed vector."
                                                  i
                                                  (vector-length v)))))
 
-(cc-def vector-set! ([vector? v] [fixnum-natural0? i] val -> vector?)
+(cc-def vector.set! ([vector? v] [fixnum-natural0? i] val -> vector?)
         "Set the element at index `i` in `v` to `val`, via mutation;
 returns `v`."
         (if (< i (vector-length v))
@@ -100,7 +100,7 @@ returns `v`."
                                                  i
                                                  (vector-length v)))))
 
-(cc-def vector-set ([vector? v] [fixnum-natural0? i] val -> vector?)
+(cc-def vector.set ([vector? v] [fixnum-natural0? i] val -> vector?)
         "Returns a copy of `v` with the element at index `i` set to
 `val`."
         (if (< i (vector-length v))
@@ -121,13 +121,13 @@ returns `v`."
  (Ok (list (vector 'c 'b) 'c 'b 'a))
  > (t '('a 'b 'c 2 copy-vector)) 
  (Ok (list (vector 'b 'c) 'c 'b 'a))
- > (t '([a b c] 2 vector-ref))
+ > (t '([a b c] 2 vector.ref))
  (Ok (list 'c))
- > (t '([a b c] 3 vector-ref))
- (Error (copycat-out-of-bounds-access 'vector-ref 3 3))
- > (t '([a b c] dup 0 "hi" vector-set!))
+ > (t '([a b c] 3 vector.ref))
+ (Error (copycat-out-of-bounds-access 'vector.ref 3 3))
+ > (t '([a b c] dup 0 "hi" vector.set!))
  (Ok (list (vector "hi" 'b 'c) (vector "hi" 'b 'c)))
- > (t '([a b c] dup 0 "hi" vector-set))
+ > (t '([a b c] dup 0 "hi" vector.set))
  (Ok (list (vector "hi" 'b 'c) (vector 'a 'b 'c))))
 
 
@@ -137,23 +137,23 @@ returns `v`."
 
 (cc-defhost string? (v -> boolean?)
             "Whether `v` is a string.")
-(cc-defhost string-length ([string? str] -> fixnum-natural0?)
+(cc-defhost string.length ([string? str] -> fixnum-natural0?)
             "The number of characters in str.")
-(cc-defhost string-append ([string? a] [string? b] -> string?)
+(cc-defhost string.append ([string? a] [string? b] -> string?)
             "Append the two strings `a` and `b`.")
 (cc-defhost/try strings-append ([(ilist-of string?) l] -> string?)
                 "Append all the elements (which must be strings) in l.")
 (cc-defhost/try strings-join ([(ilist-of string?) l] [string? inbetween]
                               -> string?))
-(cc-defhost string-split ([string? str]
+(cc-defhost string.split ([string? str]
                           ;; XX todo: allow forth preds by
                           ;; wrapping
                           [char? char-or-pred]
                           -> (ilist-of string?)))
 
-(def string-chomp chomp) ;; consistency
+(def. string.chomp chomp) ;; consistency
 
-(cc-defhost string-chomp ([string? str] -> string?)
+(cc-defhost string.chomp ([string? str] -> string?)
             "Remove one trailing newline character from str if present.")
 
 (cc-def string ([fixnum-natural0? n] -> string?)

@@ -383,23 +383,23 @@ Also see the category `(environment cc-categories)`.")
              (: help-string [symbol? word] -> string?
                 "Give help string on the given word."
                 (
-                 dup .string ": " string-append ;; intro
+                 dup .string ": " string.append ;; intro
                  swap ref
                  dup
-                 .type .maybe-original (pretty-string string-chomp)
+                 .type .maybe-original (pretty-string string.chomp)
                  maybe->>= ;; maybe type
                  ("") or ;; still get a newline
                  swap
                  dup 
                  .docstring source-code
-                 ("\n" swap string-append) maybe->>= ;; maybe docstring
+                 ("\n" swap string.append) maybe->>= ;; maybe docstring
                  swap
                  dup
-                 .categories-string "\nCategories:\n  " swap string-append
+                 .categories-string "\nCategories:\n  " swap string.append
                  swap
-                 proc-names-string "Names:\n  " swap string-append
+                 proc-names-string "Names:\n  " swap string.append
                  4 list cat-maybes "\n" strings-join
-                 string-append
+                 string.append
                  ;; add horizontal rulers
                  "----------------------------------------------------------\n"
                  swap over 3 list strings-append))

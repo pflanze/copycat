@@ -86,7 +86,7 @@ implementation)"
  > (t '(() 1 cons))
  (Ok (list (list 1)))
 
- > (t '("foo bar" #\space string-split strings-append))
+ > (t '("foo bar" #\space string.split strings-append))
  (Ok (list "foobar"))
  
  > (t '('f 42 +))
