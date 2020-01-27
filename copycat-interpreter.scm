@@ -111,7 +111,7 @@
   extends: ccproc
 
   (defmethod (cc-apply s [cc-interpreter? cci] word/loc)
-    -> copycat-runtime-result?
+    ;; -> copycat-runtime-result?  TCO
     (let* ((cci/stack (lambda (stack)
                         (cc-interpreter.stack-set cci stack)))
            (stack (lambda ()
