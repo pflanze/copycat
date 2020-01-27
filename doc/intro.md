@@ -181,8 +181,8 @@ Unlike lists, vectors are implemented as single blocks of memory; for
 this reason, unlike for lists, reading elements at random positions
 (using `vector.ref`) is fast. Vectors can be mutated in place using
 `vector.set!` (which is fast). There's also a `vector.set` operation
-which does not mutate its argument, but it's (with the current
-implementation) inefficient as it copies the whole vector.
+which does not mutate its argument, but (with the current
+implementation) it's inefficient as it copies the whole vector.
 
 ### Symbols (words)
 
