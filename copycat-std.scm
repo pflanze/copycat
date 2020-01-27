@@ -88,6 +88,8 @@ implementation)"
 
  > (t '("foo bar" #\space string.split strings-append))
  (Ok (list "foobar"))
+ > (t '("foo bar" #\space .split strings-append))
+ (Ok (list "foobar"))
  
  > (t '('f 42 +))
  (Error (copycat-type-error '+ "(number? a)" 'f))

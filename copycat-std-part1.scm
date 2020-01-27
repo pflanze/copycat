@@ -196,6 +196,10 @@ elements."
         (cc-return (not (eq? a b))))
 
 
+(cc-defhost/try .length (a -> fixnum-natural0?)
+                "Try to call the length method on `a`.")
+
+
 (====cc-category (lists)
                  "Operations on linked lists.")
 

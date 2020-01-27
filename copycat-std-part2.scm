@@ -194,6 +194,15 @@ make a string out of them in reverse order."
                 "Apply the .string method to s, which is expected to
 convert s to a string or extract a string from s.")
 
+(cc-defhost/try .split (s item-or-pred -> ilist?)
+                "Try to call the .split method on `s`, which is
+supposed to split `s` into multiple parts of the same type as `s`,
+with `item-or-pred` representing the items denoting the places that
+should be cut out and leading to the fragments. Is *not* supposed to
+coalesce multiple matching items in a row into a single hole (instead,
+it will return empty fragments from between those items in the
+result).")
+
 
 (====cc-category (chars)
                  "Operations on unicode capable characters.")
@@ -207,6 +216,38 @@ convert s to a string or extract a string from s.")
             "Convert string s into a list of all of its characters.")
 (cc-defhost char-list.string ([(list-of char?) l] -> string?)
             "Convert string s into a list of all of its characters.")
+
+
+(====cc-category (lists)
+                 (strings)
+                 (vectors))
+
+(cc-defhost/try .ref (v [fixnum-natural0? i] -> any?)
+                "Try to call the ref method on the (supposedly
+vector-like) `v`, returning the element of `v` at index `i`.")
+
+(cc-defhost/try .set (v [fixnum-natural0? i] val -> v*)
+                "Try to call the set method on the (supposedly
+vector-like) `v`, returning a new version of `v` that contains `val`
+at index `i`.")
+
+(====cc-category (strings)
+                 (vectors))
+
+(cc-def .set! (v [fixnum-natural0? i] val -> v)
+        "Try to call the set! method on the (supposedly vector-like)
+`v`, mutating `v` to contain `val` at index `i`. The identical (but
+mutated) `v` is returned for consistency with the `.set` method."
+        (mdo (copycat:try-Ok (.set! v i val))
+             (cc-return v)))
+
+(TEST
+ > (equal? (t* '(10 11 12 3 vector dup 1 "hi" .set!))
+           (Ok '([10 "hi" 12] [10 "hi" 12])))
+ #t
+ > (equal? (t* '(#\a #\b #\c 3 string dup 1 #\Z .set!))
+           (Ok '("aZc" "aZc")))
+ #t)
 
 
 (====cc-category (control-flow maybe)
