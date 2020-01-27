@@ -179,8 +179,8 @@ vector items.
 
 Unlike lists, vectors are implemented as single blocks of memory; for
 this reason, unlike for lists, reading elements at random positions
-(using `vector-ref`) is fast. Vectors can be mutated in place using
-`vector-set!` (which is fast). There's also a `vector-set` operation
+(using `vector.ref`) is fast. Vectors can be mutated in place using
+`vector.set!` (which is fast). There's also a `vector.set` operation
 which does not mutate its argument, but it's (with the current
 implementation) inefficient as it copies the whole vector.
 
@@ -202,7 +202,7 @@ characters if they are enclosed with vertical bar character:
 
     @ c '|foo \|bar's| symbol.string
     ("foo |bar's")
-    @ string-length
+    @ string.length
     (10)
 
 ### Additional syntax
