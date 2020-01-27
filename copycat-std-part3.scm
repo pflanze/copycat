@@ -216,6 +216,9 @@ given exit code.")
         (thread-sleep! seconds)
         (cc-return))
 
+(cc-def current-unixtime (-> inexact-real?)
+        "The current time in unix time, with sub-second resolution."
+        (cc-return (time->seconds (current-time))))
 
 (====cc-category (I/O s-expressions)
                  "Reading and writing s-expressions.")
