@@ -220,7 +220,7 @@
   '(c/load "lib/delimcc-simple")
   '(c/load "lib/delimcc-simple-test")
   '(c/load "lib/domain-name")
-  '(c/load "lib/dot-oo-introspection")
+  (c/load "lib/dot-oo-introspection")
   '(c/load "lib/dot-oo-optim")
   '(c/load "lib/dot-oo-test")
   '(c/load "lib/dot")
