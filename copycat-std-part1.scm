@@ -105,6 +105,16 @@ elements."
 ;; (cc-defguest 'c 'clear alias)
 ;; `alias` is not defined yet, thus move that to later
 
+(cc-def stack-length (-> fixnum-natural0?)
+        "The current number of values on the data stack."
+        ;; XX if it returns a negative number (not caught?), then the
+        ;; stack is 'corrupt'.
+        (cc-return (improper-length $s)))
+
+(TEST
+ > (t '(1 2 3 88 "hi" stack-length))
+ (Ok (list 5 "hi" 88 3 2 1)))
+
 
 (====cc-category (booleans)
                  "Operations on booleans.")
