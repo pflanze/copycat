@@ -137,8 +137,14 @@ Series of characters. They are as defined by the Scheme standard.
     @ println
     Motörhead!
     ("Allô")
-    @ string?
-    (#t)
+    @ dup string? swap string.list
+    ((#\A #\l #\l #\ô) #t)
+    @ (char.integer) list-map
+    ((65 108 108 244) #t)
+    @ (inc integer.char) list-map
+    ((#\B #\m #\m #\õ) #t)
+    @ char-list.string
+    ("Bmmõ" #t)
 
 #### Lists
 
