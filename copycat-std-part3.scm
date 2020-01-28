@@ -473,6 +473,12 @@ Also see the category `(environment cc-categories)`.")
  > (t '(10 (1 +) 5 repeat))
  (Ok (list 15)))
 
+(cc-def loop ([ilist-of-possibly-source? prog])
+        "Repeat prog forever."
+        (let lp ((cci $cci))
+          (>>= (cc-interpreter.eval cci prog)
+               lp)))
+
 
 (cc-defguest (: unergonomic-while
                 [ilist-of-possibly-source? condition]
