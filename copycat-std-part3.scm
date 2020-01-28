@@ -107,11 +107,11 @@ procedures via `:` or `set!`."
             "Get the cc-category info globally registered for the
 given category path.")
 
-(cc-defhost cc-category-list (-> (list-of cc-category?))
+(cc-defhost get-cc-category-list (-> (list-of cc-category?))
             "Get all globally registered cc-categories (sorted by
 their path).")
 
-(cc-defhost cc-category-paths (-> (list-of (list-of symbol?)))
+(cc-defhost get-cc-category-paths (-> (list-of (list-of symbol?)))
             "Get all globally registered cc-category paths (sorted).")
 
 (cc-defguest (: category-path.maybe-docstring [(list-of symbol?) path] -> (maybe string?)
@@ -368,7 +368,7 @@ Also see the category `(environment cc-categories)`.")
 ;; on cc-type
 (cc-defhost/try .maybe-original (s))
 
-(cc-defguest 'categories 'cc-category-list alias
+(cc-defguest 'categories 'get-cc-category-list alias
              
              (: proc-names [ccproc? v] -> (ilist-of symbol?)
                 "Give the list of all names that map to `v`."

@@ -10,8 +10,8 @@
 
 (export (macro ====cc-category)
         cc-category-lookup
-        cc-category-list
-        cc-category-paths)
+        get-cc-category-list
+        get-cc-category-paths)
 
 (include "lib/cj-standarddeclares.scm")
 
@@ -116,11 +116,11 @@ cc-defhost*). Each path can be followed by a docstring for it."
 (def (cc-category-lookup [(list-of symbol?) path])
      (table-ref cc-category:register path #f))
 
-(def (cc-category-list) -> (list-of cc-category?)
+(def (get-cc-category-list) -> (list-of cc-category?)
      (cmp-sort (table.values cc-category:register)
                (on cc-category.path generic-cmp)))
 
-(def (cc-category-paths) -> (list-of (list-of symbol?))
+(def (get-cc-category-paths) -> (list-of (list-of symbol?))
      (cmp-sort (table.keys cc-category:register)
                generic-cmp))
 
