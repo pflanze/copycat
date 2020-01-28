@@ -34,6 +34,9 @@ anything other than 0 is full brightness.)"
    (
     dup led-trigger-none
     (
+     ;; really run forever:
+     100 set-fuel
+
      dup 255 led-set
      1 sleep
      dup 0 led-set
