@@ -450,7 +450,8 @@ failed because of running out of fuel or for another reason) do "give
 back" their fuel, i.e. they cost nothing. This means that there will
 be fuel left after `try` to handle the error.
 
-Fuel can be added via `add-fuel` (relative) or `set-fuel` (absolute).
+The current amount of fuel can be changed via `add-fuel` (relative) or
+`set-fuel` (absolute).
 
 (Possibly the copycat-repl should automatically reset the fuel to a
 given amount on each interactive entry? Not done currently as it might
