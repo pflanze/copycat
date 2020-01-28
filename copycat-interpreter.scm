@@ -107,7 +107,7 @@
 ;; Wich is (also) part of a foreign function interface (?), hence the
 ;; naming:
 
-(defclass (ccforeigncall [natural0? numargs]
+(defclass (ccforeignproc [natural0? numargs]
                          [procedure? op])
   extends: ccproc
 
@@ -248,7 +248,7 @@ $s     the stack (out of $cci)
            (letv ((maybe-docstring body)
                   (cc-parse-body perhaps-docstring+body))
                  `(cc-word-set! ',name
-                                (ccforeigncall
+                                (ccforeignproc
                                  ',(source-location stx)
                                  ,maybe-docstring
                                  ,(.show it)      ;; type
