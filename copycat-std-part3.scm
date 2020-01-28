@@ -476,7 +476,8 @@ Also see the category `(environment cc-categories)`.")
 (cc-def loop ([ilist-of-possibly-source? prog])
         "Repeat prog forever."
         (let lp ((cci $cci))
-          (>>= (cc-interpreter.eval cci prog)
+          (==> (cc-interpreter.fuel-dec* cci $word)
+               (cc-interpreter.eval prog)
                lp)))
 
 
