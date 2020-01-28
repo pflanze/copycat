@@ -7,6 +7,8 @@
 
 
 (require easy
+         (cj-io-util putfile getfile)
+         (string-quote shell-quote)
          copycat-interpreter
          copycat-std-part2
          test)
@@ -211,6 +213,24 @@ s (i.e. never fails).")
 (cc-defhost exit ([uint8? code])
             "Exit the process running the Copycat interpreter with the
 given exit code.")
+
+(cc-defhost/try shell-command ([string? code] -> fixnum-natural0?)
+                "Run `code` in a shell, and return the exit code.")
+
+(cc-defhost/try bash ([string? code] -> string?)
+                "Run `code` in a bash shell, and return the captured
+output. If bash exited with a non-zero exit code, throw an
+exception.")
+
+(cc-defhost/try putfile (bag [path-string? path] ->)
+                "Write the contents of `bag`, which is a string or
+list (of lists of) strings, to the file at `path`.")
+
+(cc-defhost/try getfile ([path-string? path] -> string?)
+                "Get the contents of the file at `path`.")
+
+(cc-defhost shell-quote ([string? s] -> string?)
+            "Turn s into a string constant in Bash syntax.")
 
 (cc-def sleep ([nonnegative-real? seconds] ->)
         (thread-sleep! seconds)
