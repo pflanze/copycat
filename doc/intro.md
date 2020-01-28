@@ -205,52 +205,63 @@ characters if they are enclosed with vertical bar character:
     @ string.length
     (10)
 
-### Additional syntax
+### Comments
 
-* `;` is used to introduce a line comment--the rest of the line is
-    being ignored. `#;` is used to comment out the following
-    s-expression. `#| .. |#` can be used to comment out a region (but
-    if you can get away with `#;` that's nicer, especially with editor
-    support).
+`;` is used to introduce a line comment--the rest of the line is
+being ignored. `#;` is used to comment out the following
+s-expression. `#| .. |#` can be used to comment out a region (but
+if you can get away with `#;` that's nicer, especially with editor
+support).
 
-* `'` (a single single-quote character): prevents evaluation of the
-    item right to it, i.e. turns it into a literal value. For items
-    which are self-quoting (literals) anyway, it doesn't have any
-    effect, but it's necessary for symbols (words) if what you want is
-    not their evaluation, but them being put onto the stack:
-  
-        @ c 'help ref
-        ([(ccguestproc)
-                   "print help on the given word"
-                   [(cc-type/results) #f ([symbol? word]) ()]
-                   (help-string println)])
+### Quoting
 
-    `'foo` is equivalent to `(quote foo)`, and in fact the single quote
-    is expanded into the latter form by the parser before it reaches the
-    interpreter.
+`'` (a single single-quote character): prevents evaluation of the
+item right to it, i.e. turns it into a literal value. For items
+which are self-quoting (literals) anyway, it doesn't have any
+effect, but it's necessary for symbols (words) if what you want is
+not their evaluation, but them being put onto the stack:
 
-        @ c 'foo symbol?
-        (#t)
-        @ c ''foo symbol?
-        (#f)
-        @ c ''foo list?
-        (#t)
-        @ c ''foo 0 list-ref
-        (quote)
-        @ symbol?
-        (#t)
-        @ c ''foo 1 list-ref
-        (foo)
+    @ c 'help ref
+    ([(ccguestproc)
+               "print help on the given word"
+               [(cc-type/results) #f ([symbol? word]) ()]
+               (help-string println)])
 
-    Quoting via `'` is also necessary to prevent lists from being
-    understood as programs and really ensure they are being treated as
-    list literals.
+`'foo` is equivalent to `(quote foo)`, and in fact the single quote
+is expanded into the latter form by the parser before it reaches the
+interpreter.
 
-* colon, `: name (prog...)`: associates `name` with
-    `(prog...)`. Equivalent to `(prog...) 'name set!`, but follows
-    Forth's syntax and is probably nicer to read.
+    @ c 'foo symbol?
+    (#t)
+    @ c ''foo symbol?
+    (#f)
+    @ c ''foo list?
+    (#t)
+    @ c ''foo 0 list-ref
+    (quote)
+    @ symbol?
+    (#t)
+    @ c ''foo 1 list-ref
+    (foo)
 
-* colon as the first item in a sub-list, `(: name type...docstring
+Quoting via `'` is also necessary to prevent lists from being
+understood as programs and really ensure they are being treated as
+list literals.
+
+### Procedure definitions
+
+There are currently three ways to define procedures: 
+
+* Without special syntax, via the `set!` procedure and quoting:
+
+        (prog...) 'name set!
+
+* Via a colon followed by two further items, `: name (prog...)`:
+    associates `name` with `(prog...)`. This follows Forth's syntax
+    relatively closely. There's no place to declare types that way,
+    though.
+
+* Via a sub-list that starts with a colon, `(: name type...docstring
     (prog...))`: same as `: name (prog...)` but allows to additionally
     declare input and (optionally) output types, and an optional
     docstring.
