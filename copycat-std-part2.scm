@@ -231,6 +231,21 @@ vector-like) `v`, returning the element of `v` at index `i`.")
 vector-like) `v`, returning a new version of `v` that contains `val`
 at index `i`.")
 
+(cc-defhost/try .append (a b -> c)
+                "Try to call the append method on the given arguments,
+returning a container of the same type as a but with c appended.")
+
+
+(TEST
+ > (equal? (t* '(10 11 12 3 vector dup 1 "hi" .set))
+           (Ok '([10 "hi" 12] [10 11 12])))
+ #t
+ > (t '("foo" "bar" .append))
+ (Ok (list "foobar"))
+ > (t '("hello" 1 .ref))
+ (Ok (.list "e")))
+
+
 (====cc-category (strings)
                  (vectors))
 
