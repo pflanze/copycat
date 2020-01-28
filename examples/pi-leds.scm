@@ -2,7 +2,8 @@
 ;; supports setting LED 0)
 
 
-(: led-sys-basedir
+
+(: led-sys-basedir [fixnum-natural0? ledNo] -> path-string?
    (.string "/sys/devices/platform/leds/leds/led" swap .append))
 
 (: sudo-putfile [string? contents] [path-string? path] ->
