@@ -347,7 +347,9 @@ location info stripped)."
                     ;; though, `(time ,prog). Todo: improve?
                     (cj-desourcify prog)))
 
-(TEST
+;; XX can't redirect time output, it's goint to console-port which
+;; can't(?) be redirected. Sigh. Analyze/patch Gambit.
+'(TEST
  > (t '((10 30 +) time))
  (Ok (list 40)))
 
