@@ -267,8 +267,10 @@ characters if they are enclosed with vertical bar character:
     passed the value (type items which are vectors define both the
     predicate restricting the type, and the variable name). If no
     arrow is given, that means that the return types are
-    unspecified. If the arrow is given but nothing to the rigth that
-    means no return value.
+    unspecified. If the arrow is given but nothing to the right of it
+    that means no return value. If the symbol `!` is given right of
+    the arrow, that means that the procedure never returns (it might
+    exit via an exception, though).
 
     Note that currently the variable names and type constraints (when
     used via `:` from Copycat--things are different when using the
