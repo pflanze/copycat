@@ -29,7 +29,7 @@ anything other than 0 is full brightness.)"
     sudo-putfile))
 
 
-(: blink [fixnum-natural0? ledNo] -> !
+(: led-blink [fixnum-natural0? ledNo] -> !
    "Forever blink the specified LED."
    (
     dup led-trigger-none
