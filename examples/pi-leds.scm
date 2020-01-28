@@ -5,8 +5,8 @@
 (: led-sys-basedir
    (.string "/sys/devices/platform/leds/leds/led" swap .append))
 
-(: sudo-putfile ([string? contents] [path-string? path] ->)
-   "Like putfile but uses sudo / bash / echo to write it."
+(: sudo-putfile [string? contents] [path-string? path] ->
+   "Like putfile but uses sudo / bash / echo to write the file."
    (
     shell-quote
     swap
