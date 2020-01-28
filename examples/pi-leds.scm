@@ -14,8 +14,7 @@
     shell-quote "echo " swap " > " 3 list strings-append
     swap string.append
     shell-quote "sudo bash -c " swap string.append
-    ;; (XX should better not capture stdout)
-    bash drop))
+    xrun-bash))
 
 (: led-trigger-none [fixnum-natural0? ledNo] ->
    "Run this first to remove automatic triggers that might be set up."

@@ -214,13 +214,58 @@ s (i.e. never fails).")
             "Exit the process running the Copycat interpreter with the
 given exit code.")
 
-(cc-defhost/try shell-command ([string? code] -> fixnum-natural0?)
-                "Run `code` in a shell, and return the exit code.")
+(def run-shell shell-command) ;; for consistency
 
-(cc-defhost/try bash ([string? code] -> string?)
+(cc-defhost/try run-shell ([string? code] -> uint16?)
+                "Run `code` in a system shell (sh), and return the
+exit code.")
+
+(cc-defhost/try run-bash ([string? code] -> uint16?)
+                "Run `code` in a bash shell, and return the exit
+code.")
+
+(cc-defguest (: xrun-bash [string? code] ->
+                "Run `code` in a bash shell; raise an exception if
+bash exits with a non-zero exit code."
+                (run-bash dup zero?
+                          (drop)
+                          (1 list "bash exited with non-zero exit code"
+                             swap error)
+                          if)))
+
+(cc-defhost/try xbacktick-bash ([string? code] -> string?)
                 "Run `code` in a bash shell, and return the captured
 output. If bash exited with a non-zero exit code, throw an
 exception.")
+
+(cc-def backtick-bash ([string? code] -> string? uint16?)
+        "Run `code` in a bash shell, and return the captured
+output as well as the exit code."
+        (letv ((str res) (backtick-bash code))
+              (cc-return str res)))
+
+(TEST
+ > (t '("true && true" run-shell))
+ (Ok (list 0))
+ > (t '("false" run-shell))
+ (Ok (list 256))
+ > (t '("true && true" run-bash))
+ (Ok (list 0))
+ > (t '("true && false" run-bash))
+ (Ok (list 256))
+ > (t '("echo Hi" xbacktick-bash))
+ (Ok (list "Hi"))
+ > (=> (t* '("false" xbacktick-bash)) Error.value copycat-host-error?)
+ #t
+ > (t '("echo Hi" backtick-bash))
+ (Ok (list 0 "Hi"))
+ > (t '("false" backtick-bash))
+ (Ok (list 256 ""))
+ > (t '("true" xrun-bash))
+ (Ok (list))
+ > (=> (t* '("false" xrun-bash)) Error.value copycat-generic-error.args)
+ (256))
+
 
 (cc-defhost/try putfile (bag [path-string? path] ->)
                 "Write the contents of `bag`, which is a string or
