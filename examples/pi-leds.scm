@@ -7,7 +7,9 @@
    (.string "/sys/devices/platform/leds/leds/led" swap .append))
 
 (: sudo-putfile [string? contents] [path-string? path] ->
-   "Like putfile but uses sudo / bash / echo to write the file."
+   "Like putfile but uses sudo / bash / echo to write the file. NOTE:
+this leads to entries in /var/log/auth.log for every single
+invocation (disk wear/space use)!"
    (
     shell-quote
     swap
