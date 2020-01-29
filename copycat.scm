@@ -39,13 +39,10 @@
                     ;; anyway, currently
                     (if (copycat-exit-repl? e)
                         (begin
-                          (display "<Ctl-D>")
-                          (newline)
-                          ;; the only return case in _cc-repl: (the
-                          ;; new command line here was eof, hence no
-                          ;; change anyway; when raising
-                          ;; copycat-exit-repl exception from Copycat
-                          ;; code, what should happen?)
+                          (unless (eq? (source-code (copycat-exit-repl.offending-code e))
+                                       'exit-repl-error)
+                            (display "<Ctl-D>")
+                            (newline))
                           cci)
                         (begin
                           (warn "Error:" (try-show e))

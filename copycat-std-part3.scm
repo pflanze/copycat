@@ -570,12 +570,7 @@ names without the parent directory path)."
              'pwd 'current-directory alias
              (: ls -> (ilist-of string?)
                 "List the files in the current directory."
-                (current-directory directory-items))
-             (: quit ->
-                "Quit Copycat (currently also directly exits the process
-running the interpreter, not just the interpreter)."
-                ;; XX use the new repl stop thing instead?
-                (0 exit)))
+                (current-directory directory-items)))
 
 
 (====cc-category (development)

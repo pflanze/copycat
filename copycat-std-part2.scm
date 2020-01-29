@@ -449,10 +449,20 @@ is an `Error`, raise its value as an exception."
 which can be raised as an exception."
         (cc-return (copycat-generic-error $word msg args)))
 
+(cc-def exit-repl-error (-> copycat-exit-repl?)
+        (cc-return (copycat-exit-repl $word)))
+
+
 (cc-defguest (: error [string? msg] [ilist? args] -> !
                 "Raise a generic exception with the given message and
 arguments."
-                (generic-error raise)))
+                (generic-error raise))
+             
+             (: quit ->
+                "Raise an exception of type , which, if uncaught,
+instructs the current Copycat repl to end the loop (or the current
+interpreter to return with the exception as an error)."
+                (exit-repl-error raise)))
 
 (cc-defhost/try .explanation (o -> string?)
                 "Expected to return a string for copycat-error objects.")

@@ -24,7 +24,8 @@ stack and shown before showing another `@` input prompt. To interrupt
 long-running calculations, press Ctrl-C (TODO: this needs improvement,
 as it currently doesn't interrupt long-running system calls, and it
 doesn't abort a partially entered line in the line editor.)  To exit
-the repl, write `quit` (or `0 exit`), or hit Ctrl-D.
+the current repl, write `quit` or hit Ctrl-D on an empty input line;
+to exit the whole process at once, write `0 exit`.
 
 Copycat aims to provide good facilities for functional
 programming--mutation should rarely be needed.
