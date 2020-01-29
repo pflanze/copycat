@@ -130,21 +130,21 @@ Examples (`c` clears the stack):
 
 #### Strings
 
-Series of characters. They are as defined by the Scheme standard.
+Series of characters. Their syntax is as defined by the Scheme standard.
 
-    @ c "Allô" "Motörhead!"
-    ("Motörhead!" "Allô")
+    @ c "Allô 🤒" "Motörhead!"
+    ("Motörhead!" "Allô 🤒")
     @ println
     Motörhead!
-    ("Allô")
+    ("Allô 🤒")
     @ dup string? swap string.list
-    ((#\A #\l #\l #\ô) #t)
+    ((#\A #\l #\l #\ô #\space #\🤒) #t)
     @ (char.integer) list-map
-    ((65 108 108 244) #t)
+    ((65 108 108 244 32 129298) #t)
     @ (inc integer.char) list-map
-    ((#\B #\m #\m #\õ) #t)
+    ((#\B #\m #\m #\õ #\! #\🤓) #t)
     @ char-list.string
-    ("Bmmõ" #t)
+    ("Bmmõ!🤓" #t)
 
 #### Lists
 
