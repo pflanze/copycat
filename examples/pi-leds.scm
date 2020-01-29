@@ -2,7 +2,18 @@
 ;; supports setting LED 0)
 
 
+;; Load dependency
+
 "sudoserverlib.scm" include
+
+
+;; Set the category to use for the subsequent definitions. This is optional.
+;; Yes, this will benefit from special syntax once macros are implemented.
+
+'(raspberrypi LEDs)
+"Setting the LEDs (0 and 1) on the Raspberry Pi 2 and higher (Pi 1 only
+supports setting LED 0)"
+cc-category 1 list set-current-cc-categories
 
 
 (: led-sys-basedir [fixnum-natural0? ledNo] -> path-string?
@@ -34,3 +45,7 @@ anything other than 0 is full brightness.)"
      dup 0 led-set
      1 sleep) loop))
 
+
+;; The end of the category (avoid leaking over into other files or the
+;; repl)
+'() set-current-cc-categories
