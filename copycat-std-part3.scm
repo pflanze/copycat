@@ -110,6 +110,20 @@ procedures via `:` or `set!`."
         (copycat-interpreter:current-categories categories)
         (cc-return))
 
+(cc-def with-cc-categories ([(list-of cc-category?) categories]
+                            [ilist-of-possibly-source? prog])
+        "Set the current list of categories to be used to create
+procedures via `:` or `set!` while `prog` is running (i.e. in `prog`'s
+dynamic scope)."
+        ;; Relies on Scheme's scoping, assumes that is tied to scoping
+        ;; in the Guest language; which of course will cease to be the
+        ;; case once first-class continuations are
+        ;; implemented. (Well... could rely on Scheme's first-class
+        ;; continuations... should it, would it be easier to compile
+        ;; to? But, no good for compiling the interpreter to other
+        ;; languages.)
+        (parameterize ((copycat-interpreter:current-categories categories))
+          (cc-interpreter.eval $cci prog)))
 
 (cc-defhost cc-category-lookup ([(list-of symbol?) path] -> (maybe cc-category?))
             "Get the cc-category info globally registered for the
@@ -137,6 +151,20 @@ from there)."
                 (.categories (.path (.string) list-map "/" strings-join)
                              list-map
                              "\n  " strings-join)))
+
+(TEST
+ > (t '('(@not-runtime-but-set-by-test) #f cc-category 1 list
+        set-current-cc-categories))
+ (Ok (list))
+ > (equal? (t* '(
+                 '(test-category) "category for testing" cc-category 1 list
+                 ((: hi "test definition"('there))) with-cc-categories
+                 (: hi2 "not there" (not))
+                 'hi ref .categories (.path) list-map
+                 'hi2 ref .categories (.path) list-map))
+           ;; XX: bug, should be '(((@runtime)) ((test-category)))
+           (Ok '(((@not-runtime-but-set-by-test)) ((test-category)))))
+ #t)
 
 
 (====cc-category (environment symbols)
