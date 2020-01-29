@@ -320,6 +320,10 @@ The list of defined symbols can be retrieved via `dir`.
 * `'name help`: show information about the given name, including
     docstring and type declaration given when defining it.
 
+* `'name ref .maybe-location print-location`: show the location of the
+    definition of `name` (this also makes Emacs open up the shown
+    location). (Yes, this could use a shortcut. Naming suggestions?)
+
 * `(prog...) time`: show how long evaluation of the given program
     takes (including how much (temporary) memory it allocates)
   
