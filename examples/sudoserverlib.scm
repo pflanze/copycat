@@ -1,4 +1,3 @@
-
 ;; A library of utilities to offer writing files as root, even though
 ;; copycat is running as non-root user.
 
@@ -40,8 +39,8 @@ connected to the returned port."
 ;; Instead of carrying around a sudoserver instance everywhere, store
 ;; it as a (global, duh) name:
 
-new-sudoserver 1 list 'current-sudoserver set!
-
+(new-sudoserver 1 list 'current-sudoserver set!) try
+() ("Warning: new-sudoserver:" println show) if-Ok
 
 ;; And, a switchable ("how?", todo: parameterize) implementation:
 
