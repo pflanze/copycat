@@ -9,6 +9,7 @@
 (require easy
          (cj-io-util putfile getfile)
          (string-quote shell-quote)
+         cj-source
          copycat-interpreter
          copycat-std-part2
          test)
@@ -176,14 +177,66 @@ an error if not bound)."
                  "Source code representation (values and associated
 location information).")
 
-(cc-defhost source? ([possibly-source? s])
+(cc-defhost source? ([possibly-source? s] -> boolean?)
             "Whether `s` is a value wrapped with location information.")
-(cc-defhost source-code ([possibly-source? s])
+
+(cc-defhost source-code ([possibly-source? s] -> any?)
             "Strips location information from source (i.e. return the
 code embedded in a source object); if s is not a source object, return
 s (i.e. never fails).")
 
-;; XX source-location etc.?
+(cc-defhost maybe-source-location ([possibly-source? s] -> (maybe location?))
+            "Strips location information from source (i.e. return the
+code embedded in a source object); if s is not a source object, return
+s (i.e. never fails).")
+;; XX also add source-location but named source-maybe-location ?
+
+
+(====cc-category (source location)
+                 "Source code location information.")
+
+(cc-defhost/try .maybe-location ([possibly-source? s] -> (maybe location?))
+                "Try to call the maybe-location method on `s`, which
+should return `s`'s location in the source code if available.")
+
+
+(def location.container location-container)
+;;(def location.position location-position)
+
+(def (location.line loc) -> fixnum-natural?
+     (=> (location-position loc)
+         position-line))
+
+(def (location.maybe-column loc) -> (maybe fixnum-natural?)
+     (=> (location-position loc)
+         position-maybe-column))
+
+(cc-defhost location.container ([location? loc] -> (either path-string?
+                                                           pair?))
+            "Extract the container part of the location `loc`,
+which is either the path to a file, or an alternative location
+indication (like |string|, |console|) wrapped in a list.")
+
+(cc-defhost location.line ([location? loc] -> fixnum-natural?)
+            "Extract the line part of the location `loc`")
+(cc-defhost location.maybe-column ([location? loc] -> (maybe fixnum-natural?))
+            "Extract the column part of the location `loc`")
+
+;; container->path ?
+
+
+(def print-location show-location-location)
+
+(cc-defhost/try print-location ([(maybe location?) loc] ->)
+                "Print an also human-readable line that tells Emacs to
+jump to the location represented by `loc`.")
+
+(TEST
+ > (=> (with-output-to-string
+         (& (t '('help ref .maybe-location print-location))))
+       fst
+       (string-contains? "std-part3.scm\"@"))
+ #t)
 
 
 (====cc-category (I/O)
