@@ -100,6 +100,9 @@ returns `v`."
                                                  i
                                                  (vector-length v)))))
 
+;; This is a different implementation than vector.set in Scheme (to
+;; get nice error message); XX D'oh is that this means that Copycat's
+;; |.set| on vectors behaves slightly different than |vector.set|.
 (cc-def vector.set ([vector? v] [fixnum-natural0? i] val -> vector?)
         "Returns a copy of `v` with the element at index `i` set to
 `val`."
