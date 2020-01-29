@@ -9,6 +9,8 @@
 (require easy
          (cj-io-util putfile getfile)
          (string-quote shell-quote)
+         (string-util-2 string-starts-with?)
+         cj-path
          cj-source
          copycat-interpreter
          copycat-std-part2
@@ -302,6 +304,37 @@ sent to the OS."
         (cc-return (call-with-input-string s identity)))
 
 
+(====cc-category (I/O paths)
+                 "Paths are strings with a few restrictions: they
+can't be the empty string, and they can't contain the null character,
+\"\\0\".")
+
+;; XX lib
+(def. path-string.append path-append)
+
+(cc-defhost/try path-string.append ([path-string? base] [path-string? add]
+                                    -> path-string?)
+                "Build the path that results from following add when
+the current-directory were base.")
+
+;; XX lib
+(def. path-string.absolute? path-absolute?)
+
+(def. (path-string.relative? path)
+  "Whether `path` does not start with a '/'. (TODO: portable
+solution?)"
+  (not (path-string.absolute? path)))
+
+
+(cc-defhost path-string.absolute? ([path-string? path] -> boolean?)
+            "Whether `path` starts with a '/'. (TODO: portable
+solution?)")
+
+(cc-defhost path-string.relative? ([path-string? path] -> boolean?)
+            "Whether `path` does not start with a '/'. (TODO: portable
+solution?)")
+
+
 (====cc-category (I/O processes)
                  "Running processes.")
 
@@ -429,16 +462,43 @@ list (of lists of) strings, to the file at `path`.")
  (Ok (list (list 'hello 3 "there"))))
 
 
-(cc-def read-source ([string? path] -> ilist?)
+(cc-def path-string.read-source ([path-string? path] -> ilist?)
         "Read the contents of the file at path as a list of
 s-expressions, enriched with location information."
         (>>= (copycat:try-Ok
               (call-with-input-file path read-all-source))
              (C cc-return _)))
 
-(cc-defguest (: load [string? path]
+(cc-defguest (: load [path-string? path]
                 "Read and evaluate the given file."
-                (read-source eval)))
+                (path-string.read-source eval)))
+
+;; This can't be guest code because I want to use the $word to get the
+;; base location from, not the path argument. (Except could add syntax
+;; (a macro!) to extract the location info onto the stack before the
+;; call.)
+(cc-def include ([path-string? path] ->)
+        "Load the file at `path` resolved from the point of the call
+to `include`, not the current-directory."
+        (>>= (if (path-string.relative? path)
+                 (if-let* ((loc (maybe-source-location $word))
+                           (cont (location.container loc)))
+                          (if (path-string? cont)
+                              (Ok (path-string.append (dirname cont) path))
+                              (Error (copycat-generic-error ;; ?
+                                      $word
+                                      "can't resolve relative path from source not coming from a file"
+                                      (list cont))))
+                          (Error (copycat-generic-error ;; better?
+                                  $word
+                                  "can't resolve relative path without source location information on the source code"
+                                  '())))
+                 (Ok path))
+             (lambda (path)
+               (>>= (copycat:try-Ok
+                     (call-with-input-file path read-all-source))
+                    (lambda (prog)
+                      (cc-interpreter.eval $cci prog))))))
 
 (cc-def write (v ->)
         (mdo (copycat:try-Ok (write v))
