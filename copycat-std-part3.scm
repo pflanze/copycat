@@ -317,6 +317,11 @@ can't be the empty string, and they can't contain the null character,
                 "Build the path that results from following add when
 the current-directory were base.")
 
+(cc-defhost/try .add (a b -> a*)
+                "Call the add method on a with b as additional
+argument. The result is expected to be of the same type as the first
+argument.")
+
 ;; XX lib
 (def. path-string.absolute? path-absolute?)
 
