@@ -1,4 +1,4 @@
-;; Setting the LEDs on the Raspberry Pi 2 and higher (Pi 1 only
+;; Setting the LEDs (0 and 1) on the Raspberry Pi 2 and higher (Pi 1 only
 ;; supports setting LED 0)
 
 
