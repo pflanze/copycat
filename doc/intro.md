@@ -428,6 +428,10 @@ lead to increasing call stack memory usage on each iteration.
 * Procedures which work for various types via type dispatch (methods)
     are named with a leading dot.
 
+* The slash "/" in names generally means "with". For example,
+    `number.string/base` would be read as "number to string with
+    base".
+
 
 ## Files
 
