@@ -52,18 +52,21 @@
 (====cc-category (environment))
 
 (cc-def set! ([(either ilist-of-possibly-source? ccproc?) prog]
-              [symbol? name] ->)
+              [(possibly-source-of symbol?) name] ->)
         "Set the word with the given name to prog, which must be
 either a list of instructions, or a ccproc data structure as retrieved
 from `ref`."
         (let (prog (xcond ((ccproc? prog)
                            prog)
                           ((ilist-of-possibly-source? prog)
-                           (ccguestproc #f ;; docstring
+                           (ccguestproc (or (maybe-source-location prog)
+                                            (maybe-source-location name)
+                                            (maybe-source-location $word))
+                                        #f ;; docstring
                                         (cc-type-unknown #f)
                                         (copycat-interpreter:current-categories)
                                         prog))))
-          (cc-word-set! name prog))
+          (cc-word-set! (source-code name) prog))
         (cc-return))
 
 (====cc-category (environment cc-categories)

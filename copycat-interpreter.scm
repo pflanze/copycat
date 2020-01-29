@@ -86,6 +86,7 @@
 ;; Procedure values
 
 (defclass ((ccproc #f)
+           [(maybe location?) maybe-location]
            [(maybe (possibly-source-of string?)) docstring]
            [cc-type? type]
            [(list-of cc-category?) categories]))
@@ -248,6 +249,7 @@ $s     the stack (out of $cci)
                   (cc-parse-body perhaps-docstring+body))
                  `(cc-word-set! ',name
                                 (ccforeigncall
+                                 ',(source-location stx)
                                  ,maybe-docstring
                                  ,(.show it)      ;; type
                                  ,(cc-category:current-categories-symbol)
@@ -436,10 +438,12 @@ result is an Error or if there are any values left"
                                   ;; XX could retain name/loc
                                   ;; XX allow docstring still?
                                   (cc-word-set! (source-code name/loc)
-                                                (ccguestproc #f ;;
-                                                             (cc-type-unknown #f)
-                                                             (copycat-interpreter:current-categories)
-                                                             subprog))
+                                                (ccguestproc
+                                                 (maybe-source-location name/loc)
+                                                 #f ;; docstring
+                                                 (cc-type-unknown #f)
+                                                 (copycat-interpreter:current-categories)
+                                                 subprog))
                                   (cc-interpreter.eval s cont))
                                 (Error
                                  (copycat-type-error item/loc
@@ -507,7 +511,9 @@ result is an Error or if there are any values left"
                                            (begin
                                              (cc-word-set!
                                               (source-code name) ;; XX loc ?
-                                              (ccguestproc maybe-docstring
+                                              (ccguestproc (maybe-source-location
+                                                            item/loc)
+                                                           maybe-docstring
                                                            type
                                                            (copycat-interpreter:current-categories)
                                                            prog))
