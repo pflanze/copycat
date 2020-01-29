@@ -206,8 +206,32 @@ elements."
         (cc-return (not (eq? a b))))
 
 
+(cc-defhost number.string ([number? x] -> string?)
+            "Convert x to a string representation in base 10 (in the
+same format as in S-expressions).")
+
+(def. (number.string/base x base)
+  (number->string x base))
+
+(cc-defhost/try number.string/base ([number? x] [uint8? base] -> string?)
+                "Convert `x` to a string representation in the given
+base (in the same format as in S-expressions). Only the bases 2, 8, 10
+and 16 are supported.")
+
+
 (cc-defhost/try .length (a -> fixnum-natural0?)
                 "Try to call the length method on `a`.")
+
+
+(TEST
+ > (t '(
+        20e4 number.string
+        40 number.string
+        40 2 number.string/base
+        40 8 number.string/base
+        40 10 number.string/base
+        40 16 number.string/base))
+ (Ok (list "28" "40" "50" "101000" "40" "200000.")))
 
 
 (====cc-category (lists)
