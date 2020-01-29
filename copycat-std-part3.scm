@@ -162,8 +162,7 @@ from there)."
                  (: hi2 "not there" (not))
                  'hi ref .categories (.path) list-map
                  'hi2 ref .categories (.path) list-map))
-           ;; XX: bug, should be '(((@runtime)) ((test-category)))
-           (Ok '(((@not-runtime-but-set-by-test)) ((test-category)))))
+           (Ok '(((@runtime)) ((test-category)))))
  #t)
 
 

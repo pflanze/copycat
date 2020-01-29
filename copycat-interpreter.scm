@@ -549,7 +549,19 @@ result is an Error or if there are any values left"
                         (cont-literal)))))))
 
                 ;; improper list (stupid)
-                (Error (copycat-type-error prog/loc "list?" prog)))))))))
+                (Error (copycat-type-error prog/loc "list?" prog))))))))
+
+  (defmethod (eval-with-dyn-boundary s prog/loc)
+    "`.eval` but create a boundary for (some?) dynamic variables
+around the given prog (settings of those variables will be reverted
+when prog finishes or aborts via exception)."
+    ;; XX auto-update when introducing new variables? If this is a
+    ;; feature offered to the guest language, it would have to be
+    ;; runtime-extended, too. Once implemented independently of Scheme
+    ;; dynamic scope, this will be easier.
+    (parameterize ((copycat-interpreter:current-categories
+                    (copycat-interpreter:current-categories)))
+      (cc-interpreter.eval s prog/loc))))
 
 
 (defparameter copycat-default-fuel 100000)

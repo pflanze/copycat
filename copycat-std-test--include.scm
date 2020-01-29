@@ -3,8 +3,9 @@
 
 (def (t* prog)
      (in-monad Result
-               (==> (cc-interpreter.eval (cc-interpreter '() 10000 0)
-                                         prog)
+               (==> (cc-interpreter.eval-with-dyn-boundary
+                     (cc-interpreter '() 10000 0)
+                     prog)
                     ((comp return cc-interpreter.stack)))))
 
 (def (t prog)
