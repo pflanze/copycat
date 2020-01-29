@@ -45,7 +45,7 @@
 
 (cc-def eval ([ilist-of-possibly-source? prog])
         "Evaluate prog (a list of instructions)."
-        (copycat:try (cc-interpreter.eval $cci prog)))
+        (cc-interpreter.eval $cci prog))
 
 (cc-def nop (->)
         "No operation."
