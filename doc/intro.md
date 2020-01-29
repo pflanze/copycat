@@ -450,7 +450,7 @@ Other file based commands are `current-directory` or `pwd`,
 ## Fuel
 
 The interpreter runs on a limited (but possibly very high) amount of
-fuel. Each program step costs one unit of fuel for its evaluation. When
+fuel. Each program evaluation step costs one unit of fuel. When
 fuel reaches zero, evaluation stops (aborts) with an exception. This
 exception can be trapped with `try`. As mentioned in the section on
 exceptions, currently failing programs (regardless of whether they
