@@ -38,12 +38,7 @@
                     ;; takes old cci -- we don't have a new one
                     ;; anyway, currently
                     (if (copycat-exit-repl? e)
-                        (begin
-                          (unless (eq? (source-code (copycat-exit-repl.offending-code e))
-                                       'exit-repl-error)
-                            (display "<Ctl-D>")
-                            (newline))
-                          cci)
+                        cci
                         (begin
                           (warn "Error:" (try-show e))
                           (next cci past future))))))
