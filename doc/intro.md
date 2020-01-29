@@ -339,15 +339,17 @@ The list of defined symbols can be retrieved via `dir`.
     prints "msg"
 
 * `D`: enter a sub-repl in which you can interact with the stack; hit
-    ctl-d on an empty input line to continue evaluation of the
-    surrounding program. The sub-repl shows the level of nesting
-    between the fuel number and the prompt. Example:
+    ctl-d on an empty input line (or alternatively, enter `quit`) to
+    continue evaluation of the surrounding program. The sub-repl shows
+    the level of nesting between the fuel number and the
+    prompt. Example ("<ctl-d>" means, there you press the control key
+    and 'd'):
 
         100000 @ 1 2 3 D 4 5 *
         (3 2 1)
         99996 1 @ 1 +
         (4 2 1)
-        99994 1 @ <Ctl-D>
+        99994 1 @ <ctl-d>
         (20 4 2 1)
         99991 @ 
 
