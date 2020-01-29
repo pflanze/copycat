@@ -385,6 +385,7 @@
 (/load "copycat-std-part2")
 (/load "copycat-std-part3")
 (/load "copycat-std-part4")
+(/load "copycat-std-part5")
 (/load "copycat-std")
 
 ;; (generate-proper-tail-calls #f)
