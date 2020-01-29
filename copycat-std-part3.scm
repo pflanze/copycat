@@ -244,6 +244,8 @@ jump to the location represented by `loc`.")
 
 
 (cc-def print (v ->)
+        ;; XX this hackery only needed due to -> not used for returns
+        ;; yet
         (mdo (copycat:try-Ok (print v))
              (cc-return)))
 
@@ -255,9 +257,42 @@ jump to the location represented by `loc`.")
         (mdo (copycat:try-Ok (println v))
              (cc-return)))
 
+(def. (port.print p val)
+  (print port: p val))
+
+(cc-def port.print ([port? p] v ->)
+        (mdo (copycat:try-Ok (port.print p v))
+             (cc-return)))
+
+(def. port.newline newline)
+(cc-def port.newline ([port? p] ->)
+        (mdo (copycat:try-Ok (port.newline p))
+             (cc-return)))
+
+(def. (port.println p val)
+  (println port: p val))
+
+(cc-def port.println ([port? p] v ->)
+        (mdo (copycat:try-Ok (port.println p v))
+             (cc-return)))
+;; or:
+;; (cc-defguest (: port.println [port? p] v ->
+;;                 (over swap port.print port.newline)))
+
+(def. port.flush force-output)
+(cc-def port.flush ([port? p] ->)
+        "Force output that was written to p but still buffered to be
+sent to the OS."
+        (mdo (copycat:try-Ok (port.flush p))
+             (cc-return)))
+
 
 (cc-defhost current-input-port (-> input-port?)
-            "Returns the current input filehandle (most often stdin).")
+            "Returns the current input filehandle (on startup: stdin).")
+(cc-defhost current-output-port (-> output-port?)
+            "Returns the current output filehandle (on startup: stdout).")
+(cc-defhost current-error-port (-> output-port?)
+            "Returns the current error filehandle (on startup: stderr).")
 
 (cc-defhost maybe-read-line ([input-port? port] -> string?)
             "Read a line from the given file handle, #f on EOF (ctl-d).")
@@ -266,9 +301,46 @@ jump to the location represented by `loc`.")
         "Open the given string as a filehandle."
         (cc-return (call-with-input-string s identity)))
 
+
+(====cc-category (I/O processes)
+                 "Running processes.")
+
 (cc-defhost exit ([uint8? code])
             "Exit the process running the Copycat interpreter with the
 given exit code.")
+
+
+
+(def (open-receiver-command [path-string? cmdpath] [(list-of string?) args])
+     -> output-port? ;; odd, actually an #<input-output-port #9 (process "true")>
+     "Simplified variant of open-output-process"
+     (open-process (list path: cmdpath
+                         arguments: args
+                         stdin-redirection: #t
+                         stdout-redirection: #f
+                         stderr-redirection: #f)))
+
+(cc-defhost/try open-receiver-command ([path-string? cmdpath]
+                                       [(list-of string?) args]
+                                       -> output-port?)
+                "Start the given command/args and return an
+output-port connected to it. When done, run `port.close`, and
+`port.process-status` to get the exit status.")
+
+(def. port.close close-port)
+
+(cc-def port.close ([port? p] ->)
+        "Close the given port (both input and output directions)."
+        (mdo (copycat:try-Ok (port.close p))
+             (cc-return)))
+
+(def. port.process-status process-status)
+
+(cc-defhost/try port.process-status ([port? p] -> uint16?)
+                "Wait for the process on the other side of port `p` to
+exit then return the exit status.")
+;; (XX filehandles versus  ? (IRC discussion.))
+
 
 (def run-shell shell-command) ;; for consistency
 
