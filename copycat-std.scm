@@ -11,6 +11,7 @@
          copycat-std-part1
          copycat-std-part2
          copycat-std-part3
+         copycat-std-part4
          test)
 
 (export)
