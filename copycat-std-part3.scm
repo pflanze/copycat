@@ -310,10 +310,10 @@ can't be the empty string, and they can't contain the null character,
 \"\\0\".")
 
 ;; XX lib
-(def. path-string.append path-append)
+(def. path-string.add path-append)
 
-(cc-defhost/try path-string.append ([path-string? base] [path-string? add]
-                                    -> path-string?)
+(cc-defhost/try path-string.add ([path-string? base] [path-string? add]
+                                 -> path-string?)
                 "Build the path that results from following add when
 the current-directory were base.")
 
@@ -484,7 +484,7 @@ to `include`, not the current-directory."
                  (if-let* ((loc (maybe-source-location $word))
                            (cont (location.container loc)))
                           (if (path-string? cont)
-                              (Ok (path-string.append (dirname cont) path))
+                              (Ok (path-string.add (dirname cont) path))
                               (Error (copycat-generic-error ;; ?
                                       $word
                                       "can't resolve relative path from source not coming from a file"
