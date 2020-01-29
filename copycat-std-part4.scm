@@ -9,6 +9,7 @@
 (require easy
          (cj-io-util putfile getfile)
          (string-quote shell-quote)
+         (srfi-13-kmp string-contains?)
          cj-path
          cj-source
          copycat-interpreter
@@ -86,9 +87,9 @@ jump to the location represented by `loc`.")
 
 (TEST
  > (=> (with-output-to-string
-         (& (t '('help ref .maybe-location print-location))))
+         (& (t '('location.maybe-column ref .maybe-location print-location))))
        fst
-       (string-contains? "std-part3.scm\"@"))
+       (string-contains? "std-part4.scm\"@"))
  #t)
 
 
