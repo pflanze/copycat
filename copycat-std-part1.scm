@@ -124,10 +124,18 @@ elements."
 
 
 (====cc-category (numbers)
-                 "Operations on numbers.")
+                 "Handling of numbers.")
 
-(cc-defhost string.maybe-number ([string? s] -> (maybe number?))
-            "Convert given string to a number if possible, #f if not.")
+(====cc-category (numbers of)
+                 "Generic functions that use numbers to represent
+something.")
+
+(cc-defhost/try .length (a -> fixnum-natural0?)
+                "Try to call the length method on `a`.")
+
+
+(====cc-category (numbers predicates)
+                 "Types and ranges of numbers.")
 
 (cc-defhost number? (v -> boolean?))
 (cc-defhost exact? ([number? v] -> boolean?))
@@ -140,6 +148,23 @@ elements."
 (cc-defhost complex? (v -> boolean?))
 (cc-defhost integer? (v -> boolean?))
 (cc-defhost fixnum? (v -> boolean?))
+
+(cc-defhost natural? (v -> boolean?)
+            "Wether v is a natural number (excluding zero); this
+includes inexact numbers that happen to fall onto integers.")
+(cc-defhost natural0? (v -> boolean?)
+            "Wether v is a natural number or zero; this includes
+inexact numbers that happen to fall onto integers.")
+
+(cc-defhost fixnum-natural? (v -> boolean?)
+            "Wether v is both a fixnum and a natural number.")
+(cc-defhost fixnum-natural0? (v -> boolean?)
+            "Wether v is both a fixnum and a natural number or zero.")
+
+
+(====cc-category (numbers arithmetic)
+                 "Calculations on numbers.")
+
 
 (cc-defhost + ([number? a] [number? b] -> number?))
 (cc-defhost - ([number? a] [number? b] -> number?))
@@ -206,6 +231,14 @@ elements."
         (cc-return (not (eq? a b))))
 
 
+(====cc-category (numbers strings)
+                 (strings numbers)
+                 "Parsring and printing of numbers.")
+
+(cc-defhost string.maybe-number ([string? s] -> (maybe number?))
+            "Convert given string to a number if possible, #f if not.")
+
+
 (cc-defhost number.string ([number? x] -> string?)
             "Convert x to a string representation in base 10 (in the
 same format as in S-expressions).")
@@ -217,10 +250,6 @@ same format as in S-expressions).")
                 "Convert `x` to a string representation in the given
 base (in the same format as in S-expressions). Only the bases 2, 8, 10
 and 16 are supported.")
-
-
-(cc-defhost/try .length (a -> fixnum-natural0?)
-                "Try to call the length method on `a`.")
 
 
 (TEST
