@@ -7,10 +7,11 @@
 
 
 (require easy
-         test)
+         (copycat-interpreter-util possibly-source?
+                           copycat:predicate-accepts-source?))
 
-(export possibly-source?
-        copycat:predicate-accepts-source?)
+(export)
+
 
 "Representation for errors in Copycat (guest accessible) (used with
 Result)"
@@ -18,41 +19,10 @@ Result)"
 (include "lib/cj-standarddeclares.scm")
 
 
-(defclass ((copycat-error #f) [possibly-source? offending-code])
+(defclass ((copycat-error-part2 #f))
+  extends: copycat-error
 
-  (defmethod- (maybe-help s) #f)
-
-  (defclass (copycat-exit-repl)
-    (defmethod (explanation s)
-      "not an error, but a signal for the current evaluator to stop
-evaluation (and presumably continue evaluation of the program in the
-outer context, if any)."))
-
-  (defclass (copycat-out-of-fuel)
-    (defmethod (explanation s)
-      "no fuel left")
-    (defmethod (maybe-help s)
-      "Perhaps the program ran in an infinite loop. If
-you think it isn't, try giving it more fuel via `add-fuel` or
-`set-fuel`."))
-
-  (defclass (copycat-interrupted)
-    (defmethod (explanation s)
-      "received interrupt signal (SIGINT, ctl-c)"))
-
-  (defclass (copycat-generic-error [string? msg]
-                                   [ilist? args])
-    (defmethod (explanation s)
-      "generic error"))
-
-  (defclass (copycat-assertment-failure)
-    (defmethod (explanation s)
-      "`assert` was called with #f as the argument."))
-
-  (defclass (copycat-unbound-symbol [symbol? name])
-    (defmethod (explanation s)
-      "the given word is not defined"))
-
+ 
   (defclass (copycat-missing-arguments proc
                                        [fixnum-natural0? need]
                                        [fixnum-natural0? got])
