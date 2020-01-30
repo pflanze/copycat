@@ -450,14 +450,24 @@ which can be raised as an exception."
         (cc-return (copycat-generic-error $word msg args)))
 
 (cc-def exit-repl-error (-> copycat-exit-repl?)
+        "Create an exit-repl error object."
         (cc-return (copycat-exit-repl $word)))
 
+
+(cc-def assertment-failure-error (-> copycat-assertment-failure?)
+        "Create an assertment-failure error object."
+        (cc-return (copycat-assertment-failure $word)))
 
 (cc-defguest (: error [string? msg] [ilist? args] -> !
                 "Raise a generic exception with the given message and
 arguments."
                 (generic-error raise))
-             
+
+             (: assert [boolean? t] ->
+                "If `t` is #t, does nothing; if it is #f, raise an
+assertment-failure exception."
+                ((assertment-failure-error raise) unless))
+
              (: quit ->
                 "Raise an exception of type , which, if uncaught,
 instructs the current Copycat repl to end the loop (or the current

@@ -45,6 +45,10 @@ you think it isn't, try giving it more fuel via `add-fuel` or
     (defmethod (explanation s)
       "generic error"))
 
+  (defclass (copycat-assertment-failure)
+    (defmethod (explanation s)
+      "`assert` was called with #f as the argument."))
+
   (defclass (copycat-unbound-symbol [symbol? name])
     (defmethod (explanation s)
       "the given word is not defined"))
