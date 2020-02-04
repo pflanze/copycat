@@ -391,6 +391,8 @@
 
 ;; (generate-proper-tail-calls #f)
 (c/load "svg-logo-lib")
+(c/load "svg-logo-1")
+(c/load "svg-logo-2")
 (c/load "svg-logo")
 (/load "copycat-turtle")
 
