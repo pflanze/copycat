@@ -156,6 +156,18 @@ sent to the OS."
         (cc-return (call-with-input-string s identity)))
 
 
+(cc-defguest (: ask-string [string? question] -> string?
+                "Show `question` to the user, wait for him to enter a
+single line, return that line as a string. If the user cancels (hits
+ctl-d with no input), throws an exception."
+                ;; XX maybe-read-line should be called
+                ;; port.maybe-read-line etc.!
+                (
+                 println
+                 current-input-port maybe-read-line
+                 dup () ("user cancelled" () error) if-just)))
+
+
 (====cc-category (I/O paths)
                  "Paths are strings with a few restrictions: they
 can't be the empty string, and they can't contain the null character,
