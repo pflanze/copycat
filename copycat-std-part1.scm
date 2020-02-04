@@ -399,3 +399,17 @@ the stack and running `prog`."
              (comp source-code copycat-type-error.value))))
  ("list?" 5))
 
+
+(cc-defhost iota ([fixnum-natural0? n] -> (list-of/length exact-integer? n))
+            "Return the list of the n integers starting from 0.")
+
+(def iota/start iota)
+
+(cc-defhost iota/start ([fixnum-natural0? n] [exact-integer? start]
+                        -> (list-of/length exact-integer? n))
+            "Return the list of the n integers starting from 0.")
+
+(TEST
+ > (t '(4 -100 iota/start))
+ (Ok (list (list -100 -99 -98 -97))))
+
