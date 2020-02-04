@@ -16,10 +16,7 @@
          svg-logo-2)
 
 (export save-svn-logo
-        svg-logo#°
-        north-angle
         list-repeat
-        svn-logo-process
         save&possibly-show-svn-logo
         show-svn-logo
         save-svn-logo ;; without cursor!
@@ -27,6 +24,9 @@
         ;;p
 
         ;; re-exports:
+        svg-logo#°
+        north-angle
+        svn-logo-process
         (class turtlepos)
         (class drawing-state)
         (interface logo-command
@@ -55,21 +55,6 @@
 (include "lib/cj-standarddeclares.scm")
 
 
-
-;; (def p 2d-point)
-
-
-(def (svg-logo#° deg)
-     (* (/ deg 360) 2 pi))
-
-(TEST
- > (svg-logo#° 180)
- 3.141592653589793)
-
-
-(def north-angle (svg-logo#° -90))
-
-
 (def (_repeat [natural0? n] l)
      (cond ((zero? n)
 	    '())
@@ -94,18 +79,6 @@
 
 ;; (def (svn-logo . cmds)
 ;;      (flatten cmds))
-
-(def (_svn-logo-process l state)
-     ;; ^ shapes is actually reverse, but same name used in .process
-     ;; methods, too
-     (if (null? l)
-	 state
-	 (let-pair
-	  ((a l*) l)
-	  (_svn-logo-process l* (.process a state)))))
-
-(def (svn-logo-process l state)
-     (reverse (.shapes (_svn-logo-process l state))))
 
 
 (def default-drawing-state

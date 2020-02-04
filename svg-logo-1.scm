@@ -14,7 +14,9 @@
          (table-1 table-delete!))
 
 
-(export (interface logo-command)
+(export svg-logo#°
+        north-angle
+        (interface logo-command)
         (class turtlepos)
         (class drawing-state)
         (interface logo-command
@@ -26,6 +28,21 @@
 
 
 (include "lib/cj-standarddeclares.scm")
+
+
+;; (def p 2d-point)
+
+
+(def (svg-logo#° deg)
+     (* (/ deg 360) 2 pi))
+
+(TEST
+ > (svg-logo#° 180)
+ 3.141592653589793)
+
+
+(def north-angle (svg-logo#° -90))
+
 
 
 (defclass (turtlepos [2d-point? pos]

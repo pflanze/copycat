@@ -15,7 +15,8 @@
          svg-logo-1)
 
 
-(export (interface logo-command
+(export svn-logo-process
+        (interface logo-command
           (interface path-command
             (class draw)
             (class jump)
@@ -26,6 +27,20 @@
 
 
 (include "lib/cj-standarddeclares.scm")
+
+
+
+(def (_svn-logo-process l state)
+     ;; ^ shapes is actually reverse, but same name used in .process
+     ;; methods, too
+     (if (null? l)
+	 state
+	 (let-pair
+	  ((a l*) l)
+	  (_svn-logo-process l* (.process a state)))))
+
+(def (svn-logo-process l state)
+     (reverse (.shapes (_svn-logo-process l state))))
 
 
 
