@@ -58,9 +58,6 @@
 
 ;; See copycat-error.scm
 
-(def (cc-unwrap [copycat-runtime-result? v])
-     (if-Ok v it (raise it)))
-
 ;; XX ilist? is still used in many places
 (def copycat-stack? (ilist-of any?))
 
@@ -313,7 +310,7 @@ $s     the stack (out of $cci)
 (def (cc-defguest-run expr categories)
      (=> (parameterize ((copycat-interpreter:current-categories categories))
            (cc-interpreter.eval (fresh-cc-interpreter) expr))
-         cc-unwrap
+         Result.unwrap
          cc-interpreter.stack
          ((lambda (stack)
             (unless (null? stack)

@@ -32,7 +32,7 @@
                      ;; Hack: proper hook?
                      (let (tcmds (turtle-commands))
                        (unless (eq? tcmds last-commands)
-                         (cc-unwrap (cc-interpreter.eval cci '(zeig))))
+                         (unwrap (cc-interpreter.eval cci '(zeig))))
                        (_cc-repl cci past future tcmds))))
              (err (lambda (e)
                     ;; takes old cci -- we don't have a new one
