@@ -136,7 +136,7 @@
                    (err))))
         (else
          (let (stack (stack))
-           (if-Just ((it (Maybe-split-at-reverse stack numargs)))
+           (if-Just (Maybe-split-at-reverse stack numargs)
                     (letv ((rargs stack) it)
                           (apply op word/loc (cci/stack stack) rargs))
                     (err))))))))
@@ -383,8 +383,8 @@ result is an Error or if there are any values left"
 
   (defmethod (apply s [symbol? word] word/loc)
     ;; -> copycat-runtime-result?  don't break TCO!
-    (if-Just ((w (table.Maybe-ref cc-words word)))
-             (.cc-apply w s word/loc)
+    (if-Just (table.Maybe-ref cc-words word)
+             (.cc-apply it s word/loc)
              (Error (copycat-unbound-symbol word/loc
                                             word))))
 

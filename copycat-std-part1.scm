@@ -57,7 +57,7 @@ that the oldest one becomes the newest."
 
 
 (def (copycat:pick $word $cci $s n)
-     (if-Just ((it (list-Maybe-ref $s n)))
+     (if-Just (list-Maybe-ref $s n)
               (cc-return it)
               (Error (copycat-missing-arguments
                       $word
@@ -90,7 +90,7 @@ elements."
         (cc-return))
 (cc-def dropn ([fixnum-natural0? n] ->)
         "Drop the n last elements from the stack."
-        (if-Just ((it (Maybe-drop $s n)))
+        (if-Just (Maybe-drop $s n)
                  (Ok (cc-interpreter.stack-set $cci it))
                  (Error
                   (copycat-missing-arguments $word
@@ -297,7 +297,7 @@ does not check to the end of the list, for performance).")
             "Whether `a` is an empty list.")
 
 (def (cc:Rlist $cci $s $word numargs reverse?)
-     (if-Just ((it (Maybe-split-at-reverse $s numargs)))
+     (if-Just (Maybe-split-at-reverse $s numargs)
               (letv ((rargs stack*) it)
                     (Ok (cc-interpreter.stack-set
                          $cci

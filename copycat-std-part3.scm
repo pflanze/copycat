@@ -181,8 +181,8 @@ currently there's just one global environment.")
 (cc-def ref ([symbol? name] -> ccproc?)
         "Return the ccproc data structure associated with name (giving
 an error if not bound)."
-        (if-Just ((v (table.Maybe-ref cc-words name)))
-                 (cc-return v)
+        (if-Just (table.Maybe-ref cc-words name)
+                 (cc-return it)
                  (Error (copycat-unbound-symbol $word name))))
 
 (cc-defguest (: alias [symbol? new] [symbol? old] ->
