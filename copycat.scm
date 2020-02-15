@@ -48,23 +48,23 @@
                                   (C with-input-from-string _
                                      read-all-source))))
                     (lambda (prog)
-                      (if prog
-                          (mcase prog
-                                 ;; handle pseudo commands
-                                 (`(undo)
-                                  (if-let-pair ((p past*) past)
-                                               (_cc-repl p
-                                                         past*
-                                                         (cons stack future))
-                                               (err (XXX))))
-                                 (`(redo)
-                                  XXX)
-                                 (else
-                                  ;; HACK:
-                                  (set! *copycat-interpreter:interrupt* #f)
-                                  ;; /HACK
-                                  (cc-interpreter.eval cci prog)))
-                          (Error (copycat-exit-repl #f)))))
+                      (if-just prog
+                               (mcase it
+                                      ;; handle pseudo commands
+                                      (`(undo)
+                                       (if-let-pair ((p past*) past)
+                                                    (_cc-repl p
+                                                              past*
+                                                              (cons stack future))
+                                                    (err (XXX))))
+                                      (`(redo)
+                                       XXX)
+                                      (else
+                                       ;; HACK:
+                                       (set! *copycat-interpreter:interrupt* #f)
+                                       ;; /HACK
+                                       (cc-interpreter.eval cci it)))
+                               (Error (copycat-exit-repl #f)))))
                (next it
                      (cons it (rappend future (cons cci past)))
                      ;; ^ XX undo/redo retain fuel, too, now.
