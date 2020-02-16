@@ -332,7 +332,8 @@ result is an Error or if there are any values left"
 
 (defclass (cc-interpreter [copycat-stack? stack]
                           [fixnum-natural0? fuel]
-                          [fixnum-natural0? repl-level])
+                          [fixnum-natural0? repl-level]
+                          [(maybe output-port?) maybe-transcript-port])
 
   (defmethod (repl-level-inc s)
     (.repl-level-update s inc-function))
@@ -343,14 +344,14 @@ result is an Error or if there are any values left"
   (defmethod (fuel-dec* s offending-code) -> copycat-runtime-result?
     (if (zero? fuel)
         (Error (copycat-out-of-fuel offending-code))
-        (Ok (cc-interpreter stack (dec fuel) repl-level))))
+        (Ok (cc-interpreter.fuel-update s dec-function))))
 
   ;; For the other ...* methods, could just `==>`-chain fuel-dec* but
   ;; already wrote those and "are more optimized".
 
 
   (defmethod (push s val)
-    (cc-interpreter (cons val stack) fuel repl-level))
+    (cc-interpreter.stack-set s (cons val stack)))
 
   ;; (defmethod (push-vals s vals)
   ;;   (cc-interpreter (append vals stack) fuel repl-level))
@@ -358,7 +359,10 @@ result is an Error or if there are any values left"
   (defmethod (push* s val offending-code)
     (if (zero? fuel)
         (Error (copycat-out-of-fuel offending-code))
-        (Ok (cc-interpreter (cons val stack) (dec fuel) repl-level))))
+        (Ok (cc-interpreter (cons val stack)
+                            (dec fuel)
+                            repl-level
+                            maybe-transcript-port))))
 
   
   (defmethod (drop s offending-code) -> copycat-runtime-result?
@@ -366,7 +370,7 @@ result is an Error or if there are any values left"
     (in-monad Result
               (>>= (copycat:rest stack offending-code 1)
                    (lambda (stack*)
-                     (Ok (cc-interpreter stack* fuel repl-level))))))
+                     (Ok (cc-interpreter.stack-set s stack*))))))
 
   ;; (defmethod (drop* s offending-code) -> copycat-runtime-result?
   ;;   "drop operation that takes fuel"
@@ -563,8 +567,8 @@ when prog finishes or aborts via exception)."
 
 (defparameter copycat-default-fuel 100000)
 
-(def (fresh-cc-interpreter)
-     (cc-interpreter '() (copycat-default-fuel) 0))
+(def (fresh-cc-interpreter #!optional (fuel (copycat-default-fuel)))
+     (cc-interpreter '() fuel 0 #f))
 
 (def copycat-runtime-result?
      (Result-of cc-interpreter?

@@ -34,7 +34,7 @@ machine state."
         ;; XX HACK: defined in copycat.scm which currently
         ;; depends on us
         (Ok (=> (.repl-level-inc $cci)
-                cc-repl*
+                _cc-repl
                 .repl-level-dec)))
 
 (cc-def DScheme ()

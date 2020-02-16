@@ -4,7 +4,7 @@
 (def (t* prog)
      (in-monad Result
                (==> (cc-interpreter.eval-with-dyn-boundary
-                     (cc-interpreter '() 10000 0)
+                     (fresh-cc-interpreter 10000)
                      prog)
                     ((comp return cc-interpreter.stack)))))
 
