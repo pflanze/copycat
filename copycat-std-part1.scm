@@ -134,6 +134,16 @@ something.")
                 "Try to call the length method on `a`.")
 
 
+(====cc-category (randomness)
+                 (numbers random)
+                 "Random numbers")
+
+;; random-integer
+(cc-defhost random-natural0 ([natural0? n] -> natural0?))
+
+(cc-defhost random-real (-> 0..1?))
+
+
 (====cc-category (numbers predicates)
                  "Types and ranges of numbers.")
 
