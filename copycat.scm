@@ -135,7 +135,7 @@
 
 
 (def (new-transcript-name)
-     (let lp ((n 0))
+     (let lp (n 0)
        (let (path ($ "transcript-"
                      (localtime-filenamestring)
                      (if (zero? n) "" ($ "-$n"))
