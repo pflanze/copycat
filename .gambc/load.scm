@@ -382,6 +382,7 @@
 (c/load "cc-type")
 (/load "cc-category")
 (/load "copycat-interpreter")
+(/load "copycat-transcript")
 (/load "copycat-std-part1")
 (/load "copycat-std-part2")
 (/load "copycat-std-part3")
