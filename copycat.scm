@@ -11,7 +11,7 @@
          copycat-interpreter
          copycat-std
          copycat-turtle;; XX
-         )
+         (copycat-transcript new-transcript))
 
 (export cc-repl
         cc-repl*
@@ -20,16 +20,6 @@
 
 
 (include "lib/cj-standarddeclares.scm")
-
-
-(def (localtime-filenamestring)
-     (=> (current-localtime)
-         .localtime-string
-         (.filter-map (lambda (c)
-                        (case c
-                          ((#\, #\:) #f)
-                          ((#\space) #\_)
-                          (else c))))))
 
 
 (def (_cc-repl [cc-interpreter? cci]) -> cc-interpreter?
@@ -134,33 +124,24 @@
              (err it)))))))
 
 
-(def (new-transcript-name)
-     (let lp (n 0)
-       (let (path ($ "transcript-"
-                     (localtime-filenamestring)
-                     (if (zero? n) "" ($ "-$n"))
-                     ".scm"))
-         (if (file-exists? path)
-             (lp (inc n))
-             path))))
-
-
 (def (cc-repl* #!key
                (cci (fresh-cc-interpreter))
                [(maybe path-string?) transcript])
      -> cc-interpreter?
      "for running from console"
      (let (cont (lambda (maybe-transcript-port)
-                  (_cc-repl (if maybe-transcript-port
-                                (.maybe-transcript-port-set
-                                 cci maybe-transcript-port)
-                                cci))))
+                  (let (cci* (_cc-repl (if maybe-transcript-port
+                                           (.maybe-transcript-port-set
+                                            cci maybe-transcript-port)
+                                           cci)))
+                    (when-just (.maybe-transcript-port cci*)
+                               (close-port it))
+                    cci*)))
        (if-just transcript
                 (if (file-exists? it)
                     (error "transcript file already exists:" it)
-                    (call-with-output-file it cont))
-                (let (path (new-transcript-name))
-                  (call-with-output-file path cont)))))
+                    (cont (open-output-file it)))
+                (cont (new-transcript)))))
 
 (def (cc-repl . args) -> cc-interpreter?
      "for running from Emacs inferior scheme mode"
