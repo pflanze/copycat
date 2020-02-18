@@ -181,11 +181,6 @@ can't be the empty string, and they can't contain the null character,
                 "Build the path that results from following add when
 the current-directory were base.")
 
-(cc-defhost/try .add (a b -> a*)
-                "Call the add method on a with b as additional
-argument. The result is expected to be of the same type as the first
-argument.")
-
 ;; XX lib
 (def. path-string.absolute? path-absolute?)
 
@@ -202,6 +197,24 @@ solution?)")
 (cc-defhost path-string.relative? ([path-string? path] -> boolean?)
             "Whether `path` does not start with a '/'. (TODO: portable
 solution?)")
+
+(def. path-string.normalize path-normalize)
+
+(cc-defhost/try path-string.normalize ([path-string? path] -> path-string?)
+                "Simplify/expand `path`, considering
+`current-directory` and following symlinks found in the
+filesystem. Throws an error for path segments that are not found,
+except for the last segment (the file).")
+
+
+
+(cc-defhost/try .add (a b -> a*)
+                "Call the add method on a with b as additional
+argument. The result is expected to be of the same type as the first
+argument.")
+(cc-defhost/try .absolute? (a -> boolean?))
+(cc-defhost/try .relative? (a -> boolean?))
+(cc-defhost/try .normalize (a -> a*))
 
 
 (====cc-category (I/O processes)
