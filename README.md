@@ -16,6 +16,9 @@ changes. It might be
 
 ### Dependencies
 
+Currently this will only run on POSIX-like systems. It has been tested
+on Debian and Raspbian.
+
 This requires the Gambit-C Scheme system with some patches as
 available [here](https://github.com/pflanze/gambc.git); on a Debian
 (or Raspbian or perhaps Ubuntu) system it can easily be installed via
