@@ -63,9 +63,17 @@ machine state."
                 .repl-level-dec)))
 
 (cc-def DScheme ()
-        "Print stack, enter a Scheme repl; enter ,(c (Ok $s)) to continue!"
+        "Print stack, enter a Scheme repl; enter `,(c something)` to
+continue (where `something` could be `(Ok $cci)`--if `something` is a
+`copycat-runtime-result?`, it is used as the new interpreter state or
+error, otherwise the old one, `$cci`, is reused)."
         (mdo (copycat:try-Ok (pretty-print $s))
-             (##repl)))
+             (let (r (##repl))
+               (if (copycat-runtime-result? r)
+                   r
+                   (begin
+                     (warn "continuing with old interpreter state")
+                     (Ok $cci))))))
 
 (cc-def P (->)
         "Print the location of P and then the current stack (with
