@@ -41,10 +41,8 @@ to edit transcripts into a correct and useful shape.")
 one. Note that if the stack isn't empty when running
 `new-transcript!`, loading the transcript file later with an empty
 stack may fail or not yield the same results."
-        ;; (when-just (.maybe-transcript-port $cci)
-        ;;            (close-port it))
-        ;; ^ XX can't close it as the repl wants to print some more
-        ;;   and flush afterwards.
+        (when-just (.maybe-transcript-port $cci)
+                   (close-port it))
         (Ok (.maybe-transcript-port-set $cci (new-transcript))))
 
 (cc-def current-transcript-port (-> (maybe output-port?))

@@ -27,8 +27,7 @@
               (past '())
               (future '())
               (last-commands (turtle-commands)))
-       (let (($word 'cc-repl)
-             (maybe-transcript-port (.maybe-transcript-port cci)))
+       (let ($word 'cc-repl)
          (in-monad
           Result
           (pretty-print (cj-desourcify (.stack cci))) ;; XX display modes?
@@ -68,7 +67,7 @@
                            ;; Now that it is clear that
                            ;; `line` is proper s-expression
                            ;; syntax, write it down:
-                           (when-just maybe-transcript-port
+                           (when-just (.maybe-transcript-port cci)
                                       (displayln line it)
                                       (force-output it))
 
@@ -87,13 +86,15 @@
                              ;; HACK:
                              (set! *copycat-interpreter:interrupt* #f)
                              ;; /HACK
-                             (let (res (cc-interpreter.eval cci prog))
+                             (let* ((res (cc-interpreter.eval cci prog))
+                                    (cci* (if-Ok res it cci)))
                                (when-just
-                                maybe-transcript-port
+                                (.maybe-transcript-port cci*)
                                 (displayln
                                  (let (maybe-level
-                                       (let (level (.repl-level cci))
-                                         ;; ^ XX or (.value res) if Ok ?
+                                       (let (level (.repl-level cci*))
+                                         (assert (= (.repl-level cci)
+                                                    (.repl-level cci*)))
                                          (and (> level 0)
                                               level)))
                                    (if-Ok res
