@@ -9,6 +9,7 @@
 (require easy
          copycat-interpreter
          copycat-std-part4
+         (copycat-transcript new-transcript)
          test)
 
 (export)
@@ -24,6 +25,28 @@
 
 (====cc-category (development)
                  "Development aids.")
+
+(====cc-category (development files)
+                 "Developing with files.")
+
+(====cc-category (development files transcripts)
+                 "Transcripts are files onto which the current repl
+writes all successfully parsed user inputs, and in case of errors the
+error message in a commet. Transcripts can be loaded via `load`,
+although evaluation stops on the first failing statement; the idea is
+to edit transcripts into a correct and useful shape.")
+
+(cc-def new-transcript! (->)
+        "Closes the current transcript file (if any), and opens a new
+one. Note that if the stack isn't empty when running
+`new-transcript!`, loading the transcript file later with an empty
+stack may fail or not yield the same results."
+        (Ok (.maybe-transcript-port-set $cci (new-transcript))))
+
+(cc-def current-transcript-port (-> (maybe output-port?))
+        "Return the current transcript port, if any."
+        (cc-return (.maybe-transcript-port $cci)))
+
 
 (====cc-category (development debugging)
                  "Debugging aids.")
