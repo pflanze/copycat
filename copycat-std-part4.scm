@@ -414,7 +414,7 @@ program that reconstructs v when evaluated."
         "The list of entries in the given directory (only the file
 names without the parent directory path)."
         (>>= (copycat:try-Ok (stream->list (directory-item-stream path)))
-            (C cc-return _)))
+             (C cc-return _)))
 
 (cc-defguest 'cd 'set-current-directory alias
              'pwd 'current-directory alias
