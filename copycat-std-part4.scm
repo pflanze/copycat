@@ -331,7 +331,7 @@ list (of lists of) strings, to the file at `path`.")
  (Ok (list (list 'hello 3 "there"))))
 
 
-(cc-def path-string.read-source ([path-string? path] -> ilist?)
+(cc-def path-string.read-all-source ([path-string? path] -> ilist?)
         "Read the contents of the file at path as a list of
 s-expressions, enriched with location information."
         (>>= (copycat:try-Ok
@@ -340,7 +340,7 @@ s-expressions, enriched with location information."
 
 (cc-defguest (: load [path-string? path]
                 "Read and evaluate the given file."
-                (path-string.read-source eval)))
+                (path-string.read-all-source eval)))
 
 ;; This can't be guest code because I want to use the $word to get the
 ;; base location from, not the path argument. (Except could add syntax
