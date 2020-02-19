@@ -140,6 +140,15 @@ returns `v`."
 
 (cc-defhost string? (v -> boolean?)
             "Whether `v` is a string.")
+
+(cc-defhost string=? ([string? a] [string? b] -> boolean?)
+            "Whether a and b are equal character for character. For
+compatibility with Scheme; perhaps use `string.equal?` instead, OK?")
+
+(def. string.equal? string=?)
+(cc-defhost string.equal? ([string? a] [string? b] -> boolean?)
+            "Whether a and b are equal character for character.")
+
 (cc-defhost string.length ([string? str] -> fixnum-natural0?)
             "The number of characters in str.")
 (cc-defhost string.append ([string? a] [string? b] -> string?)
@@ -205,6 +214,8 @@ should be cut out and leading to the fragments. Is *not* supposed to
 coalesce multiple matching items in a row into a single hole (instead,
 it will return empty fragments from between those items in the
 result).")
+
+(cc-defhost/try .equal? (v1 v2 -> boolean?))
 
 
 (====cc-category (chars)
