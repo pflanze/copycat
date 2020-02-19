@@ -361,9 +361,35 @@ s-expressions, enriched with location information."
               (call-with-input-file path read-all-source))
              (C cc-return _)))
 
-(cc-defguest (: load [path-string? path]
-                "Read and evaluate the given file."
-                (path-string.read-all-source eval)))
+(cc-defguest
+ (: load [path-string? path]
+    "Read and evaluate the given file."
+    (
+     ;; Check if path is the same as the current transcript, if any,
+     ;; and given an error if it is, to prevent endless loops (since
+     ;; the current transcript will have the very load command at the
+     ;; end that is currently running, if entered via the repl).
+
+     ;; Normalize the transcript path, if available
+     current-transcript-port ;; XX rename with maybe-
+     (port.name
+      dup string?
+      (path-string.normalize
+       ;; now compare with the normalized `path` value
+       over path-string.normalize
+       string.equal?
+       (1 list "refusing to load the current transcript" swap error)
+       ( ;; "OK, can load it" println
+        path-string.read-all-source eval)
+       if)
+      ( ;;"transcript is not to a path" println
+       ;; COPY-PASTE
+       path-string.read-all-source eval)
+      if)
+     ( ;; "no transcript" println
+      ;; COPY-PASTE
+      path-string.read-all-source eval)
+     if-just)))
 
 ;; This can't be guest code because I want to use the $word to get the
 ;; base location from, not the path argument. (Except could add syntax
