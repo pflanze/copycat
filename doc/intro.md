@@ -353,6 +353,19 @@ The list of defined symbols can be retrieved via `dir`.
         (20 4 2 1)
         99991 @ 
 
+### Transcripts
+
+Everything you enter at the copycat-repl is automatically written to a
+file `transcript-....scm` in the current working directory, that is
+created when starting the copycat-repl. You can edit these files with
+a text editor and re-evaluate them by passing the file path to
+`load`. To prevent endless loops, `load` refuses to load a file if it
+is the currently active transcript (because it would lead to an
+endless loop given that the load statement just entered to the repl is
+written to it). You could choose to save to another path from the text
+editor, or cut logging to the current transcript and start another one
+via `new-transcript!`.
+
 
 ## Errors / exceptions
 
