@@ -152,8 +152,18 @@ sent to the OS."
             "Read a line from the given file handle, #f on EOF (ctl-d).")
 
 (cc-def string.port ([string? s] -> input-port?)
-        "Open the given string as a filehandle."
+        "Open the given string as a filehandle (meaning, read
+operations on the returned filehandle will receive the string's
+contents)."
         (cc-return (call-with-input-string s identity)))
+
+(cc-defhost port.name ([port? p] -> (either path-string? pair?))
+            "Return the name associated with `p`; if `p` was opened
+from a file, this is the path string. In other cases it is a list with
+some informal structure describing what the port was opened from.")
+
+(cc-defhost/try .name (v -> w))
+
 
 
 (cc-defguest (: ask-string [string? question] -> string?
