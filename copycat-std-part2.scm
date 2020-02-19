@@ -277,20 +277,27 @@ can also be convenient (TODO: offer nesting 'Maybe' type)."
                  (booleans maybe))
 
 (cc-def if-just ([any? a]
-                  [ilist-of-possibly-source? then]
-                  [ilist-of-possibly-source? else])
+                 [ilist-of-possibly-source? then]
+                 [ilist-of-possibly-source? else])
         "Unlike `if`, this accepts non-boolean values for `a`, in
-which case the `then` branch is evaluated (i.e. a 'maybe' type if)."
-        (cc-interpreter.eval $cci (if a then else)))
+which case `a` is put back and the `then` branch is evaluated,
+otherwise `else` is evaluated (without putting back the false value
+from `a`)."
+        (if a
+            (=> (cc-interpreter.push $cci a)
+                (cc-interpreter.eval then))
+            (cc-interpreter.eval $cci else)))
 
 (TEST
  > (t '(#f ('yes) ('no) if-just))
  (Ok (list 'no))
  > (t '(#t ('yes) ('no) if-just))
- (Ok (list 'yes))
+ (Ok (list 'yes #t))
  > (t '("other" ('yes) ('no) if-just))
- (Ok (list 'yes))
+ (Ok (list 'yes "other"))
  ;; unlike:
+ > (t '(#t ('yes) ('no) if))
+ (Ok (list 'yes))
  > (t '("other" ('yes) ('no) if))
  (Error (copycat-type-error 'if "(boolean? val)" "other")))
 
@@ -307,11 +314,15 @@ style one (monadic >>)."
 'maybe' type: if `a` is #f, it will return #f; otherwise, it will put
 `a` back on the stack (unlike `and` which does not do this) and
 evaluate `b`."
-                (over -rot () if-just)))
+                ((#f) if-just)))
 
 (TEST
- > (t '(#f (10 +) maybe->>=))
- (Ok (list #f))
+ > (def i (t* '(#f (10 +) maybe->>=)))
+ > (cj-desourcify i)
+ [(Ok) (#f)]
+ ;; (Ok (list #f)) but #f has location information
+ > (=> i (vector-ref 1) .first maybe-source-location just?)
+ #t
  > (t '(11 (10 +) maybe->>=))
  (Ok (list 21)))
 
