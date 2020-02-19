@@ -371,7 +371,7 @@ s-expressions, enriched with location information."
      ;; end that is currently running, if entered via the repl).
 
      ;; Normalize the transcript path, if available
-     current-transcript-port ;; XX rename with maybe-
+     current-maybe-transcript-port
      (port.name
       dup string?
       (path-string.normalize

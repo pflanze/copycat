@@ -45,7 +45,7 @@ stack may fail or not yield the same results."
                    (close-port it))
         (Ok (.maybe-transcript-port-set $cci (new-transcript))))
 
-(cc-def current-transcript-port (-> (maybe output-port?))
+(cc-def current-maybe-transcript-port (-> (maybe output-port?))
         "Return the current transcript port, if any."
         (cc-return (.maybe-transcript-port $cci)))
 
