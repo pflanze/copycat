@@ -318,6 +318,7 @@
   '(c/load "lib/parse1")
   '(c/load "lib/partial-apply")
   '(c/load "lib/posix/cj-posix-example")
+  (c/load "lib/posix/nice")
   '(c/load "lib/pseudorandom")
   '(c/load "lib/queue")
   '(c/load "lib/vectormap")
